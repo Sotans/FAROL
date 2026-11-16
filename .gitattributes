@@ -1,0 +1,5 @@
+# Quebras de linha sempre LF no repositório e no checkout (combina com o Prettier).
+* text=auto eol=lf
+*.png binary
+*.wav binary
+*.ttf binary
