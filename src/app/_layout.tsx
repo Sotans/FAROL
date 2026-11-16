@@ -1,0 +1,45 @@
+import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+
+import { ProgressoProvider, useProgresso } from '@/estado/progresso';
+import { prepararSons } from '@/servicos/som';
+import { cor } from '@/tema/tokens';
+
+SplashScreen.preventAutoHideAsync();
+
+export default function LayoutRaiz() {
+  const [carregou, erro] = useFonts({ Inter_400Regular, Inter_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold });
+
+  if (!carregou && !erro) return null;
+
+  return (
+    <ProgressoProvider>
+      <StatusBar style="light" />
+      <Telas />
+    </ProgressoProvider>
+  );
+}
+
+/** Só mostra as telas depois que fontes e progresso salvo estiverem prontos. */
+function Telas() {
+  const { carregado } = useProgresso();
+
+  useEffect(() => {
+    if (carregado) {
+      SplashScreen.hideAsync();
+      // Depois da montagem, com os módulos nativos prontos.
+      prepararSons();
+    }
+  }, [carregado]);
+
+  if (!carregado) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: cor.fundo }, animation: 'fade' }} />
+  );
+}
