@@ -9,7 +9,8 @@ import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { NoTrilha, type EstadoNo } from '@/componentes/NoTrilha';
 import { textoDeDias, useProgresso } from '@/estado/progresso';
-import { nomeDoModulo, partes, totalDePartes } from '@/licao/dados';
+import { indiceDoFarol, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
+import { QUESTOES_DO_FAROL } from '@/licao/montar';
 import { rotuloModoDeErro } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
 import { diagnosticoDoSom, tocar } from '@/servicos/som';
@@ -43,7 +44,8 @@ export default function Trilha() {
   if (!onboardingConcluido) return <Redirect href="/boas-vindas" />;
 
   const c = carreiraPorId(carreira);
-  const todasConcluidas = concluidas >= totalDePartes;
+  const farolAceso = concluidas >= totalDeNos;
+  const vezDoFarol = concluidas === indiceDoFarol;
   const feitasHoje = Math.min(licoesHoje, metaDiaria);
   const metaCumprida = licoesHoje >= metaDiaria;
   // Convite "Pular pra cá?" no nó dois à frente, quando existir.
@@ -52,6 +54,19 @@ export default function Trilha() {
   function estadoDaParte(indice: number): EstadoNo {
     if (indice < concluidas) return dominadas.includes(indice) ? 'dominada' : 'feita';
     return indice === concluidas ? 'atual' : 'bloqueada';
+  }
+
+  function tocarFarol() {
+    if (farolAceso) {
+      haptico.selecao();
+      mostrarAviso(`Farol aceso. Você concluiu ${nomeDoModulo}.`);
+    } else if (vezDoFarol) {
+      haptico.leve();
+      setCartaoAberto(true);
+    } else {
+      haptico.leve();
+      setAlvoDoPulo(indiceDoFarol);
+    }
   }
 
   function tocarParte(indice: number) {
@@ -91,7 +106,7 @@ export default function Trilha() {
 
       <View style={estilos.banner}>
         <View>
-          <Text style={estilos.bannerPequeno}>{`UNIDADE 1 · PORTUGUÊS${c ? ` · ${c.nome.toUpperCase()}` : ''}`}</Text>
+          <Text style={estilos.bannerPequeno}>{`PORTUGUÊS · MÓDULO 1${c ? ` · ${c.nome.toUpperCase()}` : ''}`}</Text>
           <Text style={estilos.bannerTitulo}>{nomeDoModulo}</Text>
         </View>
         <Text style={estilos.bannerLista}>☰</Text>
@@ -111,16 +126,11 @@ export default function Trilha() {
 
       <ScrollView contentContainerStyle={estilos.rolagem} showsVerticalScrollIndicator={false}>
         <NoTrilha
-          estado="bau"
-          rotulo="Baú da unidade"
-          onPress={() => {
-            haptico.aviso();
-            mostrarAviso(
-              todasConcluidas
-                ? 'Baú aberto! (a recompensa ainda não está no protótipo)'
-                : 'Termine todas as partes para abrir o baú.',
-            );
-          }}
+          farol
+          estado={farolAceso ? 'feita' : vezDoFarol ? 'atual' : 'bloqueada'}
+          rotulo={`Farol de ${nomeDoModulo}`}
+          sub={farolAceso ? 'Aceso' : vezDoFarol ? 'Hoje' : 'Estilo de prova'}
+          onPress={tocarFarol}
         />
         {[...partes]
           .map((_, i) => partes.length - 1 - i)
@@ -157,17 +167,20 @@ export default function Trilha() {
 
       <Aviso texto={aviso} />
 
-      {cartaoAberto && !todasConcluidas ? (
+      {cartaoAberto && !farolAceso ? (
         <View style={StyleSheet.absoluteFill}>
           <Pressable style={estilos.fundoCartao} onPress={() => setCartaoAberto(false)} accessibilityLabel="Fechar" />
           <Animated.View entering={FadeInDown.duration(220)} style={estilos.cartao}>
-            <Text style={estilos.cartaoTitulo}>{partes[concluidas]}</Text>
-            <Text
-              style={estilos.cartaoSub}>{`Lição ${concluidas + 1} de ${totalDePartes} · cerca de 10 questões`}</Text>
+            <Text style={estilos.cartaoTitulo}>{vezDoFarol ? `Farol de ${nomeDoModulo}` : partes[concluidas]}</Text>
+            <Text style={estilos.cartaoSub}>
+              {vezDoFarol
+                ? `${QUESTOES_DO_FAROL} questões no estilo da prova, com tudo o que você viu no módulo. Acenda o farol.`
+                : `Lição ${concluidas + 1} de ${totalDePartes} · cerca de 10 questões`}
+            </Text>
             <View style={estilos.cartaoBotao}>
               <Botao
-                rotulo="COMEÇAR"
-                sub="+25 XP"
+                rotulo={vezDoFarol ? 'ACENDER O FAROL' : 'COMEÇAR'}
+                sub={`+${vezDoFarol ? limites.xpDoFarol : limites.xpDaLicao} XP`}
                 onPress={() => {
                   setCartaoAberto(false);
                   router.push('/licao');

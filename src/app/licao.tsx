@@ -12,17 +12,24 @@ import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Opcao, type EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useProgresso } from '@/estado/progresso';
-import { questoesDeBoasVindas, questoesDeDemonstracao } from '@/licao/dados';
+import { indiceDoFarol, moduloAtual } from '@/licao/dados';
+import { montarBoasVindas, montarFarol, montarLicao } from '@/licao/montar';
 import { rotuloTipo } from '@/licao/tipos';
 import { useLicao } from '@/licao/useLicao';
 import { haptico } from '@/servicos/haptico';
-import { alvoMinimo, cor, fonte, raio, tamanho } from '@/tema/tokens';
+import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 export default function Licao() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
   const boasVindas = modo === 'boas-vindas';
-  const { concluir, modoDeErro, celebracaoDeSequencia } = useProgresso();
-  const [questoes] = useState(() => (boasVindas ? questoesDeBoasVindas() : questoesDeDemonstracao));
+  const { concluir, concluidas, modoDeErro, celebracaoDeSequencia } = useProgresso();
+  // Fixados na abertura: `concluidas` muda ao concluir, antes de a tela sair.
+  const [farol] = useState(() => !boasVindas && concluidas === indiceDoFarol);
+  const [questoes] = useState(() => {
+    if (boasVindas) return montarBoasVindas(moduloAtual);
+    if (farol) return montarFarol(moduloAtual, Date.now());
+    return montarLicao(moduloAtual, concluidas, Date.now());
+  });
   const licao = useLicao(questoes, modoDeErro);
   const { questao: q, fase, selecionada, removidas } = licao;
 
@@ -43,13 +50,14 @@ export default function Licao() {
 
   function continuar() {
     if (licao.proxima()) {
-      concluir();
+      concluir(farol ? limites.xpDoFarol : limites.xpDaLicao);
       router.replace({
         pathname: '/conclusao',
         params: {
           acertos: String(licao.acertosDePrimeira),
           total: String(licao.totalOriginal),
           primeira: boasVindas ? '1' : '0',
+          farol: farol ? '1' : '0',
         },
       });
     }
@@ -90,9 +98,11 @@ export default function Licao() {
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip
           texto={
-            boasVindas ? 'Lição de boas-vindas' : `${rotuloTipo[q.tipo]}${q.modo === 'imediato' ? ' · imediato' : ''}`
+            boasVindas
+              ? 'Lição de boas-vindas'
+              : (q.origem ?? `${rotuloTipo[q.tipo]}${q.modo === 'imediato' ? ' · imediato' : ''}`)
           }
-          tom={boasVindas ? 'luz' : 'mare'}
+          tom={boasVindas || q.origem ? 'luz' : 'mare'}
         />
         <Text style={estilos.enunciado}>{q.enunciado}</Text>
 

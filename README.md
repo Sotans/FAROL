@@ -2,7 +2,7 @@
 
 Protótipo em código do fluxo de uma lição (submeta 1.5). Expo SDK 58, React Native, TypeScript, Expo Router e Reanimated.
 
-> **Conteúdo de demonstração.** As questões em `src/licao/dados.ts` não foram revisadas por professor e servem só para testar a mecânica.
+> **Conteúdo de demonstração.** As questões em `src/conteudo/` não foram revisadas por professor e servem só para testar a mecânica.
 
 ## Como rodar no celular
 
@@ -56,10 +56,11 @@ O progresso fica salvo no aparelho. Para recomeçar do zero, use "Reiniciar demo
 src/
   app/          rotas (Expo Router): boas-vindas, carreira, guia, meta, trilha (index), lição, conclusão, diagnóstico, mapa, desafio
   carreiras/    carreiras de lançamento e "em breve"
+  conteudo/     módulos de conteúdo (matéria → módulo → partes → questões) e testes de integridade
   componentes/  Botão, Opção, Barra de progresso, Folha de feedback, Nó da trilha, Luzes, Farol, Luz, Personagem, Balão, Aviso
   desafio/      motor do desafio "Pular pra cá?" (useDesafio)
   diagnostico/  questões do diagnóstico e cálculo do mapa
-  licao/        tipos, conteúdo de demonstração e motor da lição (useLicao)
+  licao/        tipos, montagem das sessões (montar.ts) e motor da lição (useLicao)
   estado/       progresso de demonstração
   servicos/     vibrações
   tema/         tokens do design system
@@ -75,7 +76,8 @@ Sons: `assets/sons/*.wav` são gerados pelo script `scripts/gerar-sons.py`. Para
 npm run typecheck   # checa os tipos
 npm run lint        # ESLint + Prettier (avisos de formatação não bloqueiam)
 npm run lint:fix    # corrige a formatação
+npm test            # testes automatizados (Jest)
 npx expo-doctor     # confere dependências e configuração
 ```
 
-Rode `typecheck` e `lint` antes de dar uma tarefa por concluída.
+Rode `typecheck`, `lint` e `test` antes de dar uma tarefa por concluída.

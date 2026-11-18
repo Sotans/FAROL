@@ -8,10 +8,11 @@ import { Botao } from '@/componentes/Botao';
 import { Chip } from '@/componentes/Chip';
 import { Farol } from '@/componentes/Farol';
 import { textoDeDias, useProgresso } from '@/estado/progresso';
-import { partes, totalDePartes } from '@/licao/dados';
+import { indiceDoFarol, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
+import { QUESTOES_DO_FAROL } from '@/licao/montar';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
-import { cor, fonte, raio, tamanho } from '@/tema/tokens';
+import { cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 const frases = [
   'Não deixe para amanhã o que pode fazer hoje.',
@@ -19,30 +20,35 @@ const frases = [
   'Mais uma? A sua luz já está acesa.',
 ];
 
-const XP_DA_LICAO = 25;
-
 export default function Conclusao() {
-  const { acertos, total, primeira } = useLocalSearchParams<{ acertos?: string; total?: string; primeira?: string }>();
+  const { acertos, total, primeira, farol } = useLocalSearchParams<{
+    acertos?: string;
+    total?: string;
+    primeira?: string;
+    farol?: string;
+  }>();
   const { concluidas, licoesHoje, sequencia, metaDiaria, mapa } = useProgresso();
   const primeiraLicao = primeira === '1';
+  const acendeuOFarol = farol === '1';
+  const xpGanho = acendeuOFarol ? limites.xpDoFarol : limites.xpDaLicao;
   const [xp, setXp] = useState(0);
   const [mostrarCartao, setMostrarCartao] = useState(false);
   const [frase] = useState(() => frases[Math.floor(Math.random() * frases.length)]);
 
-  // Pulsos de vibração e o sino do farol. Se a meta do dia fechou, o sino mais longo.
+  // Pulsos de vibração e o sino do farol. Meta do dia fechada ou farol aceso: o sino mais longo.
   useEffect(() => {
     haptico.pulsosDoFarol();
-    tocar(licoesHoje === metaDiaria ? 'meta' : 'licao');
+    tocar(acendeuOFarol || licoesHoje === metaDiaria ? 'meta' : 'licao');
     // Só na entrada da tela.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // O XP sobe contando.
   useEffect(() => {
-    if (xp >= XP_DA_LICAO) return;
-    const t = setTimeout(() => setXp((v) => Math.min(v + 1, XP_DA_LICAO)), 40);
+    if (xp >= xpGanho) return;
+    const t = setTimeout(() => setXp((v) => Math.min(v + 1, xpGanho)), 40);
     return () => clearTimeout(t);
-  }, [xp]);
+  }, [xp, xpGanho]);
 
   // O pop-up da próxima lição sobe sozinho depois da celebração.
   useEffect(() => {
@@ -54,15 +60,17 @@ export default function Conclusao() {
     return () => clearTimeout(t);
   }, []);
 
-  const unidadeConcluida = concluidas >= totalDePartes;
+  const moduloConcluido = concluidas >= totalDeNos;
+  const vezDoFarol = concluidas === indiceDoFarol;
 
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <View style={estilos.centro}>
         <Farol />
         <Text style={estilos.titulo}>
-          {unidadeConcluida ? 'Unidade concluída!' : primeiraLicao ? 'Primeira lição concluída!' : 'Lição concluída!'}
+          {acendeuOFarol ? 'Farol aceso!' : primeiraLicao ? 'Primeira lição concluída!' : 'Lição concluída!'}
         </Text>
+        {acendeuOFarol ? <Text style={estilos.detalhe}>{`Você concluiu o módulo ${nomeDoModulo}.`}</Text> : null}
         <Text style={estilos.xp}>{`+${xp} XP`}</Text>
         <Text style={estilos.detalhe}>{`Você acertou ${acertos ?? '0'} de ${total ?? '0'} de primeira.`}</Text>
         {primeiraLicao ? (
@@ -89,12 +97,29 @@ export default function Conclusao() {
                 <Botao rotulo="Mais tarde" variante="terciario" onPress={() => router.replace('/')} />
               </View>
             </>
-          ) : unidadeConcluida ? (
+          ) : moduloConcluido ? (
             <>
-              <Text style={estilos.cartaoTitulo}>Você terminou todas as partes de Crase.</Text>
-              <Text style={estilos.cartaoSub}>O baú da unidade e os próximos módulos chegam nas próximas versões.</Text>
+              <Text style={estilos.cartaoTitulo}>{`O farol de ${nomeDoModulo} está aceso.`}</Text>
+              <Text style={estilos.cartaoSub}>Os próximos módulos chegam nas próximas versões.</Text>
               <View style={estilos.botoes}>
                 <Botao rotulo="VOLTAR À TRILHA" onPress={() => router.replace('/')} />
+              </View>
+            </>
+          ) : vezDoFarol ? (
+            <>
+              <Text style={estilos.cartaoTitulo}>{`Você terminou todas as partes de ${nomeDoModulo}.`}</Text>
+              <Text style={estilos.cartaoSub}>Falta acender o farol do módulo.</Text>
+              <View style={estilos.proxima}>
+                <Text style={estilos.proximaTitulo}>{`Farol de ${nomeDoModulo}`}</Text>
+                <Text style={estilos.proximaSub}>{`Estilo de prova · ${QUESTOES_DO_FAROL} questões`}</Text>
+              </View>
+              <View style={estilos.botoes}>
+                <Botao
+                  rotulo="ACENDER O FAROL"
+                  sub={`+${limites.xpDoFarol} XP`}
+                  onPress={() => router.replace('/licao')}
+                />
+                <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.replace('/')} />
               </View>
             </>
           ) : (
@@ -109,7 +134,7 @@ export default function Conclusao() {
                   }>{`Lição ${concluidas + 1} de ${totalDePartes} · cerca de 10 questões`}</Text>
               </View>
               <View style={estilos.botoes}>
-                <Botao rotulo="CONTINUAR" sub="+25 XP" onPress={() => router.replace('/licao')} />
+                <Botao rotulo="CONTINUAR" sub={`+${limites.xpDaLicao} XP`} onPress={() => router.replace('/licao')} />
                 <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.replace('/')} />
               </View>
             </>

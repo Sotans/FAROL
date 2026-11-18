@@ -38,5 +38,7 @@ export const limites = {
   luzesDoDesafio: 5,
   dicasPorDia: 3,
   desafiosPorDia: 1,
+  xpDaLicao: 25,
   xpDoDesafio: 50,
+  xpDoFarol: 50,
 } as const;

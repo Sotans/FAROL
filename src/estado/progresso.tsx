@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import type { CarreiraId } from '@/carreiras/dados';
 import type { Mapa } from '@/diagnostico/dados';
-import { totalDePartes } from '@/licao/dados';
+import { totalDeNos, totalDePartes } from '@/licao/dados';
 import type { ModoDeErro } from '@/licao/tipos';
 import { carregarEstado, salvarEstado } from '@/servicos/armazenamento';
 import { haptico } from '@/servicos/haptico';
@@ -17,7 +17,10 @@ export type Estado = {
   metaDiaria: MetaDiaria;
   /** Mapa do ponto de partida (diagnóstico). null = ainda não feito. */
   mapa: Mapa | null;
-  /** Partes concluídas em sequência (lições ou desafio). O índice `concluidas` é a parte atual. */
+  /**
+   * Nós concluídos em sequência (lições, desafio e, por último, o farol). O índice `concluidas` é o nó atual.
+   * Igual ao número de partes: o farol é o atual. Igual ao total de nós: farol aceso.
+   */
   concluidas: number;
   /** Partes marcadas como dominadas pelo desafio "Pular pra cá?". */
   dominadas: number[];
@@ -48,8 +51,9 @@ type Progresso = Estado & {
   registrarToqueEmBreve: (id: CarreiraId) => void;
   registrarAcerto: () => void;
   quebrarSequenciaDeAcertos: () => void;
-  concluir: () => void;
-  /** Resultado do desafio: as partes de `concluidas` até `ate - 1` ficam dominadas e `ate` vira a atual. */
+  /** Conclui o nó atual (lição ou farol) e soma o XP dele. */
+  concluir: (xp: number) => void;
+  /** Resultado do desafio: as partes de `concluidas` até `ate - 1` ficam dominadas e `ate` vira o nó atual. */
   dominarAte: (ate: number) => void;
   registrarDesafio: () => void;
   /** Anúncio recompensado (SIMULADO): concede mais um desafio hoje. */
@@ -165,16 +169,16 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     setEstado((e) => (e.acertosSeguidos === 0 ? e : { ...e, acertosSeguidos: 0 }));
   }, []);
 
-  const concluir = useCallback(() => {
+  const concluir = useCallback((xp: number) => {
     setEstado((e) => {
       const atual = virarDia(e);
       return {
         ...atual,
-        concluidas: Math.min(atual.concluidas + 1, totalDePartes),
+        concluidas: Math.min(atual.concluidas + 1, totalDeNos),
         licoesHoje: atual.licoesHoje + 1,
         sequencia: atual.licoesHoje === 0 ? atual.sequencia + 1 : atual.sequencia,
         ultimoDiaDeEstudo: atual.dia,
-        xp: atual.xp + 25,
+        xp: atual.xp + xp,
       };
     });
   }, []);

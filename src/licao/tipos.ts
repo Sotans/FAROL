@@ -15,6 +15,8 @@ export type Questao = {
   dica: string;
   armadilha?: string;
   repetida?: boolean;
+  /** Rótulo de origem quando a questão vem de outra parte, como "Revisão · Pronomes". */
+  origem?: string;
 };
 
 /**
