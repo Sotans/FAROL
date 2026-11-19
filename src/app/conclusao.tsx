@@ -12,6 +12,7 @@ import { indiceDoFarol, nomeDoModulo, partes, totalDeNos, totalDePartes } from '
 import { QUESTOES_DO_FAROL } from '@/licao/montar';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
+import { IconeAnelDaMeta, IconeFaisca, IconeLuzDaSequencia } from '@/icones';
 import { cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 const frases = [
@@ -71,13 +72,21 @@ export default function Conclusao() {
           {acendeuOFarol ? 'Farol aceso!' : primeiraLicao ? 'Primeira lição concluída!' : 'Lição concluída!'}
         </Text>
         {acendeuOFarol ? <Text style={estilos.detalhe}>{`Você concluiu o módulo ${nomeDoModulo}.`}</Text> : null}
-        <Text style={estilos.xp}>{`+${xp} XP`}</Text>
+        <View style={estilos.linha}>
+          <IconeFaisca tamanho={30} />
+          <Text style={estilos.xp}>{`+${xp} XP`}</Text>
+        </View>
         <Text style={estilos.detalhe}>{`Você acertou ${acertos ?? '0'} de ${total ?? '0'} de primeira.`}</Text>
         {primeiraLicao ? (
           <Text style={estilos.detalhe}>Dia 1 concluído. Você começou, e é isso que importa.</Text>
         ) : null}
-        <Text style={estilos.sequencia}>{`● ${textoDeDias(sequencia)} seguidos`}</Text>
-        {licoesHoje === metaDiaria ? <Chip texto="Meta do dia cumprida ✓" tom="luz" /> : null}
+        <View style={estilos.linha}>
+          <IconeLuzDaSequencia tamanho={22} />
+          <Text style={estilos.sequencia}>{`${textoDeDias(sequencia)} seguidos`}</Text>
+        </View>
+        {licoesHoje === metaDiaria ? (
+          <Chip texto="Meta do dia cumprida" tom="luz" icone={<IconeAnelDaMeta tamanho={14} progresso={1} />} />
+        ) : null}
       </View>
 
       {mostrarCartao ? (
@@ -151,6 +160,7 @@ const estilos = StyleSheet.create({
   titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xl, color: cor.texto },
   xp: { fontFamily: fonte.titulo, fontSize: tamanho.xxl, color: cor.acerto },
   detalhe: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   sequencia: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.luz },
   cartao: {
     position: 'absolute',

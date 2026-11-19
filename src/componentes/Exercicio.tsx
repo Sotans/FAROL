@@ -11,6 +11,7 @@ import Animated, {
   ZoomIn,
 } from 'react-native-reanimated';
 
+import { IconeSeta } from '@/icones';
 import { colunaDaDireita, ordemDeExibicao, parEstaCorreto } from '@/licao/respostas';
 import type { Questao, QuestaoDeOrdenar, QuestaoDePares } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
@@ -170,7 +171,7 @@ function LigarPares({ questao, situacao, onErrarPar, onConcluirPares }: Props & 
         {questao.pares.map(([a, b], i) => (
           <View key={i} style={estilos.parRevelado}>
             <Text style={estilos.parReveladoTexto}>{a}</Text>
-            <Text style={estilos.parReveladoSeta}>→</Text>
+            <IconeSeta tamanho={20} />
             <Text style={[estilos.parReveladoTexto, { color: cor.acerto }]}>{b}</Text>
           </View>
         ))}
@@ -362,7 +363,6 @@ const estilos = StyleSheet.create({
     paddingVertical: 12,
   },
   parReveladoTexto: { flex: 1, fontFamily: fonte.textoSemi, fontSize: tamanho.md, color: cor.texto },
-  parReveladoSeta: { fontFamily: fonte.titulo, fontSize: tamanho.md, color: cor.acerto },
   bloco: {
     minHeight: alvoMinimo,
     borderRadius: raio.md,

@@ -8,6 +8,7 @@ import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { useProgresso } from '@/estado/progresso';
 import { haptico } from '@/servicos/haptico';
+import { IlustracaoCarreira } from '@/icones';
 import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 
 /** T2. "O que você quer ser?" A carreira monta a trilha. Toques em "em breve" são contados. */
@@ -55,7 +56,7 @@ export default function EscolhaDeCarreira() {
                   selecionada ? estilos.cartaoSelecionado : null,
                   c.ativa ? null : estilos.cartaoEmBreve,
                 ]}>
-                <Text style={estilos.icone}>{c.icone}</Text>
+                <IlustracaoCarreira id={c.id} tamanho={52} />
                 <Text style={[estilos.nome, selecionada ? { color: cor.luz } : null]}>{c.nome}</Text>
                 <Text style={estilos.descricao}>{c.ativa ? c.descricao : 'EM BREVE'}</Text>
               </Pressable>
@@ -92,7 +93,6 @@ const estilos = StyleSheet.create({
   },
   cartaoSelecionado: { borderColor: cor.luz, backgroundColor: 'rgba(255,200,87,0.1)' },
   cartaoEmBreve: { opacity: 0.5 },
-  icone: { fontSize: 34, lineHeight: 42 },
   nome: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.texto },
   descricao: { fontFamily: fonte.texto, fontSize: 11, color: cor.textoSuave, textAlign: 'center' },
   rodape: { paddingVertical: 12 },

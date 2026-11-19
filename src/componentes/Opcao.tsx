@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { IconeFechar, IconeVisto } from '@/icones';
 import { alvoMinimo, cor, fonte, raio, tamanho } from '@/tema/tokens';
 
 export type EstadoOpcao = 'normal' | 'selecionada' | 'correta' | 'errada' | 'removida';
@@ -53,8 +54,6 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
     transform: [{ translateX: deslocamento.value }, { scale: escala.value }],
   }));
 
-  const sufixo = estado === 'correta' ? '  ✓' : estado === 'errada' ? '  ✕' : '';
-
   return (
     <Animated.View style={[animado, compacta ? estilos.compactaRaiz : null]}>
       <Pressable
@@ -71,7 +70,11 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
             opacity: estado === 'removida' ? 0.45 : 1,
           },
         ]}>
-        <Text style={[estilos.texto, { color: v.texto }]}>{`${texto}${sufixo}`}</Text>
+        <View style={estilos.linha}>
+          <Text style={[estilos.texto, { color: v.texto }]}>{texto}</Text>
+          {estado === 'correta' ? <IconeVisto tamanho={18} cor={cor.acerto} /> : null}
+          {estado === 'errada' ? <IconeFechar tamanho={18} cor={cor.atencao} /> : null}
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -87,9 +90,11 @@ const estilos = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: 'center',
   },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   compactaRaiz: { alignSelf: 'flex-start' },
   compacta: { paddingHorizontal: 22 },
   texto: {
+    flexShrink: 1,
     fontFamily: fonte.textoSemi,
     fontSize: tamanho.md,
   },

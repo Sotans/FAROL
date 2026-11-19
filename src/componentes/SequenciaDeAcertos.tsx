@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { IconeFaisca } from '@/icones';
 import { cor, fonte, raio } from '@/tema/tokens';
 
 /**
@@ -34,7 +35,8 @@ export function SequenciaDeAcertos({ valor }: { valor: number }) {
 
   return (
     <Animated.View style={[estilos.caixa, estilo]} accessible accessibilityLabel={`${valor} acertos seguidos`}>
-      <Text style={estilos.texto}>{`✦ ${valor}`}</Text>
+      <IconeFaisca tamanho={16} />
+      <Text style={estilos.texto}>{valor}</Text>
     </Animated.View>
   );
 }
@@ -47,6 +49,8 @@ const estilos = StyleSheet.create({
     borderRadius: raio.circulo,
     borderWidth: 1,
     borderColor: cor.linha,
+    flexDirection: 'row',
+    gap: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },

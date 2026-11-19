@@ -12,6 +12,7 @@ import { calcularMapa, questoesDoDiagnostico, type RespostaDoDiagnostico } from 
 import { useProgresso } from '@/estado/progresso';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
+import { IconeFechar } from '@/icones';
 import { alvoMinimo, cor, fonte, tamanho } from '@/tema/tokens';
 
 type Resultado = 'acertou' | 'naoAcertou' | 'naoVi';
@@ -86,7 +87,7 @@ export default function Diagnostico() {
           accessibilityRole="button"
           accessibilityLabel="Fazer o mapa mais tarde"
           style={estilos.sair}>
-          <Text style={estilos.sairTexto}>✕</Text>
+          <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={(indice + (respondendo ? 0 : 1)) / total} />
       </View>
@@ -143,7 +144,6 @@ const estilos = StyleSheet.create({
     paddingRight: 24,
   },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
-  sairTexto: { fontFamily: fonte.tituloMedio, fontSize: tamanho.lg, color: cor.textoSuave },
   corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
   opcoes: { gap: 10 },

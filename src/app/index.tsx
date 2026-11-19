@@ -14,6 +14,7 @@ import { QUESTOES_DO_FAROL } from '@/licao/montar';
 import { rotuloModoDeErro } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
 import { diagnosticoDoSom, tocar } from '@/servicos/som';
+import { IconeAnelDaMeta, IconeLuzDaSequencia, IconeModulos } from '@/icones';
 import { cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 const deslocamentos = [0, 46, 0, -46];
@@ -98,10 +99,16 @@ export default function Trilha() {
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <View style={estilos.cabeca}>
-        <Text style={estilos.sequencia}>{`● ${textoDeDias(sequencia)}`}</Text>
-        <Text style={[estilos.meta, metaCumprida ? { color: cor.acerto } : null]}>
-          {`Meta de hoje: ${feitasHoje} de ${metaDiaria}${metaCumprida ? ' ✓' : ''}`}
-        </Text>
+        <View style={estilos.indicador}>
+          <IconeLuzDaSequencia tamanho={22} intensidade={sequencia > 0 ? 1 : 0.3} />
+          <Text style={estilos.sequencia}>{textoDeDias(sequencia)}</Text>
+        </View>
+        <View style={estilos.indicador}>
+          <IconeAnelDaMeta tamanho={20} progresso={feitasHoje / metaDiaria} />
+          <Text style={[estilos.meta, metaCumprida ? { color: cor.luz } : null]}>
+            {metaCumprida ? 'Meta de hoje cumprida' : `Meta de hoje: ${feitasHoje} de ${metaDiaria}`}
+          </Text>
+        </View>
       </View>
 
       <View style={estilos.banner}>
@@ -109,7 +116,7 @@ export default function Trilha() {
           <Text style={estilos.bannerPequeno}>{`PORTUGUÊS · MÓDULO 1${c ? ` · ${c.nome.toUpperCase()}` : ''}`}</Text>
           <Text style={estilos.bannerTitulo}>{nomeDoModulo}</Text>
         </View>
-        <Text style={estilos.bannerLista}>☰</Text>
+        <IconeModulos tamanho={26} />
       </View>
 
       {!mapa ? (
@@ -159,6 +166,9 @@ export default function Trilha() {
           style={estilos.rodapeDemo}
           accessibilityRole="button">
           <Text style={estilos.rodapeDemoTexto}>Testar som (diagnóstico)</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push('/icones')} style={estilos.rodapeDemo} accessibilityRole="button">
+          <Text style={estilos.rodapeDemoTexto}>Ver catálogo de ícones</Text>
         </Pressable>
         <Pressable onPress={reiniciar} style={estilos.rodapeDemo} accessibilityRole="button">
           <Text style={estilos.rodapeDemoTexto}>Reiniciar demonstração (volta ao início)</Text>
@@ -247,6 +257,7 @@ export default function Trilha() {
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo, paddingHorizontal: 16 },
   cabeca: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
+  indicador: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   sequencia: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.luz },
   meta: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
   banner: {
@@ -268,7 +279,6 @@ const estilos = StyleSheet.create({
     opacity: 0.85,
   },
   bannerTitulo: { fontFamily: fonte.titulo, fontSize: tamanho.lg, color: cor.textoSobreMare },
-  bannerLista: { fontSize: tamanho.lg, color: cor.textoSobreMare },
   linkMapa: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 8 },
   linkMapaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
   rolagem: { paddingVertical: 8, paddingBottom: 40 },

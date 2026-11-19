@@ -18,6 +18,7 @@ import { montarBoasVindas, montarFarol, montarLicao } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { useLicao } from '@/licao/useLicao';
 import { haptico } from '@/servicos/haptico';
+import { IconeFechar, IconeLanterna } from '@/icones';
 import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 export default function Licao() {
@@ -88,7 +89,7 @@ export default function Licao() {
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <View style={estilos.topo}>
         <Pressable onPress={sair} accessibilityRole="button" accessibilityLabel="Sair da lição" style={estilos.sair}>
-          <Text style={estilos.sairTexto}>✕</Text>
+          <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={licao.progresso} />
         <SequenciaDeAcertos valor={licao.acertosSeguidos} />
@@ -97,7 +98,8 @@ export default function Licao() {
           accessibilityRole="button"
           accessibilityLabel={`Dica, ${licao.dicasRestantes} restantes`}
           style={estilos.dica}>
-          <Text style={estilos.dicaTexto}>{`💡 ${licao.dicasRestantes}`}</Text>
+          <IconeLanterna tamanho={20} acesa={licao.dicasRestantes > 0} />
+          <Text style={estilos.dicaTexto}>{licao.dicasRestantes}</Text>
         </Pressable>
       </View>
 
@@ -114,7 +116,8 @@ export default function Licao() {
 
         {licao.dicaAberta ? (
           <Animated.View entering={FadeInDown} style={estilos.caixaDica}>
-            <Text style={estilos.caixaDicaTexto}>{`💡 ${q.dica}`}</Text>
+            <IconeLanterna tamanho={20} />
+            <Text style={estilos.caixaDicaTexto}>{q.dica}</Text>
           </Animated.View>
         ) : null}
 
@@ -223,13 +226,14 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo },
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 6 },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
-  sairTexto: { fontFamily: fonte.tituloMedio, fontSize: tamanho.lg, color: cor.textoSuave },
   dica: {
     minHeight: 40,
     paddingHorizontal: 12,
     borderRadius: raio.circulo,
     borderWidth: 1,
     borderColor: cor.linha,
+    flexDirection: 'row',
+    gap: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -237,13 +241,15 @@ const estilos = StyleSheet.create({
   corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
   caixaDica: {
+    flexDirection: 'row',
+    gap: 8,
     backgroundColor: 'rgba(255,200,87,0.12)',
     borderColor: 'rgba(255,200,87,0.4)',
     borderWidth: 1,
     borderRadius: raio.md,
     padding: 12,
   },
-  caixaDicaTexto: { fontFamily: fonte.texto, fontSize: tamanho.sm, lineHeight: 21, color: cor.luz },
+  caixaDicaTexto: { flex: 1, fontFamily: fonte.texto, fontSize: tamanho.sm, lineHeight: 21, color: cor.luz },
   aviso: {
     backgroundColor: cor.superficie,
     borderColor: cor.luz,

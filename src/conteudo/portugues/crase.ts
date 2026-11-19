@@ -12,8 +12,8 @@ export const moduloCrase: Modulo = {
   id: 'pt-crase',
   materia: 'portugues',
   nome: 'Crase',
-  // HIPÓTESE: valor provisório até o mapeamento das provas.
-  incidencia: 0.1,
+  // 2,3% das questões de Português do Cebraspe em 2025 e 2026 (docs/15-mapa-de-temas.md).
+  incidencia: 0.023,
   partes: [
     {
       id: 'p1',

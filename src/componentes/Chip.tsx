@@ -1,16 +1,18 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { cor, fonte, raio } from '@/tema/tokens';
 
-type Props = { texto: string; tom?: 'luz' | 'mare' };
+type Props = { texto: string; tom?: 'luz' | 'mare'; icone?: ReactNode };
 
-export function Chip({ texto, tom = 'mare' }: Props) {
+export function Chip({ texto, tom = 'mare', icone }: Props) {
   const cores =
     tom === 'luz'
       ? { texto: cor.luz, fundo: 'rgba(255,200,87,0.12)' }
       : { texto: '#8FB2FF', fundo: 'rgba(43,95,217,0.2)' };
   return (
     <View style={[estilos.chip, { backgroundColor: cores.fundo }]}>
+      {icone}
       <Text style={[estilos.texto, { color: cores.texto }]}>{texto.toUpperCase()}</Text>
     </View>
   );
@@ -19,6 +21,9 @@ export function Chip({ texto, tom = 'mare' }: Props) {
 const estilos = StyleSheet.create({
   chip: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     borderRadius: raio.circulo,
     paddingHorizontal: 10,
     paddingVertical: 4,

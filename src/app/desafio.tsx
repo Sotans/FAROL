@@ -20,6 +20,7 @@ import { moduloAtual, nomeDoModulo } from '@/licao/dados';
 import { montarDesafio } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
+import { IconeFaisca, IconeFechar } from '@/icones';
 import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 
 /** T11f. O desafio "Pular pra cá?": 5 luzes, e passar marca as partes puladas como dominadas. */
@@ -66,7 +67,10 @@ export default function Desafio() {
             style={
               estilos.detalhe
             }>{`Você acertou ${desafio.acertos} de ${desafio.total}. Em ${nomeDoModulo}, ${descricaoDasPartes} ${primeiraPulada === ultimaPulada ? 'fica marcada' : 'ficam marcadas'} como dominada${primeiraPulada === ultimaPulada ? '' : 's'}.`}</Text>
-          <Text style={estilos.xp}>{`+${limites.xpDoDesafio} XP`}</Text>
+          <View style={estilos.linhaXp}>
+            <IconeFaisca tamanho={30} />
+            <Text style={estilos.xp}>{`+${limites.xpDoDesafio} XP`}</Text>
+          </View>
           <Text style={estilos.detalhe}>
             Vamos te perguntar sobre isso de novo daqui a alguns dias, só para garantir.
           </Text>
@@ -106,7 +110,7 @@ export default function Desafio() {
           accessibilityRole="button"
           accessibilityLabel="Sair do desafio"
           style={estilos.sair}>
-          <Text style={estilos.sairTexto}>✕</Text>
+          <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={desafio.progresso} />
         <SequenciaDeAcertos valor={desafio.acertosSeguidos} />
@@ -179,7 +183,6 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo },
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 6 },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
-  sairTexto: { fontFamily: fonte.tituloMedio, fontSize: tamanho.lg, color: cor.textoSuave },
   luzes: { paddingVertical: 6 },
   corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
@@ -195,6 +198,7 @@ const estilos = StyleSheet.create({
   },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24 },
   titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xl, color: cor.texto, textAlign: 'center' },
+  linhaXp: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   xp: { fontFamily: fonte.titulo, fontSize: tamanho.xxl, color: cor.acerto },
   detalhe: {
     fontFamily: fonte.texto,
