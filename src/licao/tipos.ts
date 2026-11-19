@@ -13,6 +13,8 @@ type Base = {
   explicacao: string;
   dica: string;
   armadilha?: string;
+  /** Onde conferir a regra (lei, gramática). Usado na revisão do conteúdo. */
+  fonte?: string;
   repetida?: boolean;
   /** Rótulo de origem quando a questão vem de outra parte, como "Revisão · Pronomes". */
   origem?: string;

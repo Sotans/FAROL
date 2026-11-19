@@ -1,60 +1,9 @@
-import type { ModoResposta, Questao } from '@/licao/tipos';
+import { certoErrado, completar, escolha, identificar, ordenar, pares } from '../criar';
 import type { Modulo } from '../tipos';
 
 // CONTEÚDO DE DEMONSTRAÇÃO, não revisado por professor (docs/04-estrategia-de-conteudo.md).
 // 6 partes de 9 a 11 questões (uma nuance por parte, com os 6 tipos de exercício) e o Farol do módulo.
 // Cada lição usa as questões da parte mais 2 de revisão de partes anteriores: de 11 a 13 no total.
-
-type Comum = {
-  nivel: Questao['nivel'];
-  enunciado: string;
-  explicacao: string;
-  dica: string;
-  armadilha?: string;
-  /** Padrão: imediato até o nível 2, com confirmação do nível 3 em diante (docs/11, modos de resposta). */
-  modo?: ModoResposta;
-};
-
-const modoPadrao = (nivel: Questao['nivel']): ModoResposta => (nivel <= 2 ? 'imediato' : 'confirmar');
-
-function certoErrado(id: string, c: Comum & { certo: boolean }): Questao {
-  const { certo, modo, enunciado, ...resto } = c;
-  return {
-    id,
-    tipo: 'certoErrado',
-    modo: modo ?? modoPadrao(c.nivel),
-    enunciado: `Certo ou errado? ${enunciado}`,
-    opcoes: ['Certo', 'Errado'],
-    correta: certo ? 0 : 1,
-    ...resto,
-  };
-}
-
-function escolha(id: string, c: Comum & { opcoes: string[]; correta: number }): Questao {
-  const { modo, ...resto } = c;
-  return { id, tipo: 'multipla', modo: modo ?? modoPadrao(c.nivel), ...resto };
-}
-
-function completar(id: string, c: Comum & { opcoes: string[]; correta: number }): Questao {
-  const { modo, ...resto } = c;
-  return { id, tipo: 'completar', modo: modo ?? modoPadrao(c.nivel), ...resto };
-}
-
-/** A frase vem em trechos; `erro` é o índice do trecho errado. */
-function identificar(id: string, c: Comum & { trechos: string[]; erro: number }): Questao {
-  const { trechos, erro, modo, ...resto } = c;
-  return { id, tipo: 'identificarErro', modo: modo ?? modoPadrao(c.nivel), opcoes: trechos, correta: erro, ...resto };
-}
-
-/** `itens` na ordem correta; a tela embaralha. Sempre com confirmação. */
-function ordenar(id: string, c: Omit<Comum, 'modo'> & { itens: string[] }): Questao {
-  return { id, tipo: 'ordenar', modo: 'confirmar', ...c };
-}
-
-/** Cada par confere na hora: não há botão de confirmar. */
-function pares(id: string, c: Omit<Comum, 'modo'> & { pares: [string, string][] }): Questao {
-  return { id, tipo: 'ligarPares', modo: 'imediato', ...c };
-}
 
 const ARMADILHA_MASCULINO = 'a pé, a cavalo, a prazo, a tempo: palavras masculinas nunca levam crase.';
 const ARMADILHA_HORAS = '"de... a" (sem crase) e "das... às" (com crase): não misture os pares.';
