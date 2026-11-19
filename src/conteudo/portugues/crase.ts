@@ -2,8 +2,8 @@ import type { ModoResposta, Questao } from '@/licao/tipos';
 import type { Modulo } from '../tipos';
 
 // CONTEÚDO DE DEMONSTRAÇÃO, não revisado por professor (docs/04-estrategia-de-conteudo.md).
-// 6 partes × 8 questões, uma nuance por parte, mais o Farol do módulo (10 questões no estilo da banca).
-// Cada lição usa as 8 da parte mais até 2 de revisão de partes anteriores.
+// 6 partes de 9 a 11 questões (uma nuance por parte, com os 6 tipos de exercício) e o Farol do módulo.
+// Cada lição usa as questões da parte mais 2 de revisão de partes anteriores: de 11 a 13 no total.
 
 type Comum = {
   nivel: Questao['nivel'];
@@ -38,6 +38,22 @@ function escolha(id: string, c: Comum & { opcoes: string[]; correta: number }): 
 function completar(id: string, c: Comum & { opcoes: string[]; correta: number }): Questao {
   const { modo, ...resto } = c;
   return { id, tipo: 'completar', modo: modo ?? modoPadrao(c.nivel), ...resto };
+}
+
+/** A frase vem em trechos; `erro` é o índice do trecho errado. */
+function identificar(id: string, c: Comum & { trechos: string[]; erro: number }): Questao {
+  const { trechos, erro, modo, ...resto } = c;
+  return { id, tipo: 'identificarErro', modo: modo ?? modoPadrao(c.nivel), opcoes: trechos, correta: erro, ...resto };
+}
+
+/** `itens` na ordem correta; a tela embaralha. Sempre com confirmação. */
+function ordenar(id: string, c: Omit<Comum, 'modo'> & { itens: string[] }): Questao {
+  return { id, tipo: 'ordenar', modo: 'confirmar', ...c };
+}
+
+/** Cada par confere na hora: não há botão de confirmar. */
+function pares(id: string, c: Omit<Comum, 'modo'> & { pares: [string, string][] }): Questao {
+  return { id, tipo: 'ligarPares', modo: 'imediato', ...c };
 }
 
 const ARMADILHA_MASCULINO = 'a pé, a cavalo, a prazo, a tempo: palavras masculinas nunca levam crase.';
@@ -121,6 +137,34 @@ export const moduloCrase: Modulo = {
           explicacao: 'No sentido de ver, "assistir" pede "a": assisti ao filme → à palestra.',
           dica: 'Troque: "assisti ___ filme".',
         }),
+        pares('cr-p1-09', {
+          nivel: 1,
+          enunciado: 'Ligue cada expressão à sua troca pelo masculino.',
+          pares: [
+            ['à farmácia', 'ao mercado'],
+            ['à escola', 'ao colégio'],
+            ['à praia', 'ao clube'],
+            ['à reunião', 'ao encontro'],
+          ],
+          explicacao: 'Em todas, a troca pelo masculino dá "ao". É o sinal de que, no feminino, há crase.',
+          dica: '"À" vira "ao" quando a palavra é masculina.',
+        }),
+        ordenar('cr-p1-10', {
+          nivel: 2,
+          enunciado: 'Coloque os passos do teste do "ao" na ordem.',
+          itens: ['Troque a palavra feminina por uma masculina', 'Veja se aparece "ao"', 'Se apareceu, use "à"'],
+          explicacao: 'Primeiro a troca, depois a conferência do "ao" e, por fim, a decisão.',
+          dica: 'Comece pela troca de palavra.',
+        }),
+        identificar('cr-p1-11', {
+          nivel: 3,
+          enunciado: 'Toque no trecho com erro de crase.',
+          trechos: ['Conheço', 'à diretora', 'e obedeço', 'às regras.'],
+          erro: 1,
+          explicacao:
+            'Quem conhece, conhece alguém, sem preposição: conheço a diretora. "Às regras" está certo: obedeço aos regulamentos.',
+          dica: 'Faça o teste do "ao" em cada crase.',
+        }),
       ],
     },
     {
@@ -191,6 +235,15 @@ export const moduloCrase: Modulo = {
           explicacao: 'Dedicar-se a: aos estudos (a + os, masculino) e à leitura (a + a, feminino).',
           dica: 'Analise cada palavra separadamente: "estudos" e "leitura".',
         }),
+        identificar('cr-p2-09', {
+          nivel: 3,
+          enunciado: 'Toque no trecho com erro de crase.',
+          trechos: ['Saí', 'à cavalo', 'e cheguei', 'à fazenda.'],
+          erro: 1,
+          explicacao: '"Cavalo" é masculino: saí a cavalo. "À fazenda" está certo: cheguei ao sítio.',
+          dica: 'Procure a palavra masculina.',
+          armadilha: ARMADILHA_MASCULINO,
+        }),
       ],
     },
     {
@@ -260,6 +313,25 @@ export const moduloCrase: Modulo = {
           explicacao: 'Entre palavras repetidas não há crase: frente a frente, cara a cara, gota a gota.',
           dica: 'Repare que a palavra se repete.',
           armadilha: 'entre palavras repetidas nunca há crase, mesmo que sejam femininas.',
+        }),
+        pares('cr-p3-09', {
+          nivel: 2,
+          enunciado: 'Ligue cada locução ao seu sentido.',
+          pares: [
+            ['às pressas', 'com pressa'],
+            ['à toa', 'sem motivo'],
+            ['à vista', 'sem parcelar'],
+            ['às vezes', 'de vez em quando'],
+          ],
+          explicacao: 'Todas são locuções formadas por palavra feminina, e por isso levam crase.',
+          dica: 'Pense em como você usaria cada uma numa frase.',
+        }),
+        ordenar('cr-p3-10', {
+          nivel: 2,
+          enunciado: 'Monte a frase.',
+          itens: ['À medida que', 'estudo,', 'aprendo', 'mais.'],
+          explicacao: '"À medida que" indica proporção e leva crase.',
+          dica: 'A frase começa pela locução.',
         }),
       ],
     },
@@ -333,6 +405,28 @@ export const moduloCrase: Modulo = {
           dica: 'Os dois lados precisam combinar.',
           armadilha: ARMADILHA_HORAS,
         }),
+        pares('cr-p4-09', {
+          nivel: 2,
+          enunciado: 'Ligue cada começo ao final que combina com ele.',
+          pares: [
+            ['das 9h', 'às 18h'],
+            ['de 9h', 'a 18h'],
+            ['desde', 'as 7h'],
+            ['após', 'as 10h'],
+          ],
+          explicacao:
+            '"Das" pede "às" e "de" pede "a". Depois de "desde" e "após", o horário fica sem crase, porque já há uma preposição.',
+          dica: 'Com artigo no começo, artigo no fim.',
+          armadilha: ARMADILHA_HORAS,
+        }),
+        identificar('cr-p4-10', {
+          nivel: 3,
+          enunciado: 'Toque no trecho com erro de crase.',
+          trechos: ['Espero', 'o resultado', 'desde', 'às 7h.'],
+          erro: 3,
+          explicacao: 'Depois de "desde" não cabe outra preposição: desde as 7h.',
+          dica: '"Desde" já é uma preposição.',
+        }),
       ],
     },
     {
@@ -399,6 +493,21 @@ export const moduloCrase: Modulo = {
           certo: true,
           explicacao: '"Esta" não admite artigo (sem crase). "Àquela" é a + aquela.',
           dica: 'Analise "esta" e "aquela" separadamente.',
+        }),
+        ordenar('cr-p5-09', {
+          nivel: 2,
+          enunciado: 'Monte a frase.',
+          itens: ['Não me refiro', 'a esta lei,', 'mas', 'àquela.'],
+          explicacao: '"Esta" não admite artigo (sem crase). "Àquela" é a + aquela.',
+          dica: 'A frase começa pelo verbo.',
+        }),
+        identificar('cr-p5-10', {
+          nivel: 3,
+          enunciado: 'Toque no trecho com erro de crase.',
+          trechos: ['Pedi', 'à senhora', 'que entregasse', 'o documento', 'à ela.'],
+          erro: 4,
+          explicacao: '"Ela" é pronome pessoal e não admite artigo: a ela. "À senhora" está certo.',
+          dica: 'Procure o pronome pessoal.',
         }),
       ],
     },
@@ -474,6 +583,18 @@ export const moduloCrase: Modulo = {
           explicacao:
             '"Casa" especificada exige artigo: crase obrigatória. Antes de possessivo e de nome de pessoa, ela é opcional.',
           dica: 'Duas delas são casos facultativos.',
+        }),
+        pares('cr-p6-09', {
+          nivel: 3,
+          enunciado: 'Ligue cada frase à regra da crase nela.',
+          pares: [
+            ['Entreguei à minha mãe.', 'Crase opcional'],
+            ['Voltei à casa dos meus pais.', 'Crase obrigatória'],
+            ['Voltei a casa cedo.', 'Sem crase'],
+          ],
+          explicacao:
+            'Antes de possessivo, a crase é opcional. "Casa" especificada exige crase; "casa" como lar, sem especificação, não leva.',
+          dica: 'Veja se há possessivo e se a casa foi especificada.',
         }),
       ],
     },
@@ -573,6 +694,16 @@ export const moduloCrase: Modulo = {
       correta: 0,
       explicacao: '"Tempo" é masculino: chegou a tempo. As demais estão corretas.',
       dica: 'Procure a palavra masculina.',
+      armadilha: ARMADILHA_MASCULINO,
+    }),
+    identificar('cr-farol-11', {
+      nivel: 4,
+      enunciado: 'Toque no trecho com erro de crase.',
+      trechos: ['O candidato', 'chegou às 8h', 'e entregou', 'a prova', 'à fiscal', 'à tempo.'],
+      erro: 5,
+      explicacao:
+        '"Tempo" é masculino: a tempo. "Às 8h" (horário) e "à fiscal" (entregou ao fiscal → à fiscal) estão certos.',
+      dica: 'Uma das crases está antes de palavra masculina.',
       armadilha: ARMADILHA_MASCULINO,
     }),
   ],

@@ -1,4 +1,4 @@
-import type { Questao } from '@/licao/tipos';
+import type { QuestaoDeEscolha } from '@/licao/tipos';
 
 // CONTEÚDO DE DEMONSTRAÇÃO, não revisado por professor (ver docs/04-estrategia-de-conteudo.md).
 
@@ -15,7 +15,7 @@ export const rotuloNivel: Record<Nivel, string> = {
   avancado: 'Avançado',
 };
 
-export type QuestaoDiagnostico = Questao & { materia: Materia; assunto: string };
+export type QuestaoDiagnostico = QuestaoDeEscolha & { materia: Materia; assunto: string };
 
 /** 6 questões, 3 por matéria, em dificuldade crescente (jornada, etapa 3). */
 export const questoesDoDiagnostico: QuestaoDiagnostico[] = [

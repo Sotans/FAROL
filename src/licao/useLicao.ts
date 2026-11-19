@@ -4,7 +4,8 @@ import { useProgresso } from '@/estado/progresso';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
-import type { ModoDeErro, Questao } from './tipos';
+import { ordemEstaCorreta } from './respostas';
+import { ehDeEscolha, type ModoDeErro, type Questao } from './tipos';
 
 export type Fase = 'respondendo' | 'acerto' | 'erro' | 'guiada' | 'seguir';
 
@@ -27,6 +28,8 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   const [fase, setFase] = useState<Fase>('respondendo');
   const [selecionada, setSelecionada] = useState<number | null>(null);
   const [removidas, setRemovidas] = useState<number[]>([]);
+  // Ordenar: índices de `itens` na ordem em que a pessoa tocou.
+  const [ordem, setOrdem] = useState<number[]>([]);
   const [erros, setErros] = useState(0);
   const [dicasRestantes, setDicasRestantes] = useState<number>(limites.dicasPorDia);
   const [dicaAberta, setDicaAberta] = useState(false);
@@ -51,13 +54,17 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fase, indice]);
 
-  function conferir(i: number) {
-    if (i === questao.correta) {
+  /**
+   * Resultado de uma tentativa, para qualquer tipo de exercício.
+   * `marca` é a opção tocada (exercícios de escolha), que fica marcada e, se errada, sai das opções.
+   */
+  function aplicarResultado(acertou: boolean, marca: number | null) {
+    if (acertou) {
       const primeiraTentativa = erros === 0;
       // Só conta "de primeira" a questão original, não a que voltou ao final.
       if (primeiraTentativa && !questao.repetida) setAcertosDePrimeira((n) => n + 1);
       if (primeiraTentativa) registrarAcerto();
-      setSelecionada(i);
+      setSelecionada(marca);
       setFase('acerto');
       avancarBarra((indice + 1) / fila.length);
       return;
@@ -66,12 +73,12 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     quebrarSequenciaDeAcertos();
     const total = erros + 1;
     setErros(total);
-    setSelecionada(i);
+    setSelecionada(marca);
     if (!questao.repetida && total === 1) {
       // A questão errada volta ao final da lição, uma única vez.
       setFila((f) => [...f, { ...questao, id: `${questao.id}-r`, repetida: true }]);
     }
-    setRemovidas((r) => [...r, i]);
+    if (marca !== null) setRemovidas((r) => [...r, marca]);
     if (modoDeErro === 'pular-para-o-fim') {
       setFase('seguir');
       const tamanho = fila.length + (!questao.repetida && total === 1 ? 1 : 0);
@@ -81,7 +88,12 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     setFase(total >= 2 ? 'guiada' : 'erro');
   }
 
+  function conferir(i: number) {
+    if (ehDeEscolha(questao)) aplicarResultado(i === questao.correta, i);
+  }
+
   function escolher(i: number) {
+    if (!ehDeEscolha(questao)) return;
     if (fase === 'guiada') {
       if (i === questao.correta) {
         setSelecionada(i);
@@ -97,11 +109,47 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   }
 
   function confirmar() {
-    if (fase === 'respondendo' && selecionada !== null) conferir(selecionada);
+    if (fase !== 'respondendo') return;
+    if (questao.tipo === 'ordenar') aplicarResultado(ordemEstaCorreta(questao, ordem), null);
+    else if (selecionada !== null) conferir(selecionada);
+  }
+
+  /** Ordenar: o bloco `i` (índice em `itens`) vai para o fim da sequência montada. */
+  function adicionarAOrdem(i: number) {
+    if (fase !== 'respondendo' || ordem.includes(i)) return;
+    setOrdem((o) => [...o, i]);
+  }
+
+  /** Ordenar: tira da sequência o bloco na posição `posicao`; ele volta ao banco. */
+  function removerDaOrdem(posicao: number) {
+    if (fase !== 'respondendo') return;
+    setOrdem((o) => o.filter((_, p) => p !== posicao));
+  }
+
+  /** Ligar pares: um par errado. Não mostra folha; conta como erro e quebra a sequência de acertos. */
+  function errarPar() {
+    if (fase !== 'respondendo') return;
+    quebrarSequenciaDeAcertos();
+    setErros((e) => e + 1);
+    haptico.aviso();
+    tocar('erro');
+  }
+
+  /** Ligar pares: todos os pares ligados. É "de primeira" se nenhum par errado foi tentado. */
+  function concluirPares() {
+    if (fase === 'respondendo') aplicarResultado(true, null);
+  }
+
+  /** Resposta guiada dos exercícios compostos: a tela já mostra a solução; a pessoa só confirma que viu. */
+  function aceitarGuiada() {
+    if (fase !== 'guiada') return;
+    setFase('acerto');
+    avancarBarra((indice + 1) / fila.length);
   }
 
   function tentarDeNovo() {
     setSelecionada(null);
+    setOrdem([]);
     setFase('respondendo');
   }
 
@@ -131,6 +179,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     setFase('respondendo');
     setSelecionada(null);
     setRemovidas([]);
+    setOrdem([]);
     setErros(0);
     setDicaAberta(false);
     return false;
@@ -143,6 +192,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     fase,
     selecionada,
     removidas,
+    ordem,
     dicasRestantes,
     dicaAberta,
     avisoDeLimite,
@@ -152,6 +202,11 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     progresso,
     escolher,
     confirmar,
+    adicionarAOrdem,
+    removerDaOrdem,
+    errarPar,
+    concluirPares,
+    aceitarGuiada,
     tentarDeNovo,
     usarDica,
     ganharDicas,

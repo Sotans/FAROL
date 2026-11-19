@@ -9,12 +9,13 @@ import { Botao } from '@/componentes/Botao';
 import { CelebracaoDeSequencia } from '@/componentes/CelebracaoDeSequencia';
 import { Chip } from '@/componentes/Chip';
 import { FolhaFeedback } from '@/componentes/FolhaFeedback';
-import { Opcao, type EstadoOpcao } from '@/componentes/Opcao';
+import { Exercicio, type Situacao } from '@/componentes/Exercicio';
+import type { EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useProgresso } from '@/estado/progresso';
 import { indiceDoFarol, moduloAtual } from '@/licao/dados';
 import { montarBoasVindas, montarFarol, montarLicao } from '@/licao/montar';
-import { rotuloTipo } from '@/licao/tipos';
+import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { useLicao } from '@/licao/useLicao';
 import { haptico } from '@/servicos/haptico';
 import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
@@ -32,19 +33,26 @@ export default function Licao() {
   });
   const licao = useLicao(questoes, modoDeErro);
   const { questao: q, fase, selecionada, removidas } = licao;
+  const deEscolha = ehDeEscolha(q);
+  const correta = deEscolha ? q.correta : -1;
+  const situacao: Situacao =
+    fase === 'guiada' || fase === 'seguir' ? 'revelada' : fase === 'acerto' || fase === 'erro' ? fase : 'respondendo';
+  // Ordenar sempre confirma: a sequência só faz sentido completa.
+  const pedeConfirmacao = q.tipo === 'ordenar' || (deEscolha && q.modo === 'confirmar');
+  const podeConfirmar = q.tipo === 'ordenar' ? licao.ordem.length === q.itens.length : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
-    if (fase === 'acerto') return i === q.correta ? 'correta' : removidas.includes(i) ? 'removida' : 'normal';
+    if (fase === 'acerto') return i === correta ? 'correta' : removidas.includes(i) ? 'removida' : 'normal';
     if (fase === 'erro') return i === selecionada ? 'errada' : removidas.includes(i) ? 'removida' : 'normal';
-    if (fase === 'seguir') return i === q.correta ? 'correta' : i === selecionada ? 'errada' : 'removida';
-    if (fase === 'guiada') return i === q.correta ? 'correta' : 'removida';
+    if (fase === 'seguir') return i === correta ? 'correta' : i === selecionada ? 'errada' : 'removida';
+    if (fase === 'guiada') return i === correta ? 'correta' : 'removida';
     if (removidas.includes(i)) return 'removida';
     return i === selecionada ? 'selecionada' : 'normal';
   }
 
   function opcaoDesabilitada(i: number): boolean {
     if (fase === 'acerto' || fase === 'erro' || fase === 'seguir') return true;
-    if (fase === 'guiada') return i !== q.correta;
+    if (fase === 'guiada') return i !== correta;
     return removidas.includes(i);
   }
 
@@ -75,8 +83,6 @@ export default function Licao() {
       { text: 'Sair', onPress: () => router.replace('/') },
     ]);
   }
-
-  const completar = q.tipo === 'completar';
 
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
@@ -112,21 +118,22 @@ export default function Licao() {
           </Animated.View>
         ) : null}
 
-        <View style={completar ? estilos.fichas : estilos.opcoes}>
-          {q.opcoes.map((texto, i) => (
-            <Opcao
-              key={`${q.id}-${i}`}
-              texto={texto}
-              estado={estadoDaOpcao(i)}
-              desabilitado={opcaoDesabilitada(i)}
-              compacta={completar}
-              onPress={() => {
-                haptico.selecao();
-                licao.escolher(i);
-              }}
-            />
-          ))}
-        </View>
+        <Exercicio
+          key={q.id}
+          questao={q}
+          situacao={situacao}
+          estadoDaOpcao={estadoDaOpcao}
+          opcaoDesabilitada={opcaoDesabilitada}
+          onEscolher={(i) => {
+            haptico.selecao();
+            licao.escolher(i);
+          }}
+          ordem={licao.ordem}
+          onAdicionar={licao.adicionarAOrdem}
+          onRemover={licao.removerDaOrdem}
+          onErrarPar={licao.errarPar}
+          onConcluirPares={licao.concluirPares}
+        />
 
         {licao.avisoDeLimite ? (
           <Animated.View entering={FadeInDown} style={estilos.aviso}>
@@ -143,12 +150,16 @@ export default function Licao() {
       </ScrollView>
 
       <View style={estilos.rodape}>
-        {fase === 'respondendo' && q.modo === 'confirmar' ? (
+        {fase === 'respondendo' && pedeConfirmacao ? (
           <View style={estilos.rodapeBotao}>
-            <Botao rotulo="CONFIRMAR" desabilitado={selecionada === null} onPress={licao.confirmar} />
+            <Botao rotulo="CONFIRMAR" desabilitado={!podeConfirmar} onPress={licao.confirmar} />
           </View>
         ) : null}
-        {fase === 'respondendo' && q.modo === 'imediato' ? <Text style={estilos.toque}>Toque na resposta</Text> : null}
+        {fase === 'respondendo' && !pedeConfirmacao ? (
+          <Text style={estilos.toque}>
+            {q.tipo === 'ligarPares' ? 'Ligue cada item ao seu par' : 'Toque na resposta'}
+          </Text>
+        ) : null}
         {fase === 'acerto' ? (
           <FolhaFeedback
             tipo="acerto"
@@ -180,7 +191,17 @@ export default function Licao() {
             onPress={continuar}
           />
         ) : null}
-        {fase === 'guiada' ? (
+        {fase === 'guiada' && !deEscolha ? (
+          <FolhaFeedback
+            tipo="guiada"
+            titulo="Esta é a resposta."
+            texto={q.explicacao}
+            armadilha={q.armadilha}
+            rotuloBotao="ENTENDI"
+            onPress={licao.aceitarGuiada}
+          />
+        ) : null}
+        {fase === 'guiada' && deEscolha ? (
           <FolhaFeedback
             tipo="guiada"
             titulo="Esta é a resposta."
@@ -223,8 +244,6 @@ const estilos = StyleSheet.create({
     padding: 12,
   },
   caixaDicaTexto: { fontFamily: fonte.texto, fontSize: tamanho.sm, lineHeight: 21, color: cor.luz },
-  opcoes: { gap: 10 },
-  fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   aviso: {
     backgroundColor: cor.superficie,
     borderColor: cor.luz,

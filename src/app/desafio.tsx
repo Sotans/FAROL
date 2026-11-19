@@ -11,13 +11,14 @@ import { Chip } from '@/componentes/Chip';
 import { Farol } from '@/componentes/Farol';
 import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Luzes } from '@/componentes/Luzes';
-import { Opcao, type EstadoOpcao } from '@/componentes/Opcao';
+import { Exercicio, type Situacao } from '@/componentes/Exercicio';
+import type { EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useDesafio } from '@/desafio/useDesafio';
 import { useProgresso } from '@/estado/progresso';
 import { moduloAtual, nomeDoModulo } from '@/licao/dados';
 import { montarDesafio } from '@/licao/montar';
-import { rotuloTipo } from '@/licao/tipos';
+import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
 import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 
@@ -36,10 +37,17 @@ export default function Desafio() {
   const descricaoDasPartes =
     primeiraPulada === ultimaPulada ? `a Parte ${primeiraPulada}` : `as Partes ${primeiraPulada} a ${ultimaPulada}`;
 
+  const deEscolha = ehDeEscolha(q);
+  const correta = deEscolha ? q.correta : -1;
+  // No desafio não há nova tentativa: depois de um erro, a solução aparece.
+  const situacao: Situacao = fase === 'acerto' ? 'acerto' : fase === 'respondendo' ? 'respondendo' : 'revelada';
+  const pedeConfirmacao = q.tipo === 'ordenar' || (deEscolha && q.modo === 'confirmar');
+  const podeConfirmar = q.tipo === 'ordenar' ? desafio.ordem.length === q.itens.length : selecionada !== null;
+
   function estadoDaOpcao(i: number): EstadoOpcao {
-    if (fase === 'acerto') return i === q.correta ? 'correta' : 'normal';
+    if (fase === 'acerto') return i === correta ? 'correta' : 'normal';
     if (fase === 'erro' || fase === 'apagou')
-      return i === q.correta ? 'correta' : i === selecionada ? 'errada' : 'removida';
+      return i === correta ? 'correta' : i === selecionada ? 'errada' : 'removida';
     return i === selecionada ? 'selecionada' : 'normal';
   }
 
@@ -111,30 +119,35 @@ export default function Desafio() {
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
         <Text style={estilos.enunciado}>{q.enunciado}</Text>
-        <View style={q.tipo === 'completar' ? estilos.fichas : estilos.opcoes}>
-          {q.opcoes.map((texto, i) => (
-            <Opcao
-              key={`${q.id}-${i}`}
-              texto={texto}
-              estado={estadoDaOpcao(i)}
-              desabilitado={fase !== 'respondendo'}
-              compacta={q.tipo === 'completar'}
-              onPress={() => {
-                haptico.selecao();
-                desafio.escolher(i);
-              }}
-            />
-          ))}
-        </View>
+        <Exercicio
+          key={q.id}
+          questao={q}
+          situacao={situacao}
+          estadoDaOpcao={estadoDaOpcao}
+          opcaoDesabilitada={() => fase !== 'respondendo'}
+          onEscolher={(i) => {
+            haptico.selecao();
+            desafio.escolher(i);
+          }}
+          ordem={desafio.ordem}
+          onAdicionar={desafio.adicionarAOrdem}
+          onRemover={desafio.removerDaOrdem}
+          onErrarPar={desafio.errarPar}
+          onConcluirPares={desafio.concluirPares}
+        />
       </ScrollView>
 
       <View style={estilos.rodapeFixo}>
-        {fase === 'respondendo' && q.modo === 'confirmar' ? (
+        {fase === 'respondendo' && pedeConfirmacao ? (
           <View style={estilos.rodape}>
-            <Botao rotulo="CONFIRMAR" desabilitado={selecionada === null} onPress={desafio.confirmar} />
+            <Botao rotulo="CONFIRMAR" desabilitado={!podeConfirmar} onPress={desafio.confirmar} />
           </View>
         ) : null}
-        {fase === 'respondendo' && q.modo === 'imediato' ? <Text style={estilos.toque}>Toque na resposta</Text> : null}
+        {fase === 'respondendo' && !pedeConfirmacao ? (
+          <Text style={estilos.toque}>
+            {q.tipo === 'ligarPares' ? 'Ligue cada item ao seu par' : 'Toque na resposta'}
+          </Text>
+        ) : null}
         {fase === 'acerto' ? (
           <FolhaFeedback
             tipo="acerto"
@@ -170,8 +183,6 @@ const estilos = StyleSheet.create({
   luzes: { paddingVertical: 6 },
   corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
-  opcoes: { gap: 10 },
-  fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   rodapeFixo: { justifyContent: 'flex-end' },
   rodape: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },
   toque: {
