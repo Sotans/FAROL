@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import type { CarreiraId } from '@/carreiras/dados';
+import type { TomDePele } from '@/componentes/Personagem';
 import type { Mapa } from '@/diagnostico/dados';
 import { totalDeNos, totalDePartes } from '@/licao/dados';
 import type { ModoDeErro } from '@/licao/tipos';
@@ -14,6 +15,8 @@ export type MetaDiaria = 1 | 2 | 3;
 export type Estado = {
   onboardingConcluido: boolean;
   carreira: CarreiraId | null;
+  /** Tom de pele do guia, escolhido pela pessoa (docs/08, seção 7). */
+  tomDoGuia: TomDePele;
   metaDiaria: MetaDiaria;
   /** Mapa do ponto de partida (diagnóstico). null = ainda não feito. */
   mapa: Mapa | null;
@@ -45,6 +48,7 @@ type Progresso = Estado & {
   /** A cada 5 acertos seguidos, o número a celebrar; null fora disso. */
   celebracaoDeSequencia: number | null;
   definirCarreira: (id: CarreiraId) => void;
+  definirTomDoGuia: (tom: TomDePele) => void;
   definirMetaDiaria: (meta: MetaDiaria) => void;
   concluirOnboarding: () => void;
   definirMapa: (mapa: Mapa) => void;
@@ -77,6 +81,7 @@ function diasEntre(a: string, b: string): number {
 export const estadoInicial: Estado = {
   onboardingConcluido: false,
   carreira: null,
+  tomDoGuia: 'medio',
   metaDiaria: 1,
   mapa: null,
   concluidas: 0,
@@ -137,6 +142,7 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   }, [estado, carregado]);
 
   const definirCarreira = useCallback((id: CarreiraId) => setEstado((e) => ({ ...e, carreira: id })), []);
+  const definirTomDoGuia = useCallback((tom: TomDePele) => setEstado((e) => ({ ...e, tomDoGuia: tom })), []);
   const definirMetaDiaria = useCallback((meta: MetaDiaria) => setEstado((e) => ({ ...e, metaDiaria: meta })), []);
   const concluirOnboarding = useCallback(() => setEstado((e) => ({ ...e, onboardingConcluido: true })), []);
   const definirMapa = useCallback((mapa: Mapa) => setEstado((e) => ({ ...e, mapa })), []);
@@ -222,6 +228,7 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       modoDeErro,
       celebracaoDeSequencia,
       definirCarreira,
+      definirTomDoGuia,
       definirMetaDiaria,
       concluirOnboarding,
       definirMapa,
@@ -241,6 +248,7 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       modoDeErro,
       celebracaoDeSequencia,
       definirCarreira,
+      definirTomDoGuia,
       definirMetaDiaria,
       concluirOnboarding,
       definirMapa,

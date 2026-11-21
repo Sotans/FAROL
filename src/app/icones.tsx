@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { carreiras } from '@/carreiras/dados';
+import { expressoes, Personagem, tonsDePele, type TomDePele } from '@/componentes/Personagem';
 import {
   IconeAnelDaMeta,
   IconeBussola,
@@ -38,7 +39,7 @@ export default function Icones() {
           style={estilos.voltar}>
           <IconeFechar tamanho={26} />
         </Pressable>
-        <Text style={estilos.titulo}>Ícones do FAROL</Text>
+        <Text style={estilos.titulo}>Ícones e guias do FAROL</Text>
       </View>
       <ScrollView contentContainerStyle={estilos.corpo}>
         <Secao titulo="Farol">
@@ -135,6 +136,36 @@ export default function Icones() {
           </Item>
         </Secao>
 
+        {carreiras
+          .filter((c) => c.ativa)
+          .map((c) => (
+            <Secao key={c.id} titulo={`Guia · ${c.nome}`}>
+              {expressoes.map((e) => (
+                <Item key={e} nome={e} alto>
+                  <Personagem carreira={c} expressao={e} tamanho={72} />
+                </Item>
+              ))}
+            </Secao>
+          ))}
+
+        <Secao titulo="Guia · tons de pele">
+          {(Object.keys(tonsDePele) as TomDePele[]).map((tom) => (
+            <Item key={tom} nome={tom} alto>
+              <Personagem carreira={carreiras[0]} expressao="feliz" tom={tom} tamanho={72} />
+            </Item>
+          ))}
+        </Secao>
+
+        <Secao titulo="Guia · em breve (silhuetas)">
+          {carreiras
+            .filter((c) => !c.ativa)
+            .map((c) => (
+              <Item key={c.id} nome={c.nome} alto>
+                <Personagem carreira={c} silhueta tamanho={72} />
+              </Item>
+            ))}
+        </Secao>
+
         <Secao titulo="Carreiras">
           {carreiras.map((c) => (
             <Item key={c.id} nome={c.nome}>
@@ -156,10 +187,10 @@ function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   );
 }
 
-function Item({ nome, children }: { nome: string; children: ReactNode }) {
+function Item({ nome, children, alto = false }: { nome: string; children: ReactNode; alto?: boolean }) {
   return (
     <View style={estilos.item}>
-      <View style={estilos.desenho}>{children}</View>
+      <View style={[estilos.desenho, alto ? estilos.desenhoAlto : null]}>{children}</View>
       <Text style={estilos.nome}>{nome}</Text>
     </View>
   );
@@ -183,6 +214,7 @@ const estilos = StyleSheet.create({
     borderRadius: raio.md,
   },
   desenho: { height: 64, alignItems: 'center', justifyContent: 'center' },
+  desenhoAlto: { height: 96 },
   nome: { fontFamily: fonte.texto, fontSize: 12, color: cor.textoSuave, textAlign: 'center' },
   no: { width: 52, height: 52, borderRadius: raio.circulo, alignItems: 'center', justifyContent: 'center' },
 });
