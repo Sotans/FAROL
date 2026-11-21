@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Botao } from '@/componentes/Botao';
 import { Chip } from '@/componentes/Chip';
 import { Farol } from '@/componentes/Farol';
+import { motivoParaCadastrar } from '@/conta/regras';
 import { textoDeDias, useProgresso } from '@/estado/progresso';
 import { indiceDoFarol, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
 import { QUESTOES_DO_FAROL } from '@/licao/montar';
@@ -29,7 +30,7 @@ export default function Conclusao() {
     farol?: string;
     revisao?: string;
   }>();
-  const { concluidas, licoesHoje, sequencia, metaDiaria, mapa } = useProgresso();
+  const { concluidas, licoesHoje, sequencia, metaDiaria, mapa, nuvem, conta } = useProgresso();
   const primeiraLicao = primeira === '1';
   const acendeuOFarol = farol === '1';
   const fezRevisao = revisao === '1';
@@ -37,6 +38,9 @@ export default function Conclusao() {
   const [xp, setXp] = useState(0);
   const [mostrarCartao, setMostrarCartao] = useState(false);
   const [frase] = useState(() => frases[Math.floor(Math.random() * frases.length)]);
+  // Convite de cadastro depois de cada lição, até a pessoa se cadastrar. Nunca obrigatório: "Depois" segue o fluxo.
+  const [cadastroAdiado, setCadastroAdiado] = useState(false);
+  const convidarParaCadastro = nuvem === 'conectada' && conta?.anonima === true && !cadastroAdiado;
 
   // Pulsos de vibração e o sino do farol. Meta do dia fechada ou farol aceso: o sino mais longo.
   useEffect(() => {
@@ -102,7 +106,27 @@ export default function Conclusao() {
 
       {mostrarCartao ? (
         <Animated.View entering={SlideInDown.duration(350)} style={estilos.cartao}>
-          {primeiraLicao && !mapa ? (
+          {convidarParaCadastro ? (
+            <>
+              <Text style={estilos.cartaoTitulo}>Faça seu cadastro agora</Text>
+              <Text style={estilos.cartaoSub}>{motivoParaCadastrar({ primeiraLicao, sequencia, concluidas })}</Text>
+              <View style={estilos.botoes}>
+                <Botao
+                  rotulo="FAZER MEU CADASTRO"
+                  sub="1 min"
+                  onPress={() => router.push({ pathname: '/conta', params: { modo: 'salvar' } })}
+                />
+                <Botao
+                  rotulo="Depois"
+                  variante="terciario"
+                  onPress={() => {
+                    setCadastroAdiado(true);
+                    tocar('popup');
+                  }}
+                />
+              </View>
+            </>
+          ) : primeiraLicao && !mapa ? (
             <>
               <Text style={estilos.cartaoTitulo}>Vamos descobrir seu ponto de partida?</Text>
               <Text style={estilos.cartaoSub}>

@@ -2,6 +2,7 @@ import {
   codigoCompleto,
   emailValido,
   explicarErro,
+  motivoParaCadastrar,
   normalizarCodigo,
   normalizarEmail,
 } from '@/conta/regras';
@@ -42,3 +43,19 @@ describe('explicarErro', () => {
   });
 });
 
+describe('motivoParaCadastrar', () => {
+  it('na primeira lição, fala da primeira conquista', () =>
+    expect(motivoParaCadastrar({ primeiraLicao: true, sequencia: 1, concluidas: 1 })).toMatch(/primeira conquista/));
+  it('com sequência, fala dos dias', () =>
+    expect(motivoParaCadastrar({ primeiraLicao: false, sequencia: 4, concluidas: 3 })).toMatch(/sequência de 4 dias/));
+  it('sem sequência, fala das lições', () =>
+    expect(motivoParaCadastrar({ primeiraLicao: false, sequencia: 1, concluidas: 3 })).toMatch(/3 lições/));
+  it('no começo, fala do progresso', () =>
+    expect(motivoParaCadastrar({ primeiraLicao: false, sequencia: 1, concluidas: 1 })).toMatch(/Seu progresso/));
+  it('nunca usa tom de culpa', () => {
+    const textos = [true, false].flatMap((primeiraLicao) =>
+      [0, 1, 5].map((n) => motivoParaCadastrar({ primeiraLicao, sequencia: n, concluidas: n })),
+    );
+    textos.forEach((t) => expect(t).not.toMatch(/perdeu|culpa|falhou|errou|deveria/i));
+  });
+});
