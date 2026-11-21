@@ -2,15 +2,12 @@ import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Luz } from '@/componentes/Luz';
 import { cor, fonte, tamanho } from '@/tema/tokens';
 
 /** T1. Uma frase e um botão. Sem cadastro, sem permissões. */
 export default function BoasVindas() {
-  const { aviso, mostrarAviso } = useAviso();
-
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <View style={estilos.centro}>
@@ -25,10 +22,9 @@ export default function BoasVindas() {
         <Botao
           rotulo="Já tenho conta"
           variante="terciario"
-          onPress={() => mostrarAviso('O login chega nas próximas versões. Por enquanto, siga sem conta.')}
+          onPress={() => router.push({ pathname: '/conta', params: { modo: 'entrar' } })}
         />
       </View>
-      <Aviso texto={aviso} />
     </SafeAreaView>
   );
 }

@@ -7,6 +7,16 @@ import { totalDeNos, totalDePartes } from '@/licao/dados';
 import type { ModoDeErro } from '@/licao/tipos';
 import { registrar, type Nota, type Revisoes } from '@/revisao/agenda';
 import { carregarEstado, salvarEstado } from '@/servicos/armazenamento';
+import {
+  avisarFalhaDaNuvem,
+  baixarProgresso,
+  contaAtual,
+  enviarProgresso,
+  nuvemConfigurada,
+  sairDaConta,
+  type Conta,
+} from '@/servicos/nuvem';
+import { mesclar } from './mesclar';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
@@ -41,11 +51,25 @@ export type Estado = {
   revisoes: Revisoes;
   /** Toques em carreiras "em breve": mede a demanda antes de produzir conteúdo. */
   toquesEmBreve: Partial<Record<CarreiraId, number>>;
+  /** Momento da última mudança feita pela pessoa (ISO). Decide qual versão é a mais recente ao combinar com a nuvem. */
+  atualizadoEm: string | null;
 };
+
+/** desligada: sem .env.local. conectando: ao abrir. conectada: em dia com a nuvem. offline: falhou; tenta na próxima abertura. */
+export type StatusDaNuvem = 'desligada' | 'conectando' | 'conectada' | 'offline';
 
 type Progresso = Estado & {
   /** false até o estado salvo ser lido do aparelho. */
   carregado: boolean;
+  nuvem: StatusDaNuvem;
+  /** A conta deste aparelho na nuvem (anônima ou com e-mail); null sem nuvem. */
+  conta: Conta | null;
+  /** Depois de entrar numa conta existente: combina o progresso deste aparelho com o da conta. */
+  aposEntrarNaConta: () => Promise<void>;
+  /** Depois de salvar o progresso com um e-mail: atualiza a conta exibida. */
+  aposSalvarAConta: () => Promise<void>;
+  /** Sai da conta: o progresso fica guardado nela, e o aparelho recomeça com uma conta anônima nova. */
+  sairDaConta: () => Promise<void>;
   /** Experimento: o que acontece quando a pessoa erra (ver docs/13-experimentos.md). */
   modoDeErro: ModoDeErro;
   /** A cada 5 acertos seguidos, o número a celebrar; null fora disso. */
@@ -102,6 +126,7 @@ export const estadoInicial: Estado = {
   acertosSeguidos: 0,
   revisoes: {},
   toquesEmBreve: {},
+  atualizadoEm: null,
 };
 
 /**
@@ -115,6 +140,12 @@ function virarDia(e: Estado): Estado {
   let sequencia = e.sequencia;
   if (e.ultimoDiaDeEstudo && diasEntre(e.ultimoDiaDeEstudo, atual) >= 2) sequencia = 0;
   return { ...e, dia: atual, licoesHoje: 0, desafiosHoje: 0, sequencia };
+}
+
+/** Busca na nuvem o progresso e a conta deste aparelho, sem mexer no estado. */
+async function baixarDaNuvem(): Promise<{ remoto: Partial<Estado> | null; contaDaNuvem: Conta | null }> {
+  const remoto = await baixarProgresso<Partial<Estado>>();
+  return { remoto, contaDaNuvem: await contaAtual() };
 }
 
 /** Uma sessão concluída hoje: conta para a meta, a sequência de dias e o XP. */
@@ -142,6 +173,19 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     seguidosAtual.current = estado.acertosSeguidos;
   }, [estado.acertosSeguidos]);
 
+  const [nuvem, setNuvem] = useState<StatusDaNuvem>(nuvemConfigurada ? 'conectando' : 'desligada');
+  // Só envia à nuvem depois de combinar com o que já está lá, para um aparelho novo não apagar o progresso.
+  const combinouComANuvem = useRef(false);
+
+  /** Toda mudança feita pela pessoa passa por aqui e recebe o carimbo de tempo. */
+  const alterar = useCallback((mudanca: (e: Estado) => Estado) => {
+    const agora = new Date().toISOString();
+    setEstado((e) => {
+      const nova = mudanca(e);
+      return nova === e ? e : { ...nova, atualizadoEm: agora };
+    });
+  }, []);
+
   // Lê o estado salvo no aparelho uma vez, na abertura.
   useEffect(() => {
     let ativo = true;
@@ -160,16 +204,86 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     if (carregado) salvarEstado(estado);
   }, [estado, carregado]);
 
-  const definirCarreira = useCallback((id: CarreiraId) => setEstado((e) => ({ ...e, carreira: id })), []);
-  const definirTomDoGuia = useCallback((tom: TomDePele) => setEstado((e) => ({ ...e, tomDoGuia: tom })), []);
-  const definirMetaDiaria = useCallback((meta: MetaDiaria) => setEstado((e) => ({ ...e, metaDiaria: meta })), []);
-  const concluirOnboarding = useCallback(() => setEstado((e) => ({ ...e, onboardingConcluido: true })), []);
-  const definirMapa = useCallback((mapa: Mapa) => setEstado((e) => ({ ...e, mapa })), []);
+  const [conta, setConta] = useState<Conta | null>(null);
+
+  /** Aplica o que veio da nuvem: combina sem perder avanço e só então libera os envios. */
+  const aplicarDaNuvem = useCallback(
+    ({ remoto, contaDaNuvem }: { remoto: Partial<Estado> | null; contaDaNuvem: Conta | null }) => {
+      if (remoto) setEstado((e) => virarDia(mesclar(e, { ...estadoInicial, ...remoto })));
+      combinouComANuvem.current = true;
+      setConta(contaDaNuvem);
+      setNuvem('conectada');
+    },
+    [],
+  );
+
+  const falhouANuvem = useCallback((erro: unknown) => {
+    avisarFalhaDaNuvem('baixar o progresso', erro);
+    setNuvem('offline');
+  }, []);
+
+  /** Baixa o progresso da conta atual e combina com o do aparelho. */
+  const combinarComANuvem = useCallback(async () => {
+    if (!nuvemConfigurada) return;
+    combinouComANuvem.current = false;
+    await baixarDaNuvem().then(aplicarDaNuvem, falhouANuvem);
+  }, [aplicarDaNuvem, falhouANuvem]);
+
+  // Na abertura, depois de ler o aparelho.
+  useEffect(() => {
+    if (!carregado || !nuvemConfigurada) return;
+    let ativo = true;
+    baixarDaNuvem().then(
+      (r) => ativo && aplicarDaNuvem(r),
+      (erro) => ativo && falhouANuvem(erro),
+    );
+    return () => {
+      ativo = false;
+    };
+  }, [carregado, aplicarDaNuvem, falhouANuvem]);
+
+  const aposEntrarNaConta = useCallback(async () => {
+    setNuvem('conectando');
+    await combinarComANuvem();
+  }, [combinarComANuvem]);
+
+  const aposSalvarAConta = useCallback(async () => setConta(await contaAtual()), []);
+
+  const sair = useCallback(async () => {
+    combinouComANuvem.current = false;
+    await sairDaConta();
+    setEstado({ ...estadoInicial, dia: hoje() });
+    setConta(null);
+    setNuvem('conectando');
+    await combinarComANuvem();
+  }, [combinarComANuvem]);
+
+  // Depois de cada mudança, espera 3 segundos de calma e envia uma cópia à nuvem.
+  useEffect(() => {
+    if (!carregado || !combinouComANuvem.current) return;
+    const espera = setTimeout(() => {
+      // A conta pode ter mudado durante a espera (entrar ou sair): só envia se já combinou com a nova.
+      if (!combinouComANuvem.current) return;
+      enviarProgresso(estado)
+        .then(() => setNuvem('conectada'))
+        .catch((erro) => {
+          avisarFalhaDaNuvem('enviar o progresso', erro);
+          setNuvem('offline');
+        });
+    }, 3000);
+    return () => clearTimeout(espera);
+  }, [estado, carregado]);
+
+  const definirCarreira = useCallback((id: CarreiraId) => alterar((e) => ({ ...e, carreira: id })), [alterar]);
+  const definirTomDoGuia = useCallback((tom: TomDePele) => alterar((e) => ({ ...e, tomDoGuia: tom })), [alterar]);
+  const definirMetaDiaria = useCallback((meta: MetaDiaria) => alterar((e) => ({ ...e, metaDiaria: meta })), [alterar]);
+  const concluirOnboarding = useCallback(() => alterar((e) => ({ ...e, onboardingConcluido: true })), [alterar]);
+  const definirMapa = useCallback((mapa: Mapa) => alterar((e) => ({ ...e, mapa })), [alterar]);
 
   const registrarToqueEmBreve = useCallback(
     (id: CarreiraId) =>
-      setEstado((e) => ({ ...e, toquesEmBreve: { ...e.toquesEmBreve, [id]: (e.toquesEmBreve[id] ?? 0) + 1 } })),
-    [],
+      alterar((e) => ({ ...e, toquesEmBreve: { ...e.toquesEmBreve, [id]: (e.toquesEmBreve[id] ?? 0) + 1 } })),
+    [alterar],
   );
 
   const celebrar = useCallback((seguidos: number) => {
@@ -184,56 +298,62 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   const registrarAcerto = useCallback(() => {
     const seguidos = seguidosAtual.current + 1;
     seguidosAtual.current = seguidos;
-    setEstado((e) => ({ ...e, acertosSeguidos: seguidos }));
+    alterar((e) => ({ ...e, acertosSeguidos: seguidos }));
     if (seguidos % 5 === 0) celebrar(seguidos);
-  }, [celebrar]);
+  }, [alterar, celebrar]);
 
   // Ao perder, nada é comunicado: o ciclo só recomeça.
   const quebrarSequenciaDeAcertos = useCallback(() => {
     seguidosAtual.current = 0;
-    setEstado((e) => (e.acertosSeguidos === 0 ? e : { ...e, acertosSeguidos: 0 }));
-  }, []);
+    alterar((e) => (e.acertosSeguidos === 0 ? e : { ...e, acertosSeguidos: 0 }));
+  }, [alterar]);
 
-  const concluir = useCallback((xp: number) => {
-    setEstado((e) => {
-      const atual = estudouHoje(virarDia(e), xp);
-      return { ...atual, concluidas: Math.min(atual.concluidas + 1, totalDeNos) };
-    });
-  }, []);
-
-  const concluirRevisao = useCallback((xp: number) => setEstado((e) => estudouHoje(virarDia(e), xp)), []);
-
-  const registrarRevisoes = useCallback(
-    (notas: Record<string, Nota>) => setEstado((e) => ({ ...e, revisoes: registrar(e.revisoes, notas, new Date()) })),
-    [],
+  const concluir = useCallback(
+    (xp: number) => {
+      alterar((e) => {
+        const atual = estudouHoje(virarDia(e), xp);
+        return { ...atual, concluidas: Math.min(atual.concluidas + 1, totalDeNos) };
+      });
+    },
+    [alterar],
   );
 
-  const dominarAte = useCallback((ate: number) => {
-    setEstado((e) => {
-      const novas: number[] = [];
-      for (let i = e.concluidas; i < ate; i += 1) novas.push(i);
-      return {
-        ...e,
-        concluidas: Math.min(Math.max(ate, e.concluidas), totalDePartes),
-        dominadas: [...e.dominadas, ...novas],
-        xp: e.xp + limites.xpDoDesafio,
-      };
-    });
-  }, []);
+  const concluirRevisao = useCallback((xp: number) => alterar((e) => estudouHoje(virarDia(e), xp)), [alterar]);
+
+  const registrarRevisoes = useCallback(
+    (notas: Record<string, Nota>) => alterar((e) => ({ ...e, revisoes: registrar(e.revisoes, notas, new Date()) })),
+    [alterar],
+  );
+
+  const dominarAte = useCallback(
+    (ate: number) => {
+      alterar((e) => {
+        const novas: number[] = [];
+        for (let i = e.concluidas; i < ate; i += 1) novas.push(i);
+        return {
+          ...e,
+          concluidas: Math.min(Math.max(ate, e.concluidas), totalDePartes),
+          dominadas: [...e.dominadas, ...novas],
+          xp: e.xp + limites.xpDoDesafio,
+        };
+      });
+    },
+    [alterar],
+  );
 
   const registrarDesafio = useCallback(() => {
-    setEstado((e) => {
+    alterar((e) => {
       const atual = virarDia(e);
       return { ...atual, desafiosHoje: atual.desafiosHoje + 1 };
     });
-  }, []);
+  }, [alterar]);
 
   const ganharDesafio = useCallback(
-    () => setEstado((e) => ({ ...e, desafiosHoje: Math.max(0, e.desafiosHoje - 1) })),
-    [],
+    () => alterar((e) => ({ ...e, desafiosHoje: Math.max(0, e.desafiosHoje - 1) })),
+    [alterar],
   );
 
-  const reiniciar = useCallback(() => setEstado({ ...estadoInicial, dia: hoje() }), []);
+  const reiniciar = useCallback(() => alterar(() => ({ ...estadoInicial, dia: hoje() })), [alterar]);
 
   const alternarModoDeErro = useCallback(
     () => setModoDeErro((m) => (m === 'tentar-de-novo' ? 'pular-para-o-fim' : 'tentar-de-novo')),
@@ -244,6 +364,11 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     () => ({
       ...estado,
       carregado,
+      nuvem,
+      conta,
+      aposEntrarNaConta,
+      aposSalvarAConta,
+      sairDaConta: sair,
       modoDeErro,
       celebracaoDeSequencia,
       definirCarreira,
@@ -266,6 +391,11 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     [
       estado,
       carregado,
+      nuvem,
+      conta,
+      aposEntrarNaConta,
+      aposSalvarAConta,
+      sair,
       modoDeErro,
       celebracaoDeSequencia,
       definirCarreira,

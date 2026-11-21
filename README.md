@@ -26,6 +26,27 @@ O celular não está alcançando o computador. Tente, nesta ordem:
 3. **Firewall do Windows:** quando o Windows perguntar se o Node.js pode acessar a rede, permita em redes **privadas**. Se a rede estiver marcada como "Pública", mude para "Privada" nas configurações de Wi-Fi.
 4. **Sem celular:** `npx expo start --web` abre o protótipo no navegador do computador (as vibrações não funcionam no navegador).
 
+## Nuvem (Supabase)
+
+O app funciona sem nuvem: o progresso fica no aparelho. Com a nuvem configurada, cada pessoa ganha uma **conta anônima** ao abrir o app, e o progresso é copiado para o Supabase alguns segundos depois de cada mudança. Ao abrir o app, a cópia da nuvem é combinada com a do aparelho sem perder avanço (`src/estado/mesclar.ts`).
+
+Para ligar:
+
+1. No painel do Supabase, em **Authentication > Sign In / Providers**, ative **Allow anonymous sign-ins**.
+2. No **SQL Editor**, rode o conteúdo de `supabase/migrations/20261121120000_progresso.sql` (cria a tabela `progresso` e as regras de acesso).
+3. Copie `.env.example` para `.env.local` e preencha a URL do projeto e a chave **publishable**. O `.env.local` não vai para o GitHub. Nunca use a chave secreta nem a senha do banco no app.
+4. Reinicie com `npx expo start --clear`. O rodapé da trilha mostra o estado da nuvem.
+
+### Conta (login por código, sem senha)
+
+A pessoa guarda o progresso ligando um e-mail à conta anônima, ou entra numa conta existente em outro aparelho. Nos dois casos, recebe um **código de 6 dígitos** por e-mail; não há senha.
+
+Para o código chegar no e-mail:
+
+1. Configure um **servidor de e-mail próprio (SMTP)** em **Authentication > Emails > SMTP Settings** (por exemplo, Brevo, com plano gratuito). Sem isso, o Supabase só envia para a equipe do projeto, no máximo 2 e-mails por hora, e não deixa editar os modelos.
+2. Nos modelos **Magic Link** e **Change Email Address**, inclua o código com `{{ .Token }}`.
+3. Em **Authentication > Sign In / Providers**, ative **Allow manual linking**.
+
 ## O que o protótipo tem
 
 - **Onboarding:** boas-vindas, escolha da carreira (3 ativas, 4 "em breve" com toques contados), apresentação do guia (personagem provisório) e meta diária. Sem cadastro: termina direto na **lição de boas-vindas**, curta e fácil.

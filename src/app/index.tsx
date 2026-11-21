@@ -8,7 +8,7 @@ import { carreiraPorId } from '@/carreiras/dados';
 import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { NoTrilha, type EstadoNo } from '@/componentes/NoTrilha';
-import { textoDeDias, useProgresso } from '@/estado/progresso';
+import { textoDeDias, useProgresso, type StatusDaNuvem } from '@/estado/progresso';
 import { indiceDoFarol, moduloAtual, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
 import {
   LIMIAR_DA_REVISAO_RAPIDA,
@@ -21,9 +21,16 @@ import { vencidas } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { diagnosticoDoSom, tocar } from '@/servicos/som';
 import { IconeAnelDaMeta, IconeLuzDaSequencia, IconeModulos, IconeRevisao } from '@/icones';
-import { cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
+import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 const deslocamentos = [0, 46, 0, -46];
+
+const textoDaNuvem: Record<StatusDaNuvem, string> = {
+  desligada: 'Nuvem desligada (falta o arquivo .env.local)',
+  conectando: 'Nuvem: conectando...',
+  conectada: 'Nuvem: progresso salvo (conta anônima)',
+  offline: 'Nuvem: sem conexão agora; tenta de novo ao abrir o app',
+};
 
 export default function Trilha() {
   const {
@@ -42,6 +49,8 @@ export default function Trilha() {
     modoDeErro,
     alternarModoDeErro,
     revisoes,
+    nuvem,
+    conta,
   } = useProgresso();
   const [cartaoAberto, setCartaoAberto] = useState(false);
   const [alvoDoPulo, setAlvoDoPulo] = useState<number | null>(null);
@@ -57,6 +66,8 @@ export default function Trilha() {
   const c = carreiraPorId(carreira);
   const paraRevisar = vencidasDoModulo(moduloAtual, vencidas(revisoes, new Date(agora)));
   const temRevisaoRapida = paraRevisar.length >= LIMIAR_DA_REVISAO_RAPIDA;
+  // Convite para guardar o progresso: só depois de a pessoa ter recebido valor (2 partes) e só para conta anônima.
+  const convidarParaGuardar = nuvem === 'conectada' && conta?.anonima === true && concluidas >= 2;
   const farolAceso = concluidas >= totalDeNos;
   const vezDoFarol = concluidas === indiceDoFarol;
   const feitasHoje = Math.min(licoesHoje, metaDiaria);
@@ -152,6 +163,20 @@ export default function Trilha() {
         </Animated.View>
       ) : null}
 
+      {convidarParaGuardar ? (
+        <Pressable
+          onPress={() => {
+            haptico.leve();
+            router.push({ pathname: '/conta', params: { modo: 'salvar' } });
+          }}
+          accessibilityRole="button"
+          style={estilos.guardar}>
+          <Text style={estilos.guardarTexto}>
+            Seu progresso está só neste aparelho. <Text style={estilos.guardarLink}>Guardar na sua conta ›</Text>
+          </Text>
+        </Pressable>
+      ) : null}
+
       {!mapa ? (
         <Pressable
           onPress={() => {
@@ -202,6 +227,13 @@ export default function Trilha() {
         </Pressable>
         <Pressable onPress={() => router.push('/icones')} style={estilos.rodapeDemo} accessibilityRole="button">
           <Text style={estilos.rodapeDemoTexto}>Ver catálogo de ícones</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push('/conta')} style={estilos.rodapeDemo} accessibilityRole="button">
+          <Text style={estilos.rodapeDemoTexto}>
+            {conta && !conta.anonima && nuvem === 'conectada'
+              ? `Nuvem: progresso salvo na conta ${conta.email ?? ''}`
+              : textoDaNuvem[nuvem]}
+          </Text>
         </Pressable>
         <Pressable onPress={reiniciar} style={estilos.rodapeDemo} accessibilityRole="button">
           <Text style={estilos.rodapeDemoTexto}>Reiniciar demonstração (volta ao início)</Text>
@@ -328,6 +360,15 @@ const estilos = StyleSheet.create({
   revisaoTextos: { flex: 1 },
   revisaoTitulo: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.texto },
   revisaoSub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
+  guardar: {
+    alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    minHeight: alvoMinimo,
+    justifyContent: 'center',
+  },
+  guardarTexto: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, textAlign: 'center' },
+  guardarLink: { fontFamily: fonte.textoSemi, color: cor.luz },
   linkMapa: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 8 },
   linkMapaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
   rolagem: { paddingVertical: 8, paddingBottom: 40 },
