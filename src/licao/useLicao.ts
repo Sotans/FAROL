@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useProgresso } from '@/estado/progresso';
+import { notaDaQuestao, type Nota } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
@@ -31,6 +32,8 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   // Ordenar: índices de `itens` na ordem em que a pessoa tocou.
   const [ordem, setOrdem] = useState<number[]>([]);
   const [erros, setErros] = useState(0);
+  // Revisão espaçada: a nota de cada questão original, decidida na primeira vez que ela é resolvida.
+  const [notas, setNotas] = useState<Record<string, Nota>>({});
   const [dicasRestantes, setDicasRestantes] = useState<number>(limites.dicasPorDia);
   const [dicaAberta, setDicaAberta] = useState(false);
   const [avisoDeLimite, setAvisoDeLimite] = useState(false);
@@ -58,7 +61,15 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
    * Resultado de uma tentativa, para qualquer tipo de exercício.
    * `marca` é a opção tocada (exercícios de escolha), que fica marcada e, se errada, sai das opções.
    */
+  /** Anota a nota da questão original uma única vez (a cópia que volta no fim não muda a nota). */
+  function anotar(errou: boolean) {
+    if (questao.repetida) return;
+    const nota = notaDaQuestao({ errou, usouDica: dicaAberta, tipo: questao.tipo });
+    setNotas((n) => (questao.id in n ? n : { ...n, [questao.id]: nota }));
+  }
+
   function aplicarResultado(acertou: boolean, marca: number | null) {
+    anotar(!acertou || erros > 0);
     if (acertou) {
       const primeiraTentativa = erros === 0;
       // Só conta "de primeira" a questão original, não a que voltou ao final.
@@ -131,6 +142,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     if (fase !== 'respondendo') return;
     quebrarSequenciaDeAcertos();
     setErros((e) => e + 1);
+    anotar(true);
     haptico.aviso();
     tocar('erro');
   }
@@ -193,6 +205,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     selecionada,
     removidas,
     ordem,
+    notas,
     dicasRestantes,
     dicaAberta,
     avisoDeLimite,

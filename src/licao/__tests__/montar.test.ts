@@ -4,10 +4,13 @@ import {
   montarDesafio,
   montarFarol,
   montarLicao,
+  montarRevisaoRapida,
+  vencidasDoModulo,
   ORIGEM_DO_FAROL,
   QUESTOES_DE_BOAS_VINDAS,
   QUESTOES_DE_REVISAO,
   QUESTOES_DO_DESAFIO,
+  QUESTOES_DA_REVISAO_RAPIDA,
   QUESTOES_DO_FAROL,
 } from '@/licao/montar';
 
@@ -56,6 +59,48 @@ describe('montarLicao', () => {
 
   it('limita o índice da parte ao intervalo válido', () => {
     expect(ids(montarLicao(modulo, 99, 1))).toEqual(ids(montarLicao(modulo, modulo.partes.length - 1, 1)));
+  });
+});
+
+describe('revisão espaçada nas lições', () => {
+  it('as questões vencidas de partes anteriores entram primeiro na revisão', () => {
+    const vencidas = ['cr-p2-05', 'cr-p1-07'];
+    const revisao = montarLicao(modulo, 3, 1, vencidas).filter((q) => q.origem);
+    expect(ids(revisao).sort()).toEqual([...vencidas].sort());
+  });
+
+  it('vencidas da própria parte ou de partes futuras não entram como revisão', () => {
+    const revisao = montarLicao(modulo, 1, 1, ['cr-p5-01', 'cr-p2-01']).filter((q) => q.origem);
+    revisao.forEach((q) => expect(q.id.startsWith('cr-p1-')).toBe(true));
+  });
+
+  it('sem vencidas suficientes, completa com questões anteriores sorteadas', () => {
+    const revisao = montarLicao(modulo, 3, 1, ['cr-p1-02']).filter((q) => q.origem);
+    expect(revisao).toHaveLength(QUESTOES_DE_REVISAO);
+    expect(ids(revisao)).toContain('cr-p1-02');
+  });
+});
+
+describe('montarRevisaoRapida', () => {
+  it('usa só as vencidas do módulo, com rótulo de revisão', () => {
+    const r = montarRevisaoRapida(modulo, ['cr-p3-02', 'outro-modulo-01', 'cr-farol-04']);
+    expect(ids(r).sort()).toEqual(['cr-farol-04', 'cr-p3-02']);
+    expect(r.find((q) => q.id === 'cr-farol-04')?.origem).toBe('Revisão · Farol');
+    expect(r.find((q) => q.id === 'cr-p3-02')?.origem).toBe('Revisão · Locuções com crase');
+  });
+
+  it('limita o tamanho, priorizando as mais atrasadas', () => {
+    const todas = modulo.partes.flatMap((p) => ids(p.questoes));
+    const r = montarRevisaoRapida(modulo, todas);
+    expect(r).toHaveLength(QUESTOES_DA_REVISAO_RAPIDA);
+    expect(ids(r).sort()).toEqual(todas.slice(0, QUESTOES_DA_REVISAO_RAPIDA).sort());
+  });
+
+  it('conta só as vencidas que são deste módulo', () => {
+    expect(vencidasDoModulo(modulo, ['cr-p1-01', 'pt-virgula-p1-01', 'cr-farol-01'])).toEqual([
+      'cr-p1-01',
+      'cr-farol-01',
+    ]);
   });
 });
 

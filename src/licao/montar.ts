@@ -15,6 +15,10 @@ export const QUESTOES_DE_BOAS_VINDAS = 5;
 /** Tamanho do Farol do módulo. */
 export const QUESTOES_DO_FAROL = 10;
 export const ORIGEM_DO_FAROL = 'Farol · estilo de prova';
+/** Tamanho máximo da "Revisão rápida". */
+export const QUESTOES_DA_REVISAO_RAPIDA = 10;
+/** A "Revisão rápida" aparece na trilha a partir deste número de questões vencidas. */
+export const LIMIAR_DA_REVISAO_RAPIDA = 4;
 
 /** Embaralhamento determinístico (gerador congruencial linear), para as sessões variarem sem perder a reprodutibilidade. */
 export function embaralhar<T>(itens: readonly T[], semente: number): T[] {
@@ -42,14 +46,28 @@ function limitarParte(modulo: Modulo, indice: number): number {
  * aquecimento (2 mais fáceis) → núcleo (dificuldade subindo) → revisão de partes anteriores → fechamento fácil.
  * Terminar com uma questão de alta chance de acerto deixa a lição terminar bem.
  */
-export function montarLicao(modulo: Modulo, indiceDaParte: number, semente: number): Questao[] {
+export function montarLicao(
+  modulo: Modulo,
+  indiceDaParte: number,
+  semente: number,
+  /** Ids vencidos na revisão espaçada, do mais atrasado ao menos atrasado: entram primeiro. */
+  vencidas: readonly string[] = [],
+): Questao[] {
   const indice = limitarParte(modulo, indiceDaParte);
   const proprias = porNivel(modulo.partes[indice].questoes);
 
   const anteriores = modulo.partes
     .slice(0, indice)
     .flatMap((parte) => parte.questoes.map((q) => ({ ...q, origem: `Revisão · ${parte.nome}` })));
-  const revisao = porNivel(embaralhar(anteriores, semente).slice(0, QUESTOES_DE_REVISAO));
+  const posicao = new Map(vencidas.map((id, i) => [id, i]));
+  const prioritarias = anteriores
+    .filter((q) => posicao.has(q.id))
+    .sort((a, b) => (posicao.get(a.id) ?? 0) - (posicao.get(b.id) ?? 0));
+  const demais = embaralhar(
+    anteriores.filter((q) => !posicao.has(q.id)),
+    semente,
+  );
+  const revisao = porNivel([...prioritarias, ...demais].slice(0, QUESTOES_DE_REVISAO));
 
   if (proprias.length < 3) return [...proprias, ...revisao];
   const [aquecimento1, aquecimento2, fechamento, ...nucleo] = proprias;
@@ -68,6 +86,29 @@ export function montarBoasVindas(modulo: Modulo): Questao[] {
 export function montarFarol(modulo: Modulo, semente: number): Questao[] {
   const escolhidas = embaralhar(modulo.farol, semente).slice(0, QUESTOES_DO_FAROL);
   return porNivel(escolhidas).map((q) => ({ ...q, origem: ORIGEM_DO_FAROL }));
+}
+
+/**
+ * Revisão rápida: as questões vencidas do módulo (de qualquer parte e do farol), começando pelas
+ * mais atrasadas, em dificuldade crescente. Não ensina nada novo e não avança a trilha.
+ */
+export function montarRevisaoRapida(modulo: Modulo, vencidas: readonly string[]): Questao[] {
+  const disponiveis = new Map<string, Questao>();
+  modulo.partes.forEach((parte) =>
+    parte.questoes.forEach((q) => disponiveis.set(q.id, { ...q, origem: `Revisão · ${parte.nome}` })),
+  );
+  modulo.farol.forEach((q) => disponiveis.set(q.id, { ...q, origem: 'Revisão · Farol' }));
+  const escolhidas = vencidas
+    .map((id) => disponiveis.get(id))
+    .filter((q): q is Questao => q !== undefined)
+    .slice(0, QUESTOES_DA_REVISAO_RAPIDA);
+  return porNivel(escolhidas);
+}
+
+/** Quantas questões vencidas pertencem a este módulo. */
+export function vencidasDoModulo(modulo: Modulo, vencidas: readonly string[]): string[] {
+  const ids = new Set([...modulo.partes.flatMap((p) => p.questoes.map((q) => q.id)), ...modulo.farol.map((q) => q.id)]);
+  return vencidas.filter((id) => ids.has(id));
 }
 
 /**

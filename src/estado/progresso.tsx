@@ -5,6 +5,7 @@ import type { TomDePele } from '@/componentes/Personagem';
 import type { Mapa } from '@/diagnostico/dados';
 import { totalDeNos, totalDePartes } from '@/licao/dados';
 import type { ModoDeErro } from '@/licao/tipos';
+import { registrar, type Nota, type Revisoes } from '@/revisao/agenda';
 import { carregarEstado, salvarEstado } from '@/servicos/armazenamento';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
@@ -36,6 +37,8 @@ export type Estado = {
   xp: number;
   /** Acertos seguidos: uma sequência só, que atravessa questões, lições e desafios. Só zera ao errar. */
   acertosSeguidos: number;
+  /** Revisão espaçada: o cartão de memória de cada questão já respondida (docs/10, seção 7). */
+  revisoes: Revisoes;
   /** Toques em carreiras "em breve": mede a demanda antes de produzir conteúdo. */
   toquesEmBreve: Partial<Record<CarreiraId, number>>;
 };
@@ -57,6 +60,10 @@ type Progresso = Estado & {
   quebrarSequenciaDeAcertos: () => void;
   /** Conclui o nó atual (lição ou farol) e soma o XP dele. */
   concluir: (xp: number) => void;
+  /** Conclui uma revisão rápida: conta como lição do dia (meta e sequência), mas não avança a trilha. */
+  concluirRevisao: (xp: number) => void;
+  /** Registra as notas de uma sessão nos cartões de memória. */
+  registrarRevisoes: (notas: Record<string, Nota>) => void;
   /** Resultado do desafio: as partes de `concluidas` até `ate - 1` ficam dominadas e `ate` vira o nó atual. */
   dominarAte: (ate: number) => void;
   registrarDesafio: () => void;
@@ -93,6 +100,7 @@ export const estadoInicial: Estado = {
   sequencia: 0,
   xp: 0,
   acertosSeguidos: 0,
+  revisoes: {},
   toquesEmBreve: {},
 };
 
@@ -107,6 +115,17 @@ function virarDia(e: Estado): Estado {
   let sequencia = e.sequencia;
   if (e.ultimoDiaDeEstudo && diasEntre(e.ultimoDiaDeEstudo, atual) >= 2) sequencia = 0;
   return { ...e, dia: atual, licoesHoje: 0, desafiosHoje: 0, sequencia };
+}
+
+/** Uma sessão concluída hoje: conta para a meta, a sequência de dias e o XP. */
+function estudouHoje(e: Estado, xp: number): Estado {
+  return {
+    ...e,
+    licoesHoje: e.licoesHoje + 1,
+    sequencia: e.licoesHoje === 0 ? e.sequencia + 1 : e.sequencia,
+    ultimoDiaDeEstudo: e.dia,
+    xp: e.xp + xp,
+  };
 }
 
 const Contexto = createContext<Progresso | null>(null);
@@ -177,17 +196,17 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
 
   const concluir = useCallback((xp: number) => {
     setEstado((e) => {
-      const atual = virarDia(e);
-      return {
-        ...atual,
-        concluidas: Math.min(atual.concluidas + 1, totalDeNos),
-        licoesHoje: atual.licoesHoje + 1,
-        sequencia: atual.licoesHoje === 0 ? atual.sequencia + 1 : atual.sequencia,
-        ultimoDiaDeEstudo: atual.dia,
-        xp: atual.xp + xp,
-      };
+      const atual = estudouHoje(virarDia(e), xp);
+      return { ...atual, concluidas: Math.min(atual.concluidas + 1, totalDeNos) };
     });
   }, []);
+
+  const concluirRevisao = useCallback((xp: number) => setEstado((e) => estudouHoje(virarDia(e), xp)), []);
+
+  const registrarRevisoes = useCallback(
+    (notas: Record<string, Nota>) => setEstado((e) => ({ ...e, revisoes: registrar(e.revisoes, notas, new Date()) })),
+    [],
+  );
 
   const dominarAte = useCallback((ate: number) => {
     setEstado((e) => {
@@ -236,6 +255,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       registrarAcerto,
       quebrarSequenciaDeAcertos,
       concluir,
+      concluirRevisao,
+      registrarRevisoes,
       dominarAte,
       registrarDesafio,
       ganharDesafio,
@@ -256,6 +277,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       registrarAcerto,
       quebrarSequenciaDeAcertos,
       concluir,
+      concluirRevisao,
+      registrarRevisoes,
       dominarAte,
       registrarDesafio,
       ganharDesafio,

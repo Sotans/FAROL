@@ -22,16 +22,18 @@ const frases = [
 ];
 
 export default function Conclusao() {
-  const { acertos, total, primeira, farol } = useLocalSearchParams<{
+  const { acertos, total, primeira, farol, revisao } = useLocalSearchParams<{
     acertos?: string;
     total?: string;
     primeira?: string;
     farol?: string;
+    revisao?: string;
   }>();
   const { concluidas, licoesHoje, sequencia, metaDiaria, mapa } = useProgresso();
   const primeiraLicao = primeira === '1';
   const acendeuOFarol = farol === '1';
-  const xpGanho = acendeuOFarol ? limites.xpDoFarol : limites.xpDaLicao;
+  const fezRevisao = revisao === '1';
+  const xpGanho = acendeuOFarol ? limites.xpDoFarol : fezRevisao ? limites.xpDaRevisao : limites.xpDaLicao;
   const [xp, setXp] = useState(0);
   const [mostrarCartao, setMostrarCartao] = useState(false);
   const [frase] = useState(() => frases[Math.floor(Math.random() * frases.length)]);
@@ -69,9 +71,18 @@ export default function Conclusao() {
       <View style={estilos.centro}>
         <Farol />
         <Text style={estilos.titulo}>
-          {acendeuOFarol ? 'Farol aceso!' : primeiraLicao ? 'Primeira lição concluída!' : 'Lição concluída!'}
+          {acendeuOFarol
+            ? 'Farol aceso!'
+            : fezRevisao
+              ? 'Revisão concluída!'
+              : primeiraLicao
+                ? 'Primeira lição concluída!'
+                : 'Lição concluída!'}
         </Text>
         {acendeuOFarol ? <Text style={estilos.detalhe}>{`Você concluiu o módulo ${nomeDoModulo}.`}</Text> : null}
+        {fezRevisao ? (
+          <Text style={estilos.detalhe}>O que você acertou volta daqui a mais tempo. O resto, logo.</Text>
+        ) : null}
         <View style={estilos.linha}>
           <IconeFaisca tamanho={30} />
           <Text style={estilos.xp}>{`+${xp} XP`}</Text>

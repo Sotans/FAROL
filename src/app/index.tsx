@@ -1,5 +1,5 @@
-import { Redirect, router } from 'expo-router';
-import { useState } from 'react';
+import { Redirect, router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,12 +9,18 @@ import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { NoTrilha, type EstadoNo } from '@/componentes/NoTrilha';
 import { textoDeDias, useProgresso } from '@/estado/progresso';
-import { indiceDoFarol, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
-import { QUESTOES_DO_FAROL } from '@/licao/montar';
+import { indiceDoFarol, moduloAtual, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
+import {
+  LIMIAR_DA_REVISAO_RAPIDA,
+  QUESTOES_DA_REVISAO_RAPIDA,
+  QUESTOES_DO_FAROL,
+  vencidasDoModulo,
+} from '@/licao/montar';
 import { rotuloModoDeErro } from '@/licao/tipos';
+import { vencidas } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { diagnosticoDoSom, tocar } from '@/servicos/som';
-import { IconeAnelDaMeta, IconeLuzDaSequencia, IconeModulos } from '@/icones';
+import { IconeAnelDaMeta, IconeLuzDaSequencia, IconeModulos, IconeRevisao } from '@/icones';
 import { cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 const deslocamentos = [0, 46, 0, -46];
@@ -35,16 +41,22 @@ export default function Trilha() {
     reiniciar,
     modoDeErro,
     alternarModoDeErro,
+    revisoes,
   } = useProgresso();
   const [cartaoAberto, setCartaoAberto] = useState(false);
   const [alvoDoPulo, setAlvoDoPulo] = useState<number | null>(null);
   const [limiteDeDesafio, setLimiteDeDesafio] = useState(false);
   const { aviso, mostrarAviso } = useAviso();
+  // A hora de revisar depende do relógio: recalcula sempre que a trilha volta a aparecer.
+  const [agora, setAgora] = useState(() => Date.now());
+  useFocusEffect(useCallback(() => setAgora(Date.now()), []));
 
   // Primeiro acesso: valor antes de qualquer pedido (jornada, etapa 2).
   if (!onboardingConcluido) return <Redirect href="/boas-vindas" />;
 
   const c = carreiraPorId(carreira);
+  const paraRevisar = vencidasDoModulo(moduloAtual, vencidas(revisoes, new Date(agora)));
+  const temRevisaoRapida = paraRevisar.length >= LIMIAR_DA_REVISAO_RAPIDA;
   const farolAceso = concluidas >= totalDeNos;
   const vezDoFarol = concluidas === indiceDoFarol;
   const feitasHoje = Math.min(licoesHoje, metaDiaria);
@@ -118,6 +130,27 @@ export default function Trilha() {
         </View>
         <IconeModulos tamanho={26} />
       </View>
+
+      {temRevisaoRapida ? (
+        <Animated.View entering={FadeInDown.duration(250)}>
+          <Pressable
+            onPress={() => {
+              haptico.leve();
+              router.push({ pathname: '/licao', params: { modo: 'revisao' } });
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`Revisão rápida, ${Math.min(paraRevisar.length, QUESTOES_DA_REVISAO_RAPIDA)} questões`}
+            style={estilos.revisao}>
+            <IconeRevisao tamanho={28} />
+            <View style={estilos.revisaoTextos}>
+              <Text style={estilos.revisaoTitulo}>Revisão rápida</Text>
+              <Text style={estilos.revisaoSub}>
+                {`${Math.min(paraRevisar.length, QUESTOES_DA_REVISAO_RAPIDA)} questões no ponto de revisar · +${limites.xpDaRevisao} XP`}
+              </Text>
+            </View>
+          </Pressable>
+        </Animated.View>
+      ) : null}
 
       {!mapa ? (
         <Pressable
@@ -279,6 +312,22 @@ const estilos = StyleSheet.create({
     opacity: 0.85,
   },
   bannerTitulo: { fontFamily: fonte.titulo, fontSize: tamanho.lg, color: cor.textoSobreMare },
+  revisao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 10,
+    minHeight: 56,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: cor.superficie,
+    borderColor: cor.luz,
+    borderWidth: 1,
+    borderRadius: raio.lg,
+  },
+  revisaoTextos: { flex: 1 },
+  revisaoTitulo: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.texto },
+  revisaoSub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
   linkMapa: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 8 },
   linkMapaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
   rolagem: { paddingVertical: 8, paddingBottom: 40 },

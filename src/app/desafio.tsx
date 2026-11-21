@@ -27,7 +27,7 @@ import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 export default function Desafio() {
   const { ate } = useLocalSearchParams<{ ate?: string }>();
   const alvo = Number(ate ?? 0);
-  const { concluidas, dominarAte, celebracaoDeSequencia } = useProgresso();
+  const { concluidas, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
   // O conteúdo das partes que serão puladas.
   const [questoes] = useState(() => montarDesafio(moduloAtual, concluidas, alvo, Date.now()));
   const desafio = useDesafio(questoes);
@@ -53,6 +53,7 @@ export default function Desafio() {
   }
 
   function vencer() {
+    registrarRevisoes(desafio.notas);
     dominarAte(alvo);
     router.replace('/');
   }
@@ -93,7 +94,13 @@ export default function Desafio() {
           </Text>
         </View>
         <View style={estilos.rodape}>
-          <Botao rotulo="FAZER AS LIÇÕES" onPress={() => router.replace('/')} />
+          <Botao
+            rotulo="FAZER AS LIÇÕES"
+            onPress={() => {
+              registrarRevisoes(desafio.notas);
+              router.replace('/');
+            }}
+          />
         </View>
       </SafeAreaView>
     );

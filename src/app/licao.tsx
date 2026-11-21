@@ -14,9 +14,10 @@ import type { EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useProgresso } from '@/estado/progresso';
 import { indiceDoFarol, moduloAtual } from '@/licao/dados';
-import { montarBoasVindas, montarFarol, montarLicao } from '@/licao/montar';
+import { montarBoasVindas, montarFarol, montarLicao, montarRevisaoRapida } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { useLicao } from '@/licao/useLicao';
+import { vencidas } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { IconeFechar, IconeLanterna } from '@/icones';
 import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
@@ -24,13 +25,17 @@ import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 export default function Licao() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
   const boasVindas = modo === 'boas-vindas';
-  const { concluir, concluidas, modoDeErro, celebracaoDeSequencia } = useProgresso();
+  const revisaoRapida = modo === 'revisao';
+  const { concluir, concluirRevisao, registrarRevisoes, concluidas, revisoes, modoDeErro, celebracaoDeSequencia } =
+    useProgresso();
   // Fixados na abertura: `concluidas` muda ao concluir, antes de a tela sair.
-  const [farol] = useState(() => !boasVindas && concluidas === indiceDoFarol);
+  const [farol] = useState(() => !boasVindas && !revisaoRapida && concluidas === indiceDoFarol);
   const [questoes] = useState(() => {
+    const agora = new Date();
     if (boasVindas) return montarBoasVindas(moduloAtual);
-    if (farol) return montarFarol(moduloAtual, Date.now());
-    return montarLicao(moduloAtual, concluidas, Date.now());
+    if (revisaoRapida) return montarRevisaoRapida(moduloAtual, vencidas(revisoes, agora));
+    if (farol) return montarFarol(moduloAtual, agora.getTime());
+    return montarLicao(moduloAtual, concluidas, agora.getTime(), vencidas(revisoes, agora));
   });
   const licao = useLicao(questoes, modoDeErro);
   const { questao: q, fase, selecionada, removidas } = licao;
@@ -59,7 +64,9 @@ export default function Licao() {
 
   function continuar() {
     if (licao.proxima()) {
-      concluir(farol ? limites.xpDoFarol : limites.xpDaLicao);
+      registrarRevisoes(licao.notas);
+      if (revisaoRapida) concluirRevisao(limites.xpDaRevisao);
+      else concluir(farol ? limites.xpDoFarol : limites.xpDaLicao);
       router.replace({
         pathname: '/conclusao',
         params: {
@@ -67,6 +74,7 @@ export default function Licao() {
           total: String(licao.totalOriginal),
           primeira: boasVindas ? '1' : '0',
           farol: farol ? '1' : '0',
+          revisao: revisaoRapida ? '1' : '0',
         },
       });
     }

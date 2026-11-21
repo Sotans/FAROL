@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useProgresso } from '@/estado/progresso';
+import type { Nota } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
@@ -21,6 +22,8 @@ export function useDesafio(questoes: Questao[]) {
   const [fase, setFase] = useState<FaseDoDesafio>('respondendo');
   const [selecionada, setSelecionada] = useState<number | null>(null);
   const [ordem, setOrdem] = useState<number[]>([]);
+  // Revisão espaçada: no desafio não há dica nem nova tentativa, então é acerto (bom) ou erro.
+  const [notas, setNotas] = useState<Record<string, Nota>>({});
   const [luzes, setLuzes] = useState<number>(limites.luzesDoDesafio);
   const [acertos, setAcertos] = useState(0);
 
@@ -45,6 +48,7 @@ export function useDesafio(questoes: Questao[]) {
   }, [fase, indice]);
 
   function aplicarResultado(acertou: boolean) {
+    setNotas((n) => ({ ...n, [questao.id]: acertou ? 'bom' : 'errou' }));
     if (acertou) {
       setAcertos((n) => n + 1);
       registrarAcerto();
@@ -111,6 +115,7 @@ export function useDesafio(questoes: Questao[]) {
     fase,
     selecionada,
     ordem,
+    notas,
     luzes,
     acertos,
     acertosSeguidos,

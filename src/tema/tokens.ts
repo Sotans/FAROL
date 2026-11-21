@@ -41,4 +41,5 @@ export const limites = {
   xpDaLicao: 25,
   xpDoDesafio: 50,
   xpDoFarol: 50,
+  xpDaRevisao: 15,
 } as const;
