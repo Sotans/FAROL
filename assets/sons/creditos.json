@@ -1,0 +1,125 @@
+{
+  "_leia": "Origem e licença de cada som embutido no app. Todo arquivo em assets/sons precisa de uma entrada aqui; o teste src/servicos/__tests__/creditos-dos-sons.test.ts confere. Licenças aceitas: propria, CC0, pixabay, comercial-paga (com o recibo guardado fora do repositório).",
+  "sons": [
+    {
+      "arquivo": "acerto-1.wav",
+      "momento": "Acerto (1º da escada)",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "acerto-2.wav",
+      "momento": "Acerto (2º)",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "acerto-3.wav",
+      "momento": "Acerto (3º)",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "acerto-4.wav",
+      "momento": "Acerto (4º)",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "acerto-5.wav",
+      "momento": "Acerto (5º e acorde da sequência)",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "erro.wav",
+      "momento": "Erro gentil",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "farol.wav",
+      "momento": "Desafio vencido",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "licao.wav",
+      "momento": "Lição concluída",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "luz-apagada.wav",
+      "momento": "Desafio: uma luz se apaga",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "meta.wav",
+      "momento": "Meta do dia cumprida e farol aceso",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "popup.wav",
+      "momento": "Pop-up da próxima lição",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    },
+    {
+      "arquivo": "toque.wav",
+      "momento": "Toque em botão ou opção",
+      "origem": "Sintetizado pelo próprio projeto (scripts/gerar-sons.py)",
+      "autor": "FAROL",
+      "url": "",
+      "licenca": "propria",
+      "data": "2026-11-16",
+      "editado": false
+    }
+  ]
+}
