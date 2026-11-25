@@ -6,6 +6,8 @@ const base: Estado = {
   onboardingConcluido: true,
   carreira: 'policial',
   tomDoGuia: 'medio',
+  cabeloDoGuia: 'curto',
+  corDoCabeloDoGuia: 'escuro',
   metaDiaria: 1,
   mapa: null,
   moduloAtual: 'pt-virgula',

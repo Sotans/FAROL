@@ -23,7 +23,11 @@ export type EstadoDoFarol = 'apagado' | 'atual' | 'aceso';
 
 /** O farol: símbolo do app e nó que fecha cada módulo. Aceso, lança dois feixes. */
 export function IconeFarol({ tamanho = 48, estado = 'aceso' }: Omit<PropsIcone, 'cor'> & { estado?: EstadoDoFarol }) {
-  const lampada = estado === 'apagado' ? cor.linha : cor.luz;
+  // Apagado sem opacidade (doc 11, regra 15): a torre fica em linhaForte e a lâmpada em linha.
+  const apagado = estado === 'apagado';
+  const lampada = apagado ? cor.linha : cor.luz;
+  const torre = apagado ? cor.linhaForte : cor.texto;
+  const faixa = apagado ? cor.superficie : cor.mare;
   return (
     <Svg width={tamanho * 1.5} height={tamanho} viewBox="-12 0 72 48">
       {estado === 'aceso' ? (
@@ -32,14 +36,14 @@ export function IconeFarol({ tamanho = 48, estado = 'aceso' }: Omit<PropsIcone, 
           <Polygon points="24,11.5 -12,4 -12,19" fill={cor.luz} />
         </G>
       ) : null}
-      <G opacity={estado === 'apagado' ? 0.6 : 1}>
-        <Path d="M16 8.5 L24 2.5 L32 8.5 Z" fill={cor.texto} />
+      <G>
+        <Path d="M16 8.5 L24 2.5 L32 8.5 Z" fill={torre} />
         <Rect x={18} y={8} width={12} height={8} rx={2} fill={lampada} />
-        <Rect x={15.5} y={16} width={17} height={3} rx={1.5} fill={cor.texto} />
-        <Path d="M18.5 19 L29.5 19 L32.5 44 L15.5 44 Z" fill={cor.texto} />
-        <Path d="M17.6 26.5 L30.4 26.5 L31.1 32 L16.9 32 Z" fill={cor.mare} />
-        <Rect x={21.8} y={36.5} width={4.4} height={7.5} rx={2.2} fill={cor.mare} />
-        <Rect x={11} y={44} width={26} height={3.2} rx={1.6} fill={cor.texto} />
+        <Rect x={15.5} y={16} width={17} height={3} rx={1.5} fill={torre} />
+        <Path d="M18.5 19 L29.5 19 L32.5 44 L15.5 44 Z" fill={torre} />
+        <Path d="M17.6 26.5 L30.4 26.5 L31.1 32 L16.9 32 Z" fill={faixa} />
+        <Rect x={21.8} y={36.5} width={4.4} height={7.5} rx={2.2} fill={faixa} />
+        <Rect x={11} y={44} width={26} height={3.2} rx={1.6} fill={torre} />
       </G>
     </Svg>
   );
@@ -144,9 +148,11 @@ export function IconeSeloConcluida({ tamanho = 48 }: Omit<PropsIcone, 'cor'>) {
 export function IconeSeloDominada({ tamanho = 48 }: Omit<PropsIcone, 'cor'>) {
   return (
     <Svg width={tamanho} height={tamanho} viewBox="0 0 48 48">
-      <Polygon points={pontosDeEstrela(24, 24, 16, 22, 18)} fill={cor.luz} />
+      {/* Verde, como o nó dominado da trilha: dominar é um tipo de concluir. A faísca âmbar é a conquista. */}
+      <Polygon points={pontosDeEstrela(24, 24, 16, 22, 18)} fill={cor.acerto} />
       <Circle cx={24} cy={24} r={14} fill="none" stroke={cor.fundo} strokeWidth={1.5} opacity={0.35} />
       <Polygon points={pontosDeEstrela(24, 24, 8, 9.5, 4.8)} fill={cor.fundo} />
+      <Polygon points={pontosDeEstrela(39, 9, 4, 5, 1.6)} fill={cor.luz} />
     </Svg>
   );
 }
@@ -155,10 +161,9 @@ export function IconeSeloDominada({ tamanho = 48 }: Omit<PropsIcone, 'cor'>) {
 export function IconeBussola({ tamanho = 24, cor: c = cor.texto }: PropsIcone) {
   return (
     <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24">
-      <Circle cx={12} cy={12} r={9.5} stroke={c} strokeWidth={2} fill="none" />
-      <Polygon points="12,4.8 14.6,12 9.4,12" fill={cor.luz} />
-      <Polygon points="12,19.2 14.6,12 9.4,12" fill={c} opacity={0.55} />
-      <Circle cx={12} cy={12} r={1.4} fill={c} />
+      <Circle cx={12} cy={12} r={9.2} stroke={c} strokeWidth={2.4} fill="none" />
+      <Polygon points="12,5.4 14.4,12 9.6,12" fill={cor.luz} />
+      <Polygon points="12,18.6 14.4,12 9.6,12" fill={cor.textoSuave} />
     </Svg>
   );
 }
@@ -170,12 +175,13 @@ export function IconeRevisao({ tamanho = 24, cor: c = cor.texto }: PropsIcone) {
       <Path
         d="M5.2 9 A7.5 7.5 0 1 1 4.6 13.5 M4.5 4.5 V9.2 H9.2"
         stroke={c}
-        strokeWidth={2.2}
+        strokeWidth={2.4}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       />
-      <Circle cx={12} cy={12} r={2.6} fill={cor.luz} />
+      {/* Revisão é retomada, não conquista: o ponto é maré, não âmbar. */}
+      <Circle cx={12} cy={12} r={2.6} fill={cor.mareClaro} />
     </Svg>
   );
 }
@@ -184,9 +190,11 @@ export function IconeRevisao({ tamanho = 24, cor: c = cor.texto }: PropsIcone) {
 export function IconeRelampago({ tamanho = 24, cor: c = cor.texto }: PropsIcone) {
   return (
     <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24">
-      <Polygon points="6,12 22,6.5 22,17.5" fill={cor.luz} opacity={0.85} />
-      <Circle cx={6} cy={12} r={2.4} fill={cor.luz} />
-      <Path d="M2 7.5 H7 M2 16.5 H6" stroke={c} strokeWidth={2} strokeLinecap="round" />
+      {/* Família sólida inteira: o feixe, o núcleo e as marcas de velocidade (antes, em traço). */}
+      <Polygon points="7,12 21.5,6.5 21.5,17.5" fill={cor.luz} opacity={0.55} />
+      <Circle cx={7} cy={12} r={2.8} fill={cor.luz} />
+      <Rect x={1.5} y={6.4} width={5.5} height={2.2} rx={1.1} fill={c} />
+      <Rect x={1.5} y={15.4} width={4.2} height={2.2} rx={1.1} fill={c} />
     </Svg>
   );
 }

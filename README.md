@@ -65,11 +65,18 @@ Para o código chegar no e-mail:
 ## O que ainda não tem
 
 - O kit sonoro definitivo e a música ao selecionar um nó (submeta 1.11).
-- Ícones e personagem definitivos (1.10 e 1.12). Os glifos e emojis são provisórios.
+- Personagem final feito por ilustrador (1.12). O guia atual é desenhado em código (`src/componentes/Personagem.tsx`).
 - Revisão espaçada, download de lições para offline, login e sincronização com o backend.
 - Os outros 3 tipos de exercício (ligar pares, ordenar, identificar o erro).
 
 O progresso fica salvo no aparelho. Para recomeçar do zero, abra o **Laboratório** (toque longo no banner do módulo, na trilha) e use "Reiniciar demonstração", que volta ao onboarding. O Laboratório também guarda o experimento de erro, o teste de som, o catálogo de ícones e o estado da nuvem.
+
+## Ícones e o guia
+
+- **Ícones de interface** (fechar, visto, cadeado, abas, perfil, baixar, lembrete, reportar erro etc.): biblioteca [Lucide](https://lucide.dev), licença ISC, uso comercial livre. Ficam em `src/icones/interface.tsx`, com traço 2,4 e cores dos tokens. Importe cada ícone pelo próprio arquivo (`lucide-react-native/icons/<nome>`), nunca da raiz do pacote, que traria mais de mil ícones para o app.
+- **Ícones de marca e conquista** (farol, luz da sequência, lanterna, faísca, selos): desenhados à mão, em `src/icones/conquistas.tsx` e `utilitarios.tsx`. Só eles usam o âmbar.
+- **O guia**: 3 carreiras, 7 expressões, 4 tons de pele, 4 cabelos e 4 cores de cabelo, escolhidos na tela do guia. Há também um avatar de busto (`AvatarDoGuia`) para tamanhos pequenos. A paleta da ilustração fica em `src/tema/ilustracao.ts`.
+- O catálogo completo está na tela de demonstração de ícones (Laboratório > Ver catálogo de ícones).
 
 ## Estrutura
 

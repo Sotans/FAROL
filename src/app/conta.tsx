@@ -60,7 +60,16 @@ const textos: Record<Fluxo, { titulo: string; sub: string; pronto: string; pront
 /** Conta (submeta 2.6): salvar o progresso com um e-mail, ou entrar numa conta existente. Login por código, sem senha. */
 export default function ContaTela() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
-  const { conta, carreira, aposEntrarNaConta, aposSalvarAConta, sairDaConta } = useProgresso();
+  const {
+    conta,
+    carreira,
+    tomDoGuia,
+    cabeloDoGuia,
+    corDoCabeloDoGuia,
+    aposEntrarNaConta,
+    aposSalvarAConta,
+    sairDaConta,
+  } = useProgresso();
   const [fluxo, setFluxo] = useState<Fluxo>(modo === 'entrar' ? 'entrar' : 'salvar');
   const [etapa, setEtapa] = useState<Etapa>('email');
   const [email, setEmail] = useState('');
@@ -183,7 +192,16 @@ export default function ContaTela() {
             </>
           ) : etapa === 'pronto' ? (
             <Animated.View entering={FadeInDown.duration(300)} style={estilos.centro}>
-              {c ? <Personagem carreira={c} expressao="comemorando" tamanho={110} /> : null}
+              {c ? (
+                <Personagem
+                  carreira={c}
+                  tom={tomDoGuia}
+                  cabelo={cabeloDoGuia}
+                  corDoCabelo={corDoCabeloDoGuia}
+                  expressao="comemorando"
+                  tamanho={110}
+                />
+              ) : null}
               <Text style={[estilos.titulo, estilos.textoCentro]}>{t.pronto}</Text>
               <Text style={[estilos.sub, estilos.textoCentro]}>{t.prontoSub}</Text>
               <View style={estilos.acoes}>

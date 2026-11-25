@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { AppState } from 'react-native';
 
 import type { CarreiraId } from '@/carreiras/dados';
-import type { TomDePele } from '@/componentes/Personagem';
+import type { Cabelo, CorDoCabelo, TomDePele } from '@/componentes/Personagem';
 import type { Mapa } from '@/diagnostico/dados';
 import { moduloPorId, trilhaDePortugues } from '@/conteudo/trilha';
 import type { Modulo } from '@/conteudo/tipos';
@@ -32,6 +32,9 @@ export type Estado = {
   carreira: CarreiraId | null;
   /** Tom de pele do guia, escolhido pela pessoa (docs/08, seção 7). */
   tomDoGuia: TomDePele;
+  /** Cabelo e cor do cabelo do guia, escolhidos pela pessoa. */
+  cabeloDoGuia: Cabelo;
+  corDoCabeloDoGuia: CorDoCabelo;
   metaDiaria: MetaDiaria;
   /** Mapa do ponto de partida (diagnóstico). null = ainda não feito. */
   mapa: Mapa | null;
@@ -94,6 +97,8 @@ type Progresso = Estado & {
   celebracaoDeSequencia: number | null;
   definirCarreira: (id: CarreiraId) => void;
   definirTomDoGuia: (tom: TomDePele) => void;
+  definirCabeloDoGuia: (cabelo: Cabelo) => void;
+  definirCorDoCabeloDoGuia: (cor: CorDoCabelo) => void;
   definirMetaDiaria: (meta: MetaDiaria) => void;
   concluirOnboarding: () => void;
   definirMapa: (mapa: Mapa) => void;
@@ -127,6 +132,8 @@ export const estadoInicial: Estado = {
   onboardingConcluido: false,
   carreira: null,
   tomDoGuia: 'medio',
+  cabeloDoGuia: 'curto',
+  corDoCabeloDoGuia: 'escuro',
   metaDiaria: 1,
   mapa: null,
   moduloAtual: trilhaDePortugues[0].id,
@@ -311,6 +318,14 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
 
   const definirCarreira = useCallback((id: CarreiraId) => alterar((e) => ({ ...e, carreira: id })), [alterar]);
   const definirTomDoGuia = useCallback((tom: TomDePele) => alterar((e) => ({ ...e, tomDoGuia: tom })), [alterar]);
+  const definirCabeloDoGuia = useCallback(
+    (cabelo: Cabelo) => alterar((e) => ({ ...e, cabeloDoGuia: cabelo })),
+    [alterar],
+  );
+  const definirCorDoCabeloDoGuia = useCallback(
+    (c: CorDoCabelo) => alterar((e) => ({ ...e, corDoCabeloDoGuia: c })),
+    [alterar],
+  );
   const definirMetaDiaria = useCallback((meta: MetaDiaria) => alterar((e) => ({ ...e, metaDiaria: meta })), [alterar]);
   const concluirOnboarding = useCallback(() => alterar((e) => ({ ...e, onboardingConcluido: true })), [alterar]);
   const definirMapa = useCallback((mapa: Mapa) => alterar((e) => ({ ...e, mapa })), [alterar]);
@@ -450,6 +465,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       celebracaoDeSequencia,
       definirCarreira,
       definirTomDoGuia,
+      definirCabeloDoGuia,
+      definirCorDoCabeloDoGuia,
       definirMetaDiaria,
       concluirOnboarding,
       definirMapa,
@@ -483,6 +500,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       celebracaoDeSequencia,
       definirCarreira,
       definirTomDoGuia,
+      definirCabeloDoGuia,
+      definirCorDoCabeloDoGuia,
       definirMetaDiaria,
       concluirOnboarding,
       definirMapa,

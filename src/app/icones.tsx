@@ -4,28 +4,73 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { carreiras } from '@/carreiras/dados';
-import { expressoes, Personagem, tonsDePele, type TomDePele } from '@/componentes/Personagem';
+import {
+  AvatarDoGuia,
+  cabelos,
+  expressoes,
+  Personagem,
+  tonsDePele,
+  type CorDoCabelo,
+  type TomDePele,
+} from '@/componentes/Personagem';
 import {
   IconeAnelDaMeta,
+  IconeBaixar,
   IconeBussola,
   IconeCadeado,
   IconeComecar,
+  IconeEmail,
+  IconeEmValidacao,
+  IconeEscudo,
+  IconeEstatisticas,
   IconeEstrelaDeLuz,
   IconeFaisca,
   IconeFarol,
   IconeFechar,
+  IconeInicio,
+  IconeLaboratorio,
   IconeLanterna,
+  IconeLembrete,
   IconeLuzDaSequencia,
+  IconeMaterias,
   IconeModulos,
+  IconePerfil,
   IconeRelampago,
+  IconeReportar,
   IconeRevisao,
   IconeSeloConcluida,
   IconeSeloDominada,
+  IconeSemConexao,
+  IconeSemSom,
   IconeSeta,
+  IconeSom,
+  IconeTrilha,
   IconeVisto,
   IlustracaoCarreira,
 } from '@/icones';
 import { cor, fonte, raio, tamanho } from '@/tema/tokens';
+
+const itensDaInterface: [string, (p: { tamanho?: number }) => React.JSX.Element][] = [
+  ['Início', IconeInicio],
+  ['Trilha', IconeTrilha],
+  ['Perfil', IconePerfil],
+  ['Matérias', IconeMaterias],
+  ['Estatísticas', IconeEstatisticas],
+  ['Baixar', IconeBaixar],
+  ['Sem conexão', IconeSemConexao],
+  ['Lembrete', IconeLembrete],
+  ['Guardar', IconeEscudo],
+  ['E-mail', IconeEmail],
+  ['Reportar erro', IconeReportar],
+  ['Em validação', IconeEmValidacao],
+  ['Som', IconeSom],
+  ['Sem som', IconeSemSom],
+  ['Laboratório', IconeLaboratorio],
+];
+
+// Combinações variadas de pele e cor para mostrar a diversidade no catálogo.
+const tonsDoCatalogo: TomDePele[] = ['claro', 'escuro', 'moreno', 'medio'];
+const coresDoCatalogo: CorDoCabelo[] = ['escuro', 'escuro', 'castanho', 'grisalho'];
 
 /** Catálogo dos ícones e ilustrações (submeta 1.10), para avaliar no aparelho. Tela de demonstração. */
 export default function Icones() {
@@ -97,7 +142,7 @@ export default function Icones() {
             </View>
           </Item>
           <Item nome="Dominada">
-            <View style={[estilos.no, { backgroundColor: cor.luz }]}>
+            <View style={[estilos.no, { backgroundColor: cor.acerto }]}>
               <IconeEstrelaDeLuz tamanho={26} cor={cor.fundo} />
             </View>
           </Item>
@@ -136,6 +181,14 @@ export default function Icones() {
           </Item>
         </Secao>
 
+        <Secao titulo="Interface (Lucide, traço 2,4, sem ponto de luz)">
+          {itensDaInterface.map(([nome, Icone]) => (
+            <Item key={nome} nome={nome}>
+              <Icone tamanho={32} />
+            </Item>
+          ))}
+        </Secao>
+
         {carreiras
           .filter((c) => c.ativa)
           .map((c) => (
@@ -152,6 +205,29 @@ export default function Icones() {
           {(Object.keys(tonsDePele) as TomDePele[]).map((tom) => (
             <Item key={tom} nome={tom} alto>
               <Personagem carreira={carreiras[0]} expressao="feliz" tom={tom} tamanho={72} />
+            </Item>
+          ))}
+        </Secao>
+
+        <Secao titulo="Guia · cabelos e cores">
+          {cabelos.map((cabelo, i) => (
+            <Item key={cabelo} nome={`${cabelo} · ${coresDoCatalogo[i]}`} alto>
+              <Personagem
+                carreira={carreiras[1]}
+                expressao="feliz"
+                tom={tonsDoCatalogo[i]}
+                cabelo={cabelo}
+                corDoCabelo={coresDoCatalogo[i]}
+                tamanho={72}
+              />
+            </Item>
+          ))}
+        </Secao>
+
+        <Secao titulo="Guia · avatar de busto">
+          {[64, 48, 32].map((t) => (
+            <Item key={t} nome={`${t} px`}>
+              <AvatarDoGuia carreira={carreiras[0]} tamanho={t} />
             </Item>
           ))}
         </Secao>
@@ -181,7 +257,7 @@ export default function Icones() {
 function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <View style={estilos.secao}>
-      <Text style={estilos.secaoTitulo}>{titulo.toUpperCase()}</Text>
+      <Text style={estilos.secaoTitulo}>{titulo}</Text>
       <View style={estilos.grade}>{children}</View>
     </View>
   );
@@ -203,7 +279,7 @@ const estilos = StyleSheet.create({
   titulo: { fontFamily: fonte.titulo, fontSize: tamanho.lg, color: cor.texto },
   corpo: { paddingHorizontal: 16, paddingBottom: 40, gap: 22 },
   secao: { gap: 10 },
-  secaoTitulo: { fontFamily: fonte.textoSemi, fontSize: tamanho.xs, letterSpacing: 0.8, color: cor.textoSuave },
+  secaoTitulo: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.textoSuave },
   grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   item: {
     width: '31%',
