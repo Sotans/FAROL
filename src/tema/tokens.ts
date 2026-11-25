@@ -14,6 +14,17 @@ export const cor = {
   acerto: '#3DDC97',
   atencao: '#FF8A80',
   sobreposicao: 'rgba(5, 9, 15, 0.6)',
+  // borda de controles (3,45:1 sobre o fundo) e maré clara para texto e ícones sobre superfícies escuras
+  linhaForte: '#53709F',
+  mareClaro: '#8FB2FF',
+  // luz clara: títulos de conquista sobre o fundo
+  luzClara: '#FFE2A3',
+  // bordas de profundidade dos nós da trilha
+  relevoLuz: '#B88E2F',
+  relevoAcerto: '#1F8F62',
+  // caixa "Armadilha de prova": informação, em maré
+  armadilhaFundo: 'rgba(43, 95, 217, 0.18)',
+  armadilhaBorda: 'rgba(143, 178, 255, 0.4)',
   // derivadas usadas nos estados dos componentes
   selecionadaFundo: '#1B3A78',
   acertoFundo: '#123A33',
@@ -26,6 +37,10 @@ export const fonte = {
   tituloMedio: 'Nunito_700Bold',
   texto: 'Inter_400Regular',
   textoSemi: 'Inter_600SemiBold',
+  /** Rótulo de botão: Inter 700, em caixa normal. */
+  botao: 'Inter_700Bold',
+  /** Só nos momentos de conquista (farol aceso, mapa do ponto de partida). */
+  conquista: 'Fraunces_600SemiBold',
 } as const;
 
 export const tamanho = { xs: 12, sm: 14, md: 16, lg: 20, xl: 24, xxl: 32 } as const;
@@ -33,6 +48,15 @@ export const espaco = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32 }
 export const raio = { sm: 8, md: 12, lg: 16, circulo: 9999 } as const;
 export const movimento = { microMs: 120, pequenoMs: 250, medioMs: 500, celebracaoMs: 1800 } as const;
 export const alvoMinimo = 48;
+
+/** Brilhos da luz (boxShadow). O primário brilha em vez de afundar; o nó atual brilha no feixe. */
+export const brilho = {
+  botao: '0 0 0 4px rgba(255, 200, 87, 0.16), 0 8px 28px rgba(255, 200, 87, 0.32)',
+  botaoTocado: '0 0 0 6px rgba(255, 200, 87, 0.24), 0 8px 36px rgba(255, 200, 87, 0.5)',
+  noAtual: '0 0 24px rgba(255, 200, 87, 0.55)',
+  // "anel fino" do nó dominado
+  anelDominada: '0 0 0 3px rgba(61, 220, 151, 0.35)',
+} as const;
 
 export const limites = {
   luzesDoDesafio: 5,

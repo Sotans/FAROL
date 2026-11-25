@@ -14,4 +14,12 @@ export {
   type EstadoDoFarol,
 } from './conquistas';
 export type { PropsIcone } from './tipos';
-export { IconeCadeado, IconeFechar, IconeLanterna, IconeModulos, IconeSeta, IconeVisto } from './utilitarios';
+export {
+  IconeCadeado,
+  IconeEscudo,
+  IconeFechar,
+  IconeLanterna,
+  IconeModulos,
+  IconeSeta,
+  IconeVisto,
+} from './utilitarios';

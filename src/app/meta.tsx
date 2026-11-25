@@ -47,7 +47,7 @@ export default function Meta() {
                 accessibilityRole="radio"
                 accessibilityState={{ checked: sel }}
                 style={[estilos.opcao, sel ? estilos.opcaoSelecionada : null]}>
-                <Text style={[estilos.opcaoTitulo, sel ? { color: cor.luz } : null]}>{o.titulo}</Text>
+                <Text style={estilos.opcaoTitulo}>{o.titulo}</Text>
                 <Text style={estilos.opcaoSub}>{o.sub}</Text>
               </Pressable>
             );
@@ -56,7 +56,7 @@ export default function Meta() {
         <Text style={estilos.nota}>Você pode mudar quando quiser.</Text>
       </View>
       <View style={estilos.rodape}>
-        <Botao rotulo="CONFIRMAR" onPress={confirmar} />
+        <Botao rotulo="Confirmar" onPress={confirmar} />
       </View>
     </SafeAreaView>
   );
@@ -78,14 +78,14 @@ const estilos = StyleSheet.create({
   opcao: {
     minHeight: alvoMinimo + 12,
     backgroundColor: cor.superficie,
-    borderColor: cor.linha,
+    borderColor: cor.linhaForte,
     borderWidth: 2,
-    borderBottomWidth: 4,
     borderRadius: raio.lg,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  opcaoSelecionada: { borderColor: cor.luz, backgroundColor: 'rgba(255,200,87,0.1)' },
+  // Seleção em maré, como a Opção da lição.
+  opcaoSelecionada: { borderColor: cor.mare, backgroundColor: cor.selecionadaFundo },
   opcaoTitulo: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.texto },
   opcaoSub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, marginTop: 2 },
   nota: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, textAlign: 'center', marginTop: 16 },

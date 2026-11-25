@@ -9,124 +9,163 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { IconeCadeado, IconeComecar, IconeEstrelaDeLuz, IconeFarol, IconeVisto, type EstadoDoFarol } from '@/icones';
-import { cor, fonte, raio } from '@/tema/tokens';
+import { brilho, cor, fonte, raio, tamanho } from '@/tema/tokens';
 
 export type EstadoNo = 'feita' | 'dominada' | 'atual' | 'bloqueada';
+/** Trecho do caminho entre dois nós: aceso (já percorrido) ou apagado (à frente). */
+export type Ligacao = 'acesa' | 'apagada';
+
+/** Medidas fixas da trilha: o feixe do farol usa as mesmas para achar o centro de cada nó. */
+export const ALTURA_DA_LINHA = 84;
+export const ALTURA_DO_FAROL = 120;
+export const COLUNA_DOS_NOS = 84;
+export const TAMANHO_DO_FAROL = 64;
+/** Onde fica a lâmpada dentro do ícone do farol (largura 1,5 × tamanho), em pontos. */
+export const LAMPADA_DO_FAROL = { x: TAMANHO_DO_FAROL * 0.75, y: TAMANHO_DO_FAROL / 4 };
 
 type Props = {
   estado: EstadoNo;
   rotulo: string;
   sub?: string;
-  /** Texto curto acima do nó, como o convite "Pular pra cá?". */
-  bolha?: string;
+  /** Convite "Pular pra cá?" como link discreto, embaixo da legenda. */
+  convite?: string;
   /** O nó que fecha o módulo: desenhado como um farol, que acende ao ser concluído. */
   farol?: boolean;
-  deslocamento?: number; // zigue-zague horizontal
+  /** Trecho do caminho que liga este nó ao de cima e ao de baixo. */
+  acima?: Ligacao;
+  abaixo?: Ligacao;
   onPress: () => void;
 };
 
 /** O ícone de cada estado, na cor que contrasta com o fundo do nó. */
 function IconeDoEstado({ estado }: { estado: EstadoNo }) {
-  if (estado === 'feita') return <IconeVisto tamanho={26} cor={cor.fundo} />;
-  if (estado === 'dominada') return <IconeEstrelaDeLuz tamanho={26} cor={cor.fundo} />;
-  if (estado === 'atual') return <IconeComecar tamanho={28} cor={cor.textoSobreLuz} />;
+  if (estado === 'feita') return <IconeVisto tamanho={24} cor={cor.fundo} />;
+  if (estado === 'dominada') return <IconeEstrelaDeLuz tamanho={24} cor={cor.fundo} />;
+  if (estado === 'atual') return <IconeComecar tamanho={26} cor={cor.textoSobreLuz} />;
   return <IconeCadeado tamanho={22} cor={cor.textoSuave} />;
 }
 
-export function NoTrilha({ estado, rotulo, sub, bolha, farol = false, deslocamento = 0, onPress }: Props) {
-  const reduzir = useReducedMotion();
-  const brilho = useSharedValue(0.25);
-
-  useEffect(() => {
-    if (estado === 'atual' && !reduzir) {
-      brilho.value = withRepeat(withTiming(0.7, { duration: 1100 }), -1, true);
-    }
-  }, [estado, reduzir, brilho]);
-
-  const halo = useAnimatedStyle(() => ({ opacity: brilho.value }));
-  const atual = estado === 'atual';
-
+function Trecho({ ligacao, lado }: { ligacao?: Ligacao; lado: 'acima' | 'abaixo' }) {
+  if (!ligacao) return null;
   return (
-    <View style={[estilos.linha, bolha ? estilos.linhaComBolha : null, farol ? estilos.linhaFarol : null]}>
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel={`${rotulo}${sub ? `, ${sub}` : ''}${bolha ? `, ${bolha}` : ''}`}
-        style={[estilos.grupo, { transform: [{ translateX: deslocamento }] }]}>
-        {bolha ? (
-          <View style={estilos.bolha}>
-            <Text style={estilos.bolhaTexto}>{bolha}</Text>
-          </View>
-        ) : null}
-        <View style={farol ? estilos.areaFarol : estilos.area}>
-          {atual ? <Animated.View style={[estilos.halo, farol ? estilos.haloFarol : null, halo]} /> : null}
-          {farol ? (
-            <FarolDoNo estado={estado} />
-          ) : (
-            <View style={[estilos.no, estilosEstado[estado], atual ? estilos.noAtual : null]}>
-              <IconeDoEstado estado={estado} />
-            </View>
-          )}
-        </View>
-        <View style={estilos.legenda}>
-          <Text style={[estilos.rotulo, atual ? { color: cor.luz } : null]}>{rotulo}</Text>
-          {sub ? <Text style={estilos.sub}>{sub}</Text> : null}
-        </View>
-      </Pressable>
-    </View>
+    <View
+      pointerEvents="none"
+      style={[
+        estilos.trecho,
+        lado === 'acima' ? estilos.trechoAcima : estilos.trechoAbaixo,
+        ligacao === 'acesa' ? estilos.trechoAceso : estilos.trechoApagado,
+      ]}
+    />
   );
 }
 
-/** Farol do módulo na trilha: apagado enquanto bloqueado, lâmpada acesa na vez dele, feixes quando concluído. */
-function FarolDoNo({ estado }: { estado: EstadoNo }) {
-  const estadoDoFarol: EstadoDoFarol =
-    estado === 'feita' || estado === 'dominada' ? 'aceso' : estado === 'atual' ? 'atual' : 'apagado';
-  return <IconeFarol tamanho={80} estado={estadoDoFarol} />;
+/**
+ * Nó da trilha "na linha da costa": os nós ficam numa linha reta à esquerda, como boias,
+ * com a legenda ao lado. O farol do módulo fica no alto, à direita, e o feixe dele
+ * (desenhado pela trilha) aponta o nó atual.
+ */
+export function NoTrilha({ estado, rotulo, sub, convite, farol = false, acima, abaixo, onPress }: Props) {
+  const reduzir = useReducedMotion();
+  const brilho = useSharedValue(0.3);
+
+  useEffect(() => {
+    if (estado === 'atual' && !reduzir && !farol) {
+      brilho.value = withRepeat(withTiming(0.65, { duration: 1100 }), -1, true);
+    }
+  }, [estado, reduzir, farol, brilho]);
+
+  const halo = useAnimatedStyle(() => ({ opacity: brilho.value }));
+  const atual = estado === 'atual';
+  const rotuloAcessivel = `${rotulo}${sub ? `, ${sub}` : ''}${convite ? `. ${convite}` : ''}`;
+
+  if (farol) {
+    const estadoDoFarol: EstadoDoFarol =
+      estado === 'feita' || estado === 'dominada' ? 'aceso' : estado === 'atual' ? 'atual' : 'apagado';
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={rotuloAcessivel}
+        style={estilos.linhaDoFarol}>
+        <View style={estilos.legendaDoFarol}>
+          <Text style={[estilos.rotulo, atual ? { color: cor.luz } : null]}>{rotulo}</Text>
+          {sub ? <Text style={estilos.sub}>{sub}</Text> : null}
+        </View>
+        <IconeFarol tamanho={TAMANHO_DO_FAROL} estado={estadoDoFarol} />
+      </Pressable>
+    );
+  }
+
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={rotuloAcessivel} style={estilos.linha}>
+      <View style={estilos.coluna}>
+        <Trecho ligacao={acima} lado="acima" />
+        <Trecho ligacao={abaixo} lado="abaixo" />
+        {atual ? <Animated.View style={[estilos.halo, halo]} /> : null}
+        <View style={[estilos.no, estilosEstado[estado], atual ? estilos.noAtual : null]}>
+          <IconeDoEstado estado={estado} />
+        </View>
+      </View>
+      <View style={estilos.legenda}>
+        <Text style={[estilos.rotulo, atual ? estilos.rotuloAtual : null]}>{rotulo}</Text>
+        {sub ? <Text style={[estilos.sub, atual ? { color: cor.texto } : null]}>{sub}</Text> : null}
+        {convite ? <Text style={estilos.convite}>{convite}</Text> : null}
+      </View>
+    </Pressable>
+  );
 }
 
 const estilos = StyleSheet.create({
-  linha: { height: 84, alignItems: 'center', justifyContent: 'center' },
-  linhaComBolha: { height: 132 },
-  linhaFarol: { height: 120 },
-  grupo: { alignItems: 'center', gap: 2 },
-  bolha: {
-    borderColor: cor.luz,
-    borderWidth: 1.5,
-    borderRadius: raio.md,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginBottom: 2,
-    backgroundColor: cor.superficie,
-  },
-  bolhaTexto: { fontFamily: fonte.textoSemi, fontSize: 11, letterSpacing: 0.4, color: cor.luz },
-  area: { width: 84, height: 62, alignItems: 'center', justifyContent: 'center' },
-  areaFarol: { width: 120, height: 84, alignItems: 'center', justifyContent: 'flex-end' },
+  linha: { height: ALTURA_DA_LINHA, flexDirection: 'row', alignItems: 'center' },
+  coluna: { width: COLUNA_DOS_NOS, height: ALTURA_DA_LINHA, alignItems: 'center', justifyContent: 'center' },
+  trecho: { position: 'absolute', left: COLUNA_DOS_NOS / 2 - 2, width: 4, borderRadius: 2 },
+  trechoAcima: { top: 0, height: ALTURA_DA_LINHA / 2 },
+  trechoAbaixo: { bottom: 0, height: ALTURA_DA_LINHA / 2 },
+  trechoAceso: { backgroundColor: cor.acerto, opacity: 0.6 },
+  trechoApagado: { borderLeftWidth: 3, borderStyle: 'dashed', borderColor: cor.linhaForte, width: 0 },
   halo: {
     position: 'absolute',
-    width: 82,
-    height: 82,
+    width: 80,
+    height: 80,
     borderRadius: raio.circulo,
     backgroundColor: cor.luz,
   },
-  haloFarol: { width: 44, height: 44, top: 2 },
   no: {
     width: 52,
     height: 52,
     borderRadius: raio.circulo,
     borderWidth: 2,
-    borderBottomWidth: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  noAtual: { width: 62, height: 62 },
-  legenda: { alignItems: 'center' },
-  rotulo: { fontFamily: fonte.tituloMedio, fontSize: 12, color: cor.texto },
-  sub: { fontFamily: fonte.texto, fontSize: 11, color: cor.textoSuave },
+  noAtual: { width: 60, height: 60, boxShadow: brilho.noAtual },
+  legenda: { flex: 1, paddingLeft: 6, gap: 1 },
+  rotulo: { fontFamily: fonte.tituloMedio, fontSize: tamanho.sm, color: cor.texto },
+  rotuloAtual: { color: cor.luz, fontSize: tamanho.md },
+  sub: { fontFamily: fonte.texto, fontSize: tamanho.xs, color: cor.textoSuave },
+  convite: {
+    fontFamily: fonte.textoSemi,
+    fontSize: tamanho.xs,
+    color: cor.texto,
+    textDecorationLine: 'underline',
+    marginTop: 2,
+  },
+  linhaDoFarol: {
+    height: ALTURA_DO_FAROL,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10,
+    paddingRight: 8,
+  },
+  legendaDoFarol: { alignItems: 'flex-end' },
 });
 
+// Sem opacidade para "bloqueado": a borda forte já comunica (doc 11, regra 15).
 const estilosEstado = StyleSheet.create({
-  feita: { backgroundColor: cor.acerto, borderColor: '#1F8F62' },
-  dominada: { backgroundColor: cor.luz, borderColor: '#B88E2F' },
-  atual: { backgroundColor: cor.luz, borderColor: '#B88E2F' },
-  bloqueada: { backgroundColor: cor.superficie, borderColor: cor.linha, opacity: 0.6 },
+  feita: { backgroundColor: cor.acerto, borderColor: cor.relevoAcerto },
+  // Dominada é um tipo de concluída: verde com estrela, nunca o âmbar do nó atual.
+  dominada: { backgroundColor: cor.acerto, borderColor: cor.relevoAcerto, boxShadow: brilho.anelDominada },
+  atual: { backgroundColor: cor.luz, borderColor: cor.relevoLuz },
+  bloqueada: { backgroundColor: cor.superficie, borderColor: cor.linhaForte },
 });

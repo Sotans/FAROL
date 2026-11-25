@@ -77,7 +77,7 @@ export default function Desafio() {
           </Text>
         </View>
         <View style={estilos.rodape}>
-          <Botao rotulo="SEGUIR NA TRILHA" variante="acerto" onPress={vencer} />
+          <Botao rotulo="Seguir na trilha" onPress={vencer} />
         </View>
       </SafeAreaView>
     );
@@ -95,7 +95,7 @@ export default function Desafio() {
         </View>
         <View style={estilos.rodape}>
           <Botao
-            rotulo="FAZER AS LIÇÕES"
+            rotulo="Fazer as lições"
             onPress={() => {
               registrarRevisoes(desafio.notas);
               router.replace('/');
@@ -130,6 +130,8 @@ export default function Desafio() {
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
         <Text style={estilos.enunciado}>{q.enunciado}</Text>
+        {/* Em telas altas, as respostas descem para a zona do polegar; o enunciado fica no topo. */}
+        <View style={estilos.empurra} />
         <Exercicio
           key={q.id}
           questao={q}
@@ -151,7 +153,7 @@ export default function Desafio() {
       <View style={estilos.rodapeFixo}>
         {fase === 'respondendo' && pedeConfirmacao ? (
           <View style={estilos.rodape}>
-            <Botao rotulo="CONFIRMAR" desabilitado={!podeConfirmar} onPress={desafio.confirmar} />
+            <Botao rotulo="Confirmar" desabilitado={!podeConfirmar} onPress={desafio.confirmar} />
           </View>
         ) : null}
         {fase === 'respondendo' && !pedeConfirmacao ? (
@@ -164,7 +166,7 @@ export default function Desafio() {
             tipo="acerto"
             titulo="Correto!"
             texto={q.explicacao}
-            rotuloBotao="CONTINUAR"
+            rotuloBotao="Continuar"
             onPress={desafio.proxima}
           />
         ) : null}
@@ -174,7 +176,7 @@ export default function Desafio() {
               tipo="erro"
               titulo="Uma luz se apagou."
               texto={`${q.explicacao} Ainda restam ${desafio.luzes}.`}
-              rotuloBotao="CONTINUAR"
+              rotuloBotao="Continuar"
               onPress={desafio.proxima}
             />
           </Animated.View>
@@ -191,7 +193,8 @@ const estilos = StyleSheet.create({
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 6 },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
   luzes: { paddingVertical: 6 },
-  corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
+  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
+  empurra: { flexGrow: 1, minHeight: 0 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
   rodapeFixo: { justifyContent: 'flex-end' },
   rodape: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },

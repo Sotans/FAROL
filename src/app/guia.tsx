@@ -60,7 +60,7 @@ export default function Guia() {
         </Animated.View>
       </View>
       <View style={estilos.rodape}>
-        <Botao rotulo="VAMOS LÁ" onPress={() => router.push('/meta')} />
+        <Botao rotulo="Vamos lá" onPress={() => router.push('/meta')} />
       </View>
     </SafeAreaView>
   );
@@ -73,7 +73,7 @@ const estilos = StyleSheet.create({
   tons: { alignItems: 'center', gap: 6, marginTop: 10 },
   linhaDeTons: { flexDirection: 'row', gap: 4 },
   alvoDoTom: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
-  tom: { width: 32, height: 32, borderRadius: raio.circulo, borderWidth: 2, borderColor: 'transparent' },
-  tomEscolhido: { borderColor: cor.luz, transform: [{ scale: 1.12 }] },
+  tom: { width: 36, height: 36, borderRadius: raio.circulo, borderWidth: 2, borderColor: 'transparent' },
+  tomEscolhido: { borderColor: cor.mareClaro, borderWidth: 3, transform: [{ scale: 1.12 }] },
   rodape: { paddingBottom: 12 },
 });

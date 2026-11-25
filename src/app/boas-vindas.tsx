@@ -18,7 +18,7 @@ export default function BoasVindas() {
         <Text style={estilos.promessa}>Estude alguns minutos por dia.{'\n'}O hábito vem depois.</Text>
       </View>
       <View style={estilos.rodape}>
-        <Botao rotulo="COMEÇAR" onPress={() => router.push('/carreira')} />
+        <Botao rotulo="Começar" onPress={() => router.push('/carreira')} />
         <Botao
           rotulo="Já tenho conta"
           variante="terciario"
