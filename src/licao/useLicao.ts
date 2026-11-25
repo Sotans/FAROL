@@ -23,7 +23,8 @@ export type Fase = 'respondendo' | 'acerto' | 'erro' | 'guiada' | 'seguir';
  * fica parada até alcançar o novo total, em vez de voltar.
  */
 export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-de-novo') {
-  const { acertosSeguidos, registrarAcerto, quebrarSequenciaDeAcertos } = useProgresso();
+  const { acertosSeguidos, registrarAcerto, quebrarSequenciaDeAcertos, dicasHoje, registrarDica, ganharDicas } =
+    useProgresso();
   const [fila, setFila] = useState<Questao[]>(questoes);
   const [indice, setIndice] = useState(0);
   const [fase, setFase] = useState<Fase>('respondendo');
@@ -34,7 +35,8 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   const [erros, setErros] = useState(0);
   // Revisão espaçada: a nota de cada questão original, decidida na primeira vez que ela é resolvida.
   const [notas, setNotas] = useState<Record<string, Nota>>({});
-  const [dicasRestantes, setDicasRestantes] = useState<number>(limites.dicasPorDia);
+  // Limite diário: o contador fica no estado do app e zera na virada do dia, não a cada lição.
+  const dicasRestantes = Math.max(0, limites.dicasPorDia - dicasHoje);
   const [dicaAberta, setDicaAberta] = useState(false);
   const [avisoDeLimite, setAvisoDeLimite] = useState(false);
   const [acertosDePrimeira, setAcertosDePrimeira] = useState(0);
@@ -168,7 +170,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   function usarDica() {
     if (dicaAberta || fase === 'acerto' || fase === 'seguir') return;
     if (dicasRestantes > 0) {
-      setDicasRestantes((d) => d - 1);
+      registrarDica();
       setDicaAberta(true);
       haptico.leve();
     } else {
@@ -177,9 +179,9 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     }
   }
 
-  /** Anúncio recompensado (SIMULADO no protótipo): concede mais dicas. */
-  function ganharDicas() {
-    setDicasRestantes((d) => d + limites.dicasPorDia);
+  /** Anúncio recompensado (SIMULADO no protótipo): devolve as dicas do dia. */
+  function ganharMaisDicas() {
+    ganharDicas();
     setAvisoDeLimite(false);
     haptico.sucesso();
   }
@@ -222,7 +224,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     aceitarGuiada,
     tentarDeNovo,
     usarDica,
-    ganharDicas,
+    ganharDicas: ganharMaisDicas,
     proxima,
     fecharAvisoDeLimite: () => setAvisoDeLimite(false),
   };

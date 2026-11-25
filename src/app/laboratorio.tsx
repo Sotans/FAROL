@@ -14,6 +14,7 @@ const textoDaNuvem: Record<StatusDaNuvem, string> = {
   conectando: 'Conectando...',
   conectada: 'Progresso salvo',
   offline: 'Sem conexão agora; tenta de novo ao abrir o app',
+  desatualizada: 'A conta tem progresso de um app mais novo: atualize o app (nada é enviado até lá)',
 };
 
 /**

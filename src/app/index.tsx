@@ -27,7 +27,7 @@ import {
   type Ligacao,
 } from '@/componentes/NoTrilha';
 import { farolAceso as farolDoModuloAceso, moduloLiberado, progressoDe, proximoModulo } from '@/estado/modulos';
-import { textoDeDias, useProgresso } from '@/estado/progresso';
+import { hoje, textoDeDias, useProgresso } from '@/estado/progresso';
 import {
   LIMIAR_DA_REVISAO_RAPIDA,
   QUESTOES_DA_REVISAO_RAPIDA,
@@ -137,6 +137,8 @@ export default function Trilha() {
     sequencia,
     licoesHoje,
     desafiosHoje,
+    dia,
+    atualizarDia,
     registrarDesafio,
     ganharDesafio,
     revisoes,
@@ -163,7 +165,13 @@ export default function Trilha() {
   const { aviso, mostrarAviso } = useAviso();
   // A hora de revisar depende do relógio: recalcula sempre que a trilha volta a aparecer.
   const [agora, setAgora] = useState(() => Date.now());
-  useFocusEffect(useCallback(() => setAgora(Date.now()), []));
+  // Ao voltar à trilha, também aplica a virada do dia (o app pode estar aberto desde ontem).
+  useFocusEffect(
+    useCallback(() => {
+      setAgora(Date.now());
+      atualizarDia();
+    }, [atualizarDia]),
+  );
 
   const farolAceso = concluidas >= totalDeNos;
   const vezDoFarol = concluidas === indiceDoFarol;
@@ -273,7 +281,9 @@ export default function Trilha() {
 
   function comecarDesafio() {
     if (alvoDoPulo === null) return;
-    if (desafiosHoje >= limites.desafiosPorDia) {
+    // Se a meia-noite passou com a tela aberta, o contador guardado ainda é o de ontem.
+    const usadosHoje = dia === hoje() ? desafiosHoje : 0;
+    if (usadosHoje >= limites.desafiosPorDia) {
       haptico.aviso();
       setLimiteDeDesafio(true);
       return;
