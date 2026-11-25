@@ -53,8 +53,10 @@ const emblemas: Record<CarreiraId, ReactNode> = {
       <Rect x={17} y={42} width={30} height={7} rx={3.5} fill={cor.mare} />
       <Rect x={19} y={35} width={26} height={7} rx={3.5} fill={cor.selecionadaFundo} />
       <Rect x={17} y={28} width={30} height={7} rx={3.5} fill={cor.mare} />
-      <Circle cx={32} cy={19} r={9.5} fill={cor.luz} />
-      <Circle cx={32} cy={19} r={5.8} fill="none" stroke={cor.fundo} strokeWidth={2} />
+      {/* A moeda é clara, com a luz só no centro: o âmbar é um ponto, como nos outros emblemas. */}
+      <Circle cx={32} cy={18} r={9} fill={cor.texto} />
+      <Circle cx={32} cy={18} r={5.6} fill="none" stroke={cor.mare} strokeWidth={2} />
+      <Circle cx={32} cy={18} r={2.6} fill={cor.luz} />
     </>
   ),
   fiscal: (
@@ -63,8 +65,10 @@ const emblemas: Record<CarreiraId, ReactNode> = {
       <Rect x={19} y={18} width={16} height={2.6} rx={1.3} fill={cor.linha} />
       <Rect x={19} y={24} width={12} height={2.6} rx={1.3} fill={cor.linha} />
       <Rect x={19} y={30} width={14} height={2.6} rx={1.3} fill={cor.linha} />
-      <Circle cx={40} cy={38} r={9} fill={cor.luz} opacity={0.25} stroke={cor.luz} strokeWidth={3.5} />
-      <Path d="M46.5 44.5 L52.5 50.5" stroke={cor.luz} strokeWidth={4.5} strokeLinecap="round" />
+      {/* Lupa em maré, com a luz só no centro da lente. */}
+      <Circle cx={40} cy={38} r={9} fill={cor.selecionadaFundo} stroke={cor.mare} strokeWidth={3.5} />
+      <Path d="M46.5 44.5 L52.5 50.5" stroke={cor.mare} strokeWidth={4.5} strokeLinecap="round" />
+      <Circle cx={40} cy={38} r={3} fill={cor.luz} />
     </>
   ),
   professor: (

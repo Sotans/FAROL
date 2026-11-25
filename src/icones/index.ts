@@ -13,13 +13,26 @@ export {
   IconeSeloDominada,
   type EstadoDoFarol,
 } from './conquistas';
-export type { PropsIcone } from './tipos';
 export {
+  IconeBaixar,
   IconeCadeado,
+  IconeEmail,
+  IconeEmValidacao,
   IconeEscudo,
+  IconeEstatisticas,
   IconeFechar,
-  IconeLanterna,
-  IconeModulos,
+  IconeInicio,
+  IconeLaboratorio,
+  IconeLembrete,
+  IconeMaterias,
+  IconePerfil,
+  IconeReportar,
+  IconeSemConexao,
+  IconeSemSom,
   IconeSeta,
+  IconeSom,
+  IconeTrilha,
   IconeVisto,
-} from './utilitarios';
+} from './interface';
+export type { PropsIcone } from './tipos';
+export { IconeLanterna, IconeModulos } from './utilitarios';

@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useId, useState, type ReactNode } from 'react';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,222 +11,477 @@ import Animated, {
 import Svg, { Circle, Defs, Ellipse, G, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import type { Carreira, CarreiraId } from '@/carreiras/dados';
+import { coresDeCabelo, ilustracao as il, tonsDePele } from '@/tema/ilustracao';
 import { cor } from '@/tema/tokens';
 
 /**
  * O guia: o profissional da carreira escolhida, com a lanterna do farol na mão
  * (docs/08-design-sensorial.md, seção 7). Base modular: o corpo é o mesmo para todas as
  * carreiras; mudam a roupa e os adereços. A lanterna é a marca e nunca muda.
+ *
+ * Versão refinada (análise de design de 2026-11-25, quadros 7 e 8): braços que saem do ombro,
+ * mão em luva, lanterna 25% maior, rosto com sobrancelha, nariz e orelha, rubor próprio,
+ * 4 cabelos em 4 cores, as expressões "pensando" e "descansando" e o avatar de busto.
  */
 
-export type Expressao = 'acenando' | 'feliz' | 'comemorando' | 'incentivando' | 'acolhendo';
-export const expressoes: Expressao[] = ['acenando', 'feliz', 'comemorando', 'incentivando', 'acolhendo'];
+export type Expressao =
+  'acenando' | 'feliz' | 'comemorando' | 'incentivando' | 'acolhendo' | 'pensando' | 'descansando';
+export const expressoes: Expressao[] = [
+  'acenando',
+  'feliz',
+  'comemorando',
+  'incentivando',
+  'acolhendo',
+  'pensando',
+  'descansando',
+];
 
-/** Tom de pele escolhível, em vez de um tom fixo (cuidado de representatividade, seção 7). */
-export type TomDePele = 'claro' | 'medio' | 'moreno' | 'escuro';
-export const tonsDePele: Record<TomDePele, string> = {
-  claro: '#F2D3B3',
-  medio: '#D9A27A',
-  moreno: '#A86F4C',
-  escuro: '#6E4630',
-};
+export type TomDePele = keyof typeof tonsDePele;
+export { tonsDePele };
 
-const TINTA = '#1B2333';
-const CABELO = '#2B2F3A';
+export type Cabelo = 'curto' | 'cacheado' | 'coque' | 'longo';
+export const cabelos: Cabelo[] = ['curto', 'cacheado', 'coque', 'longo'];
 
-type Visual = { roupa: string; detalhe: ReactNode; cabeca: 'cabelo' | 'bone' };
+export type CorDoCabelo = keyof typeof coresDeCabelo;
+export { coresDeCabelo };
+
+const TINTA = il.tinta;
+const LARGURA = 120;
+const ALTURA = 160;
+
+// ---------- Corpo por carreira ----------
+
+const OMBROS = 'M28 160 V122 C28 102 42 90 60 90 C78 90 92 102 92 122 V160 Z';
+
+type Visual = { roupa: string; detalhe: ReactNode; bone: boolean };
 
 /** O que muda por carreira. As carreiras ainda sem conteúdo aparecem como silhueta. */
 const visualDaCarreira: Partial<Record<CarreiraId, Visual>> = {
-  // Crachá no cordão.
+  // Crachá no cordão, com a luz do FAROL.
   administrativo: {
-    roupa: cor.mare,
-    cabeca: 'cabelo',
+    roupa: il.roupaAdministrativo,
+    bone: false,
     detalhe: (
       <G>
-        <Path d="M50 90 L60 109 L70 90" stroke={cor.texto} strokeWidth={1.6} fill="none" opacity={0.8} />
-        <Rect x={52.5} y={107} width={15} height={19} rx={2.5} fill={cor.texto} />
-        <Rect x={52.5} y={107} width={15} height={5} rx={2.5} fill={cor.selecionadaFundo} />
-        <Circle cx={60} cy={119} r={3} fill={cor.luz} />
+        <Path
+          d="M47 92 Q60 105 73 92"
+          stroke={il.relevoAdministrativo}
+          strokeWidth={3}
+          fill="none"
+          strokeLinecap="round"
+        />
+        <Path d="M49 93 L60 113 L71 93" stroke={cor.texto} strokeWidth={1.8} fill="none" opacity={0.85} />
+        <Rect x={52} y={111} width={16} height={20} rx={3} fill={cor.texto} />
+        <Path d="M52 114 A3 3 0 0 1 55 111 H65 A3 3 0 0 1 68 114 V116.5 H52 Z" fill={cor.selecionadaFundo} />
+        <Circle cx={60} cy={123.5} r={3.2} fill={cor.luz} />
       </G>
     ),
   },
   // Blazer, camisa e gravata; um broche de luz na lapela.
   tribunais: {
-    roupa: '#24324D',
-    cabeca: 'cabelo',
+    roupa: il.roupaTribunais,
+    bone: false,
     detalhe: (
       <G>
-        <Path d="M49 89 L60 110 L71 89 Z" fill={cor.texto} />
-        <Path d="M57.6 92 H62.4 L64 106 L60 111 L56 106 Z" fill={cor.mare} />
-        <Path d="M49 89 L56 112 M71 89 L64 112" stroke="#16203A" strokeWidth={2} />
-        <Circle cx={75} cy={104} r={2.6} fill={cor.luz} />
+        <Path d="M48 92 L60 115 L72 92 Z" fill={cor.texto} />
+        <Path d="M57.5 95 H62.5 L64.2 109 L60 114 L55.8 109 Z" fill={cor.mare} />
+        <Path d="M48 92 L56 117 M72 92 L64 117" stroke={il.lapelaTribunais} strokeWidth={2.2} strokeLinecap="round" />
+        <Circle cx={76} cy={107} r={2.8} fill={cor.luz} />
       </G>
     ),
   },
-  // Farda amigável: bolsos e um distintivo com a luz do FAROL. Sem arma e sem brasão real.
+  // Farda amigável: bolsos e um distintivo em escudo com a luz do FAROL. Sem arma e sem brasão real.
   policial: {
-    roupa: '#2E4C80',
-    cabeca: 'bone',
+    roupa: il.roupaPolicial,
+    bone: true,
     detalhe: (
       <G>
-        <Path d="M50 89 L60 99 L70 89" stroke="#1F3560" strokeWidth={3} fill="none" strokeLinejoin="round" />
-        <Rect x={43} y={106} width={11} height={9} rx={2} fill="#26416F" />
-        <Rect x={66} y={106} width={11} height={9} rx={2} fill="#26416F" />
-        <Circle cx={71.5} cy={104} r={3.2} fill={cor.luz} />
+        <Path
+          d="M48 92 L60 103 L72 92"
+          stroke={il.relevoPolicial}
+          strokeWidth={3}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Rect x={42} y={110} width={12} height={10} rx={2.5} fill={il.bolsoPolicial} />
+        <Rect x={66} y={110} width={12} height={10} rx={2.5} fill={il.bolsoPolicial} />
+        <Path
+          d="M72 98.5 L76.5 100.3 V103.5 C76.5 106.3 74.5 108 72 109.2 C69.5 108 67.5 106.3 67.5 103.5 V100.3 Z"
+          fill={cor.luz}
+        />
       </G>
     ),
   },
 };
 
-/** Posição dos braços: onde fica cada mão e se a lanterna está erguida. */
+// ---------- Poses ----------
+
+/** Mangas (cor da roupa), mãos (cor da pele) e onde fica a lanterna (topo, em coordenadas do desenho). */
 type Pose = {
-  livre: string;
-  maoLivre: [number, number];
-  lanterna: string;
-  maoLanterna: [number, number];
-  erguida: boolean;
+  mangas: [string, string];
+  maos: [number, number][];
+  lanterna: { x: number; y: number };
+  /** Polegar para cima (incentivando). */
+  polegar?: [number, number];
 };
 
 const poses: Record<Expressao, Pose> = {
   feliz: {
-    livre: 'M38 98 Q29 115 32 129',
-    maoLivre: [32, 130],
-    lanterna: 'M82 98 Q92 114 90 126',
-    maoLanterna: [90, 127],
-    erguida: false,
+    mangas: ['M41 101 Q30 117 33 131', 'M79 101 Q91 116 89 127'],
+    maos: [
+      [33, 133],
+      [89, 129],
+    ],
+    lanterna: { x: 89, y: 132 },
   },
   acenando: {
-    livre: 'M38 98 Q22 86 24 67',
-    maoLivre: [24, 65],
-    lanterna: 'M82 98 Q92 114 90 126',
-    maoLanterna: [90, 127],
-    erguida: false,
+    mangas: ['M41 101 Q24 90 27 70', 'M79 101 Q91 116 89 127'],
+    maos: [
+      [27, 66],
+      [89, 129],
+    ],
+    lanterna: { x: 89, y: 132 },
   },
   comemorando: {
-    livre: 'M38 98 Q21 84 25 63',
-    maoLivre: [25, 61],
-    lanterna: 'M82 98 Q99 84 95 63',
-    maoLanterna: [95, 61],
-    erguida: true,
+    mangas: ['M41 101 Q24 88 28 66', 'M79 101 Q96 88 92 66'],
+    maos: [
+      [28, 62],
+      [92, 62],
+    ],
+    // Erguida: a lanterna fica acima da mão.
+    lanterna: { x: 92, y: 37 },
   },
   incentivando: {
-    livre: 'M38 98 Q22 106 30 90',
-    maoLivre: [30, 88],
-    lanterna: 'M82 98 Q92 114 90 126',
-    maoLanterna: [90, 127],
-    erguida: false,
+    mangas: ['M41 101 Q25 109 32 93', 'M79 101 Q91 116 89 127'],
+    maos: [
+      [32, 90],
+      [89, 129],
+    ],
+    lanterna: { x: 89, y: 132 },
+    polegar: [30, 77],
   },
   acolhendo: {
-    livre: 'M38 98 Q42 116 53 112',
-    maoLivre: [54, 111],
-    lanterna: 'M82 98 Q90 112 86 124',
-    maoLanterna: [86, 125],
-    erguida: false,
+    mangas: ['M41 101 Q45 118 56 114', 'M79 101 Q89 114 85 124'],
+    maos: [
+      [57, 113],
+      [85, 126],
+    ],
+    lanterna: { x: 85, y: 129 },
+  },
+  // Mão no queixo: dica, "Ainda não vi isso".
+  pensando: {
+    mangas: ['M41 101 Q31 98 44 85', 'M79 101 Q91 116 89 127'],
+    maos: [
+      [46, 81],
+      [89, 129],
+    ],
+    lanterna: { x: 89, y: 132 },
+  },
+  // Braços soltos e a lanterna mais baixa: "Terminar por hoje", meta cumprida.
+  descansando: {
+    mangas: ['M41 101 Q35 118 41 130', 'M79 101 Q86 116 83 128'],
+    maos: [
+      [41, 132],
+      [83, 130],
+    ],
+    lanterna: { x: 83, y: 133 },
   },
 };
 
-function Rosto({ expressao, piscando }: { expressao: Expressao; piscando: boolean }) {
-  const olhosFechados = expressao === 'comemorando';
-  const olhosSuaves = expressao === 'acolhendo';
-  const olho = (x: number) => {
-    if (olhosFechados)
-      return (
-        <Path
-          d={`M${x - 4} 56 Q${x} 51 ${x + 4} 56`}
-          stroke={TINTA}
-          strokeWidth={2.6}
-          fill="none"
-          strokeLinecap="round"
-        />
-      );
-    if (olhosSuaves)
-      return (
-        <Path
-          d={`M${x - 4} 55 Q${x} 58.5 ${x + 4} 55`}
-          stroke={TINTA}
-          strokeWidth={2.6}
-          fill="none"
-          strokeLinecap="round"
-        />
-      );
-    if (piscando)
-      return <Path d={`M${x - 3.5} 55.5 H${x + 3.5}`} stroke={TINTA} strokeWidth={2.4} strokeLinecap="round" />;
+// ---------- Cabelo ----------
+
+/** Parte do cabelo que fica atrás da cabeça (só o longo tem). */
+function CabeloDeTras({ cabelo, c }: { cabelo: Cabelo; c: string }) {
+  if (cabelo !== 'longo') return null;
+  return (
+    <Path
+      d="M31 54 C28 31 43 20 60 20 C77 20 92 31 89 54 L91 84 C91 89 86 91 82 88 L80 64 H40 L38 88 C34 91 29 89 29 84 Z"
+      fill={c}
+    />
+  );
+}
+
+/** Parte do cabelo que fica sobre a cabeça, com um traço de brilho. */
+function CabeloDaFrente({ cabelo, c }: { cabelo: Cabelo; c: string }) {
+  const brilho = (d: string) => (
+    <Path d={d} stroke={il.brilho} strokeWidth={2} fill="none" strokeLinecap="round" opacity={0.18} />
+  );
+  if (cabelo === 'cacheado')
     return (
       <G>
-        <Ellipse cx={x} cy={55} rx={3.2} ry={4.2} fill={TINTA} />
-        <Circle cx={x + 1.1} cy={53.5} r={1.1} fill="#FFFFFF" />
+        <Circle cx={37} cy={39} r={8.5} fill={c} />
+        <Circle cx={47} cy={29} r={10} fill={c} />
+        <Circle cx={60} cy={25} r={11} fill={c} />
+        <Circle cx={73} cy={29} r={10} fill={c} />
+        <Circle cx={83} cy={39} r={8.5} fill={c} />
+        <Circle cx={33.5} cy={48} r={5.5} fill={c} />
+        <Circle cx={86.5} cy={48} r={5.5} fill={c} />
+        <Path d="M36 46 C40 36 50 32 60 32 C70 32 80 36 84 46 C77 40 69 38 60 38 C51 38 43 40 36 46 Z" fill={c} />
+        {brilho('M52 20 C56 17.5 61 17 65 18')}
       </G>
     );
-  };
-  const boca: Record<Expressao, ReactNode> = {
-    feliz: <Path d="M52 65.5 Q60 72.5 68 65.5" stroke={TINTA} strokeWidth={2.6} fill="none" strokeLinecap="round" />,
-    acenando: <Path d="M52 65.5 Q60 72.5 68 65.5" stroke={TINTA} strokeWidth={2.6} fill="none" strokeLinecap="round" />,
-    comemorando: (
-      <Path d="M50.5 64 Q60 79 69.5 64 Z" fill="#7A2E3A" stroke={TINTA} strokeWidth={2} strokeLinejoin="round" />
-    ),
-    incentivando: <Path d="M52.5 65 Q60 71 68 64" stroke={TINTA} strokeWidth={2.6} fill="none" strokeLinecap="round" />,
-    acolhendo: (
-      <Path d="M54.5 66.5 Q60 70 65.5 66.5" stroke={TINTA} strokeWidth={2.6} fill="none" strokeLinecap="round" />
-    ),
-  };
+  if (cabelo === 'coque')
+    return (
+      <G>
+        <Circle cx={60} cy={16} r={9} fill={c} />
+        <Path
+          d="M32.5 53 C30 30 45 21 60 21 C77 21 90 31 87.5 51 C80 42 70 38.5 60 39 C49 39.5 40 45 32.5 53 Z"
+          fill={c}
+        />
+        <Path d="M53 23.5 H67" stroke={TINTA} strokeWidth={2.2} strokeLinecap="round" opacity={0.25} />
+      </G>
+    );
+  if (cabelo === 'longo')
+    return (
+      <G>
+        <Path d="M33 52 C31 32 45 22 60 22 C75 22 89 32 87 52 C83 42 74 36.5 64 36 C58 40 48 43 33 52 Z" fill={c} />
+        {brilho('M47 27.5 C52 24.5 58 23.8 64 24.5')}
+      </G>
+    );
   return (
     <G>
-      {olho(50)}
-      {olho(70)}
-      {expressao === 'incentivando' ? (
-        <Path d="M45 47 L54 45 M66 45 L75 47" stroke={TINTA} strokeWidth={2.2} strokeLinecap="round" />
-      ) : null}
-      <Circle cx={43.5} cy={63} r={4} fill="#FF8A80" opacity={0.3} />
-      <Circle cx={76.5} cy={63} r={4} fill="#FF8A80" opacity={0.3} />
-      {boca[expressao]}
+      <Path
+        d="M32.5 53 C30 30 45 21 60 21 C77 21 90 31 87.5 51 C83 44 77 40.5 70 39.5 C66 42.5 61 44 55 44 C46 44 38 47 32.5 53 Z"
+        fill={c}
+      />
+      {brilho('M45 28 C50 25 56 24 62 24.5')}
     </G>
   );
 }
 
-/** A lanterna do farol, presa na mão. Erguida, brilha mais. */
-function Lanterna({ x, y, erguida }: { x: number; y: number; erguida: boolean }) {
-  // Pendurada: o alto da lanterna fica logo abaixo da mão. Erguida: logo acima.
-  const topo = erguida ? y - 24 : y + 3;
+function Bone() {
   return (
     <G>
-      <Circle cx={x} cy={topo + 10.5} r={erguida ? 18 : 13} fill="url(#brilhoDaLanterna)" />
+      <Path d="M33 45 C33 29 45 21 60 21 C75 21 87 29 87 45 Z" fill={il.roupaPolicial} />
+      <Path d="M29 44 H91 C91 48.5 87.5 50.5 84 50.5 H36 C32.5 50.5 29 48.5 29 44 Z" fill={il.relevoPolicial} />
       <Path
-        d={`M${x - 3.5} ${topo + 1} A3.5 3.5 0 0 1 ${x + 3.5} ${topo + 1}`}
+        d="M60 28 L64.5 29.8 V33 C64.5 35.8 62.5 37.5 60 38.7 C57.5 37.5 55.5 35.8 55.5 33 V29.8 Z"
+        fill={cor.luz}
+      />
+    </G>
+  );
+}
+
+// ---------- Rosto ----------
+
+const traco = { stroke: TINTA, fill: 'none', strokeLinecap: 'round' } as const;
+
+function OlhosAbertos({ dx = 0, dy = 0 }: { dx?: number; dy?: number }) {
+  return (
+    <G>
+      <Ellipse cx={49.5 + dx} cy={56 + dy} rx={3.4} ry={4.4} fill={TINTA} />
+      <Circle cx={50.7 + dx} cy={54.4 + dy} r={1.2} fill={il.brilho} />
+      <Ellipse cx={70.5 + dx} cy={56 + dy} rx={3.4} ry={4.4} fill={TINTA} />
+      <Circle cx={71.7 + dx} cy={54.4 + dy} r={1.2} fill={il.brilho} />
+    </G>
+  );
+}
+
+function Rosto({ expressao, piscando }: { expressao: Expressao; piscando: boolean }) {
+  const base = (
+    <G>
+      {/* Nariz e rubor (tom próprio, nunca o coral do erro). */}
+      <Path d="M58.8 61.5 Q60 63 61.2 61.5" {...traco} strokeWidth={1.6} opacity={0.3} />
+      <Ellipse cx={42.5} cy={64} rx={4.5} ry={3} fill={il.rubor} opacity={0.35} />
+      <Ellipse cx={77.5} cy={64} rx={4.5} ry={3} fill={il.rubor} opacity={0.35} />
+    </G>
+  );
+  const sobrancelhasSuaves = (
+    <Path d="M44.5 47.5 Q49.5 45.5 54 47 M66 47 Q70.5 45.5 75.5 47.5" {...traco} strokeWidth={2} opacity={0.7} />
+  );
+  const piscar = <Path d="M46 56 H53 M67 56 H74" {...traco} strokeWidth={2.4} />;
+  const olhosAbertos = piscando ? piscar : <OlhosAbertos />;
+
+  switch (expressao) {
+    case 'comemorando':
+      return (
+        <G>
+          {base}
+          <Path d="M45.5 57 Q49.5 52 53.5 57 M66.5 57 Q70.5 52 74.5 57" {...traco} strokeWidth={2.6} />
+          <Path d="M44.5 45.5 Q49.5 43 54 45 M66 45 Q70.5 43 75.5 45.5" {...traco} strokeWidth={2} opacity={0.7} />
+          <Path
+            d="M50.5 65.5 Q60 80 69.5 65.5 Z"
+            fill={il.boca}
+            stroke={TINTA}
+            strokeWidth={2}
+            strokeLinejoin="round"
+          />
+        </G>
+      );
+    case 'incentivando':
+      return (
+        <G>
+          {base}
+          {olhosAbertos}
+          <Path d="M45 47.5 L54 45.5 M66 45.5 L75 47.5" {...traco} strokeWidth={2.2} />
+          <Path d="M52.5 66.5 Q60 72.5 68 65.5" {...traco} strokeWidth={2.6} />
+        </G>
+      );
+    case 'acolhendo':
+      return (
+        <G>
+          {base}
+          <Path d="M45.5 56 Q49.5 59.5 53.5 56 M66.5 56 Q70.5 59.5 74.5 56" {...traco} strokeWidth={2.6} />
+          <Path d="M45 46.5 Q49.5 46 54 47.5 M66 47.5 Q70.5 46 75 46.5" {...traco} strokeWidth={2} opacity={0.7} />
+          <Path d="M54.5 67.5 Q60 71 65.5 67.5" {...traco} strokeWidth={2.6} />
+        </G>
+      );
+    case 'pensando':
+      return (
+        <G>
+          {base}
+          {piscando ? piscar : <OlhosAbertos dx={1.5} dy={-1.5} />}
+          <Path d="M44.5 47.5 Q49.5 46.5 54 47.5 M66 44.5 Q70.5 42 75.5 44" {...traco} strokeWidth={2} opacity={0.8} />
+          <Path d="M55 68 Q60 69 65 67" {...traco} strokeWidth={2.6} />
+        </G>
+      );
+    case 'descansando':
+      return (
+        <G>
+          {base}
+          <Path d="M45.5 56 Q49.5 59 53.5 56 M66.5 56 Q70.5 59 74.5 56" {...traco} strokeWidth={2.6} />
+          <Path d="M45 48 Q49.5 47 54 48 M66 48 Q70.5 47 75 48" {...traco} strokeWidth={2} opacity={0.6} />
+          <Path d="M55 67.5 Q60 70.5 65 67.5" {...traco} strokeWidth={2.6} />
+          {/* Lua pequena: o dia acabou, a trilha continua amanhã. */}
+          <Path d="M100 10 A9 9 0 1 0 108 24 A7 7 0 1 1 100 10 Z" fill={cor.textoSuave} />
+        </G>
+      );
+    default:
+      // feliz e acenando
+      return (
+        <G>
+          {base}
+          {olhosAbertos}
+          {sobrancelhasSuaves}
+          <Path d="M52 67 Q60 74 68 67" {...traco} strokeWidth={2.6} />
+        </G>
+      );
+  }
+}
+
+// ---------- Lanterna ----------
+
+/** A lanterna do farol, 25% maior que a primeira versão. (x, y) é o topo da alça. */
+function Lanterna({ x, y, id }: { x: number; y: number; id: string }) {
+  return (
+    <G>
+      <Circle cx={x} cy={y + 13} r={17} fill={`url(#${id})`} />
+      <Path
+        d={`M${x - 4.5} ${y + 1} A4.5 4.5 0 0 1 ${x + 4.5} ${y + 1}`}
         stroke={cor.texto}
-        strokeWidth={1.8}
+        strokeWidth={2}
         fill="none"
       />
-      <Rect x={x - 6} y={topo + 1} width={12} height={3.5} rx={1.6} fill={cor.texto} />
+      <Rect x={x - 7.5} y={y + 1} width={15} height={4.2} rx={2} fill={cor.texto} />
       <Rect
-        x={x - 5}
-        y={topo + 4.5}
-        width={10}
-        height={12}
-        rx={2.4}
-        fill="#FFF1C9"
+        x={x - 6.2}
+        y={y + 5.2}
+        width={12.4}
+        height={14.6}
+        rx={3}
+        fill={il.vidro}
         stroke={cor.texto}
-        strokeWidth={1.6}
+        strokeWidth={1.8}
       />
-      <Circle cx={x} cy={topo + 10.5} r={3} fill={cor.luz} />
-      <Rect x={x - 6} y={topo + 16.5} width={12} height={3} rx={1.5} fill={cor.texto} />
+      <Circle cx={x} cy={y + 12.5} r={3.8} fill={cor.luz} />
+      <Circle cx={x} cy={y + 12.5} r={1.5} fill={il.brilho} opacity={0.8} />
+      <Rect x={x - 7.5} y={y + 19.8} width={15} height={3.8} rx={1.9} fill={cor.texto} />
     </G>
   );
 }
 
-type Props = {
+// ---------- Desenho completo ----------
+
+type Aparencia = {
   carreira: Carreira;
   expressao?: Expressao;
   tom?: TomDePele;
-  tamanho?: number;
-  /** Silhueta: para carreiras "em breve". */
+  cabelo?: Cabelo;
+  corDoCabelo?: CorDoCabelo;
+  /** Silhueta: para carreiras "em breve". A lanterna continua acesa. */
   silhueta?: boolean;
 };
 
-export function Personagem({ carreira, expressao = 'feliz', tom = 'medio', tamanho = 120, silhueta = false }: Props) {
+/** As camadas do guia, na ordem de pintura. `piscando` só vale para olhos abertos. */
+function Desenho({
+  carreira,
+  expressao = 'feliz',
+  tom = 'medio',
+  cabelo = 'curto',
+  corDoCabelo = 'escuro',
+  silhueta = false,
+  piscando,
+  id,
+}: Aparencia & { piscando: boolean; id: string }) {
+  const visual = visualDaCarreira[carreira.id];
+  const apagado = silhueta || !visual;
+  const pele = apagado ? cor.linha : tonsDePele[tom];
+  const roupa = apagado ? cor.linha : visual.roupa;
+  const corCabelo = coresDeCabelo[corDoCabelo];
+  const pose = poses[apagado ? 'feliz' : expressao];
+
+  return (
+    <G>
+      <Defs>
+        {/* Brilho que some nas bordas: âmbar translúcido chapado viraria uma mancha escura sobre o fundo. */}
+        <RadialGradient id={id} cx="50%" cy="50%" r="50%">
+          <Stop offset="0" stopColor={cor.luz} stopOpacity={0.8} />
+          <Stop offset="0.45" stopColor={cor.luz} stopOpacity={0.32} />
+          <Stop offset="1" stopColor={cor.luz} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+
+      {!apagado ? <CabeloDeTras cabelo={cabelo} c={corCabelo} /> : null}
+      <Path d={OMBROS} fill={roupa} />
+      {!apagado ? visual.detalhe : null}
+
+      {/* Mangas: saem de dentro do ombro, mais grossas que antes. */}
+      {pose.mangas.map((d) => (
+        <Path key={d} d={d} stroke={roupa} strokeWidth={13} strokeLinecap="round" fill="none" />
+      ))}
+
+      <Lanterna x={pose.lanterna.x} y={pose.lanterna.y} id={id} />
+
+      {/* Pescoço, orelhas e cabeça */}
+      <Rect x={53} y={74} width={14} height={18} rx={5} fill={pele} />
+      <Rect x={53} y={74} width={14} height={7} fill={TINTA} opacity={apagado ? 0 : 0.12} />
+      <Circle cx={33} cy={56} r={5.6} fill={pele} />
+      <Circle cx={87} cy={56} r={5.6} fill={pele} />
+      {!apagado ? (
+        <G>
+          <Circle cx={33.6} cy={56} r={2.4} fill={TINTA} opacity={0.1} />
+          <Circle cx={86.4} cy={56} r={2.4} fill={TINTA} opacity={0.1} />
+        </G>
+      ) : null}
+      <Ellipse cx={60} cy={52} rx={27.5} ry={27} fill={pele} />
+
+      {!apagado ? visual.bone ? <Bone /> : <CabeloDaFrente cabelo={cabelo} c={corCabelo} /> : null}
+      {!apagado ? <Rosto expressao={expressao} piscando={piscando} /> : null}
+
+      {/* Mãos em luva, por cima das mangas e da alça da lanterna. */}
+      {pose.maos.map(([x, y]) => (
+        <Ellipse key={`${x}-${y}`} cx={x} cy={y} rx={6.6} ry={7.2} fill={pele} />
+      ))}
+      {pose.polegar && !apagado ? (
+        <Rect x={pose.polegar[0]} y={pose.polegar[1]} width={4.4} height={9} rx={2.2} fill={pele} />
+      ) : null}
+    </G>
+  );
+}
+
+/** Id do gradiente da lanterna, único por desenho (sem ":", que não vale dentro de url(#...)). */
+function useIdDoBrilho(): string {
+  return `brilhoDaLanterna${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+}
+
+type Props = Aparencia & { tamanho?: number };
+
+export function Personagem({ tamanho = 120, silhueta = false, expressao = 'feliz', ...aparencia }: Props) {
   const reduzir = useReducedMotion();
   const respiro = useSharedValue(1);
   const [piscando, setPiscando] = useState(false);
+  const id = useIdDoBrilho();
 
   // Respirar: escala bem leve, em laço.
   useEffect(() => {
@@ -248,68 +504,73 @@ export function Personagem({ carreira, expressao = 'feliz', tom = 'medio', taman
   }, [reduzir, silhueta]);
 
   const animado = useAnimatedStyle(() => ({ transform: [{ scale: respiro.value }] }));
-
-  const visual = visualDaCarreira[carreira.id];
-  const apagado = silhueta || !visual;
-  const pele = apagado ? cor.linha : tonsDePele[tom];
-  const roupa = apagado ? cor.linha : visual.roupa;
-  const pose = poses[expressao];
-  const bone = !apagado && visual.cabeca === 'bone';
+  const apagado = silhueta || !visualDaCarreira[aparencia.carreira.id];
+  const altura = (tamanho * ALTURA) / LARGURA;
 
   return (
     <Animated.View
-      style={[{ width: tamanho, height: tamanho * 1.25 }, animado]}
+      style={[{ width: tamanho, height: altura }, animado]}
       accessible
       accessibilityLabel={
         apagado
-          ? `${carreira.nome}, em breve`
-          : `Seu guia da carreira ${carreira.nome}, ${expressao}, com a lanterna do farol`
+          ? `${aparencia.carreira.nome}, em breve`
+          : `Seu guia da carreira ${aparencia.carreira.nome}, ${expressao}, com a lanterna do farol`
       }>
-      <Svg width={tamanho} height={tamanho * 1.25} viewBox="0 0 120 150">
-        <Defs>
-          {/* Brilho que some nas bordas: âmbar translúcido chapado viraria uma mancha escura sobre o fundo. */}
-          <RadialGradient id="brilhoDaLanterna" cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor={cor.luz} stopOpacity={0.75} />
-            <Stop offset="0.45" stopColor={cor.luz} stopOpacity={0.3} />
-            <Stop offset="1" stopColor={cor.luz} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        {/* Corpo */}
-        <Path d="M32 148 V117 C32 99 44 88 60 88 C76 88 88 99 88 117 V148 Z" fill={roupa} />
-        {!apagado ? visual.detalhe : null}
-
-        {/* Braços: manga na cor da roupa, mão na cor da pele */}
-        <Path d={pose.livre} stroke={roupa} strokeWidth={11} strokeLinecap="round" fill="none" />
-        <Path d={pose.lanterna} stroke={roupa} strokeWidth={11} strokeLinecap="round" fill="none" />
-        <Circle cx={pose.maoLivre[0]} cy={pose.maoLivre[1]} r={6.2} fill={pele} />
-        {expressao === 'incentivando' && !apagado ? (
-          <Rect x={pose.maoLivre[0] - 1.8} y={pose.maoLivre[1] - 11} width={3.8} height={8} rx={1.9} fill={pele} />
-        ) : null}
-        <Circle cx={pose.maoLanterna[0]} cy={pose.maoLanterna[1]} r={6.2} fill={pele} />
-
-        {/* Pescoço, orelhas e cabeça */}
-        <Rect x={53.5} y={74} width={13} height={16} rx={4} fill={pele} />
-        <Rect x={53.5} y={74} width={13} height={7} fill={TINTA} opacity={apagado ? 0 : 0.12} />
-        <Circle cx={33.5} cy={55} r={5.2} fill={pele} />
-        <Circle cx={86.5} cy={55} r={5.2} fill={pele} />
-        <Circle cx={60} cy={52} r={27} fill={pele} />
-
-        {bone ? (
-          <G>
-            <Path d="M33 45 C33 29 45 21 60 21 C75 21 87 29 87 45 Z" fill={roupa} />
-            <Path d="M29 44 H91 C91 48.5 87.5 50.5 84 50.5 H36 C32.5 50.5 29 48.5 29 44 Z" fill="#1F3560" />
-            <Circle cx={60} cy={33} r={4.6} fill={cor.luz} />
-          </G>
-        ) : (
-          <Path
-            d="M33 52 C31 31 45 22 60 22 C77 22 89 32 87 50 C80 41 70 37.5 60 38.5 C49 39 40 44 33 52 Z"
-            fill={apagado ? cor.linha : CABELO}
-          />
-        )}
-
-        {!apagado ? <Rosto expressao={expressao} piscando={piscando} /> : null}
-        {!apagado ? <Lanterna x={pose.maoLanterna[0]} y={pose.maoLanterna[1]} erguida={pose.erguida} /> : null}
+      <Svg width={tamanho} height={altura} viewBox={`0 0 ${LARGURA} ${ALTURA}`}>
+        <Desenho {...aparencia} expressao={expressao} silhueta={silhueta} piscando={piscando} id={id} />
       </Svg>
     </Animated.View>
+  );
+}
+
+/**
+ * Avatar de busto, para tamanhos pequenos (perfil, balão de fala, notificações).
+ * Sem espaço para a lanterna, ela vira o ponto de luz no canto: a mesma assinatura dos ícones.
+ */
+export function AvatarDoGuia({
+  tamanho = 48,
+  expressao = 'feliz',
+  comLuz = true,
+  ...aparencia
+}: Props & {
+  /** Sem o ponto de luz: em listas de opções, vários pontos âmbar quebrariam a regra da luz. */
+  comLuz?: boolean;
+}) {
+  const id = useIdDoBrilho();
+  const ponto = Math.max(10, Math.round(tamanho * 0.26));
+  const borda = Math.max(2, Math.round(tamanho * 0.05));
+  return (
+    <View
+      style={{ width: tamanho, height: tamanho }}
+      accessible
+      accessibilityLabel={`Seu guia da carreira ${aparencia.carreira.nome}`}>
+      <View
+        style={{
+          width: tamanho,
+          height: tamanho,
+          borderRadius: tamanho / 2,
+          overflow: 'hidden',
+          backgroundColor: il.fundoDoAvatar,
+        }}>
+        <Svg width={tamanho} height={tamanho} viewBox="22 14 76 76">
+          <Desenho {...aparencia} expressao={expressao} piscando={false} id={id} />
+        </Svg>
+      </View>
+      {comLuz ? (
+        <View
+          style={{
+            position: 'absolute',
+            right: -borda / 2,
+            top: 0,
+            width: ponto,
+            height: ponto,
+            borderRadius: ponto / 2,
+            backgroundColor: cor.luz,
+            borderWidth: borda,
+            borderColor: cor.fundo,
+          }}
+        />
+      ) : null}
+    </View>
   );
 }
