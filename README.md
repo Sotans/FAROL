@@ -51,7 +51,7 @@ Para o código chegar no e-mail:
 
 - **Onboarding:** boas-vindas, escolha da carreira (3 ativas, 4 "em breve" com toques contados), apresentação do guia (personagem provisório) e meta diária. Sem cadastro: termina direto na **lição de boas-vindas**, curta e fácil.
 - **Diagnóstico inicial** ("mapa do ponto de partida"): 6 perguntas após a primeira lição, sem nota e com "Ainda não vi isso". O resultado mostra nível e ponto forte por matéria.
-- **Trilha** em caminho, com nós concluído, dominado, atual e bloqueado, e cartão do nó selecionado ("COMEÇAR +25 XP").
+- **Trilha na linha da costa:** nós numa linha reta, com a legenda ao lado, e o feixe do farol apontando o nó de hoje (ele desce até o próximo nó quando uma parte é concluída). A trilha abre no nó atual, tem o botão "Continuar a Parte N" fixo na base e um cartão "Para você" com um assunto por vez (revisão, mapa ou guardar o progresso).
 - **"Pular pra cá?"**: tocar num nó bloqueado abre o convite. O desafio tem 5 luzes (cada erro apaga uma) e, se passar, as partes puladas ficam dominadas (+50 XP). Limite de 1 desafio por dia, com vídeo recompensado **simulado**.
 - **Lição** com 10 questões em 3 tipos (múltipla escolha, certo ou errado e completar), nos dois modos de resposta (imediato e com confirmação).
 - **Sequência de acertos:** uma só, que atravessa questões, lições e o desafio. Contador na barra e pop-up animado a cada 5 seguidos; ao errar, só recomeça, sem aviso.
@@ -69,7 +69,7 @@ Para o código chegar no e-mail:
 - Revisão espaçada, download de lições para offline, login e sincronização com o backend.
 - Os outros 3 tipos de exercício (ligar pares, ordenar, identificar o erro).
 
-O progresso fica salvo no aparelho. Para recomeçar do zero, use "Reiniciar demonstração" na trilha, que volta ao onboarding.
+O progresso fica salvo no aparelho. Para recomeçar do zero, abra o **Laboratório** (toque longo no banner do módulo, na trilha) e use "Reiniciar demonstração", que volta ao onboarding. O Laboratório também guarda o experimento de erro, o teste de som, o catálogo de ícones e o estado da nuvem.
 
 ## Estrutura
 

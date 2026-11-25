@@ -129,6 +129,8 @@ export default function Licao() {
           </Animated.View>
         ) : null}
 
+        {/* Em telas altas, as respostas descem para a zona do polegar; o enunciado fica no topo. */}
+        <View style={estilos.empurra} />
         <Exercicio
           key={q.id}
           questao={q}
@@ -153,7 +155,7 @@ export default function Licao() {
               Quer mais 3? Assista a um vídeo curto ou conheça o Pro. (Simulado no protótipo.)
             </Text>
             <View style={estilos.avisoBotoes}>
-              <Botao rotulo="ASSISTIR VÍDEO" sub="+3 dicas" variante="secundario" onPress={licao.ganharDicas} />
+              <Botao rotulo="Assistir vídeo" sub="+3 dicas" variante="secundario" onPress={licao.ganharDicas} />
               <Botao rotulo="Agora não" variante="terciario" onPress={licao.fecharAvisoDeLimite} />
             </View>
           </Animated.View>
@@ -163,7 +165,7 @@ export default function Licao() {
       <View style={estilos.rodape}>
         {fase === 'respondendo' && pedeConfirmacao ? (
           <View style={estilos.rodapeBotao}>
-            <Botao rotulo="CONFIRMAR" desabilitado={!podeConfirmar} onPress={licao.confirmar} />
+            <Botao rotulo="Confirmar" desabilitado={!podeConfirmar} onPress={licao.confirmar} />
           </View>
         ) : null}
         {fase === 'respondendo' && !pedeConfirmacao ? (
@@ -177,7 +179,7 @@ export default function Licao() {
             titulo="Correto!"
             texto={q.explicacao}
             armadilha={q.armadilha}
-            rotuloBotao="CONTINUAR"
+            rotuloBotao="Continuar"
             onPress={continuar}
           />
         ) : null}
@@ -186,7 +188,7 @@ export default function Licao() {
             tipo="erro"
             titulo="Quase."
             texto="Vamos olhar com calma. Tente de novo, e a dica continua disponível."
-            rotuloBotao="TENTAR DE NOVO"
+            rotuloBotao="Tentar de novo"
             onPress={licao.tentarDeNovo}
           />
         ) : null}
@@ -198,7 +200,7 @@ export default function Licao() {
               q.repetida ? `${q.explicacao} Vamos seguir.` : `${q.explicacao} Essa questão volta no final da lição.`
             }
             armadilha={q.armadilha}
-            rotuloBotao="CONTINUAR"
+            rotuloBotao="Continuar"
             onPress={continuar}
           />
         ) : null}
@@ -208,7 +210,7 @@ export default function Licao() {
             titulo="Esta é a resposta."
             texto={q.explicacao}
             armadilha={q.armadilha}
-            rotuloBotao="ENTENDI"
+            rotuloBotao="Entendi"
             onPress={licao.aceitarGuiada}
           />
         ) : null}
@@ -246,7 +248,8 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
-  corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
+  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
+  empurra: { flexGrow: 1, minHeight: 0 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
   caixaDica: {
     flexDirection: 'row',

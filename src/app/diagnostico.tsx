@@ -116,14 +116,14 @@ export default function Diagnostico() {
       <View style={estilos.rodapeFixo}>
         {respondendo ? (
           <View style={estilos.rodape}>
-            <Botao rotulo="CONFIRMAR" desabilitado={selecionada === null} onPress={() => responder(selecionada)} />
+            <Botao rotulo="Confirmar" desabilitado={selecionada === null} onPress={() => responder(selecionada)} />
           </View>
         ) : (
           <FolhaFeedback
             tipo={resultado === 'acertou' ? 'acerto' : 'neutro'}
             titulo={folha[resultado].titulo}
             texto={folha[resultado].texto}
-            rotuloBotao={indice + 1 >= total ? 'VER MEU MAPA' : 'CONTINUAR'}
+            rotuloBotao={indice + 1 >= total ? 'Ver meu mapa' : 'Continuar'}
             onPress={continuar}
           />
         )}

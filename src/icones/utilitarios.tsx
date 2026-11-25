@@ -34,13 +34,15 @@ export function IconeSeta({ tamanho = 24, cor: c = cor.acerto }: PropsIcone) {
   );
 }
 
-/** Cadeado com uma luz na fechadura: o nó ainda vai acender. */
+/**
+ * Cadeado. A fechadura é traço, não luz: com vários nós bloqueados, pontos âmbar
+ * em todos eles quebrariam a regra da luz (o âmbar fica no nó atual).
+ */
 export function IconeCadeado({ tamanho = 24, cor: c = cor.textoSuave }: PropsIcone) {
   return (
     <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24">
-      <Path d="M8 11 V8.5 a4 4 0 0 1 8 0 V11" stroke={c} {...traco} />
+      <Path d="M8 11 V8.5 a4 4 0 0 1 8 0 V11 M12 15 V17.5" stroke={c} {...traco} />
       <Rect x={5} y={11} width={14} height={10} rx={3} stroke={c} {...traco} />
-      <Circle cx={12} cy={16} r={1.9} fill={cor.luz} />
     </Svg>
   );
 }
@@ -66,6 +68,19 @@ export function IconeModulos({ tamanho = 24, cor: c = cor.textoSobreMare }: Prop
       <Circle cx={5} cy={12} r={1.6} fill={c} />
       <Circle cx={5} cy={17} r={1.6} fill={c} />
       <Path d="M9.5 7 H19.5 M9.5 12 H19.5 M9.5 17 H16" stroke={c} {...traco} />
+    </Svg>
+  );
+}
+
+/** Guardar o progresso (cadastro): um escudo com visto. Em maré, porque é informação, não conquista. */
+export function IconeEscudo({ tamanho = 24, cor: c = cor.mareClaro }: PropsIcone) {
+  return (
+    <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24">
+      <Path
+        d="M12 3.5 L19 6.2 V11.5 C19 16 15.8 19.2 12 20.7 C8.2 19.2 5 16 5 11.5 V6.2 Z M9 12 L11.2 14.2 L15.2 9.8"
+        stroke={c}
+        {...traco}
+      />
     </Svg>
   );
 }

@@ -152,9 +152,9 @@ export default function ContaTela() {
   }
 
   const rotuloDaSaida: Partial<Record<Saida, string>> = {
-    entrarNaConta: 'ENTRAR NESSA CONTA',
-    criarConta: 'GUARDAR MEU PROGRESSO COM ESSE E-MAIL',
-    pedirNovoCodigo: 'MANDAR OUTRO CÓDIGO',
+    entrarNaConta: 'Entrar nessa conta',
+    criarConta: 'Guardar meu progresso com esse e-mail',
+    pedirNovoCodigo: 'Mandar outro código',
   };
 
   return (
@@ -187,7 +187,7 @@ export default function ContaTela() {
               <Text style={[estilos.titulo, estilos.textoCentro]}>{t.pronto}</Text>
               <Text style={[estilos.sub, estilos.textoCentro]}>{t.prontoSub}</Text>
               <View style={estilos.acoes}>
-                <Botao rotulo="VOLTAR À TRILHA" onPress={() => router.replace('/')} />
+                <Botao rotulo="Voltar à trilha" onPress={() => router.replace('/')} />
               </View>
             </Animated.View>
           ) : (
@@ -251,14 +251,14 @@ export default function ContaTela() {
                 {ocupado ? <ActivityIndicator color={cor.luz} /> : null}
                 {etapa === 'email' ? (
                   <Botao
-                    rotulo="MANDAR CÓDIGO"
+                    rotulo="Mandar código"
                     desabilitado={ocupado || !email.trim()}
                     onPress={() => void pedirCodigo()}
                   />
                 ) : (
                   <>
                     <Botao
-                      rotulo="CONFIRMAR"
+                      rotulo="Confirmar"
                       desabilitado={ocupado || !codigoCompleto(codigo)}
                       onPress={() => void confirmar()}
                     />

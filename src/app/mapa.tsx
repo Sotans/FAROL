@@ -48,7 +48,7 @@ export default function MapaDoPontoDePartida() {
         </Animated.View>
       </ScrollView>
       <View style={estilos.rodape}>
-        <Botao rotulo="VER MINHA TRILHA" onPress={() => router.replace('/')} />
+        <Botao rotulo="Ver minha trilha" onPress={() => router.replace('/')} />
       </View>
     </SafeAreaView>
   );
@@ -74,7 +74,8 @@ function CartaoDaMateria({ nome, resultado }: { nome: string; resultado: Resulta
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo, paddingHorizontal: 16 },
   corpo: { paddingTop: 20, paddingBottom: 16, gap: 12 },
-  titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xl, color: cor.texto },
+  // O mapa é uma conquista: título com a voz das conquistas (Fraunces).
+  titulo: { fontFamily: fonte.conquista, fontSize: tamanho.xxl - 2, color: cor.luzClara },
   sub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, marginTop: -6, marginBottom: 6 },
   cartao: {
     backgroundColor: cor.superficie,
