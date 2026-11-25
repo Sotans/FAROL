@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Botao } from '@/componentes/Botao';
 import { Farol } from '@/componentes/Farol';
+import { GuiaIlustrado, temGuiaIlustrado } from '@/componentes/Ilustracoes';
+import { carreiraPorId } from '@/carreiras/dados';
 import { motivoParaCadastrar } from '@/conta/regras';
 import { trilhaDePortugues } from '@/conteudo/trilha';
 import { proximoModulo } from '@/estado/modulos';
@@ -43,7 +45,9 @@ export default function Conclusao() {
     mapa,
     nuvem,
     conta,
+    carreira,
   } = useProgresso();
+  const c = carreiraPorId(carreira);
   const nomeDoModulo = modulo.nome;
   const partes = modulo.partes.map((p) => p.nome);
   const proximo = proximoModulo(trilhaDePortugues, modulo.id);
@@ -92,7 +96,11 @@ export default function Conclusao() {
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={estilos.centro} showsVerticalScrollIndicator={false}>
-        <Farol />
+        {acendeuOFarol && temGuiaIlustrado(c) ? (
+          <GuiaIlustrado carreira={c} pose="comemorando" altura={260} />
+        ) : (
+          <Farol />
+        )}
         <Text style={acendeuOFarol ? estilos.tituloConquista : estilos.titulo} accessibilityRole="header">
           {acendeuOFarol
             ? 'Farol aceso.'

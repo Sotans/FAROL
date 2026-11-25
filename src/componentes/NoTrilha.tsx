@@ -8,8 +8,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { IconeCadeado, IconeComecar, IconeEstrelaDeLuz, IconeFarol, IconeVisto, type EstadoDoFarol } from '@/icones';
+import { IconeCadeado, IconeComecar, IconeEstrelaDeLuz, IconeVisto } from '@/icones';
 import { brilho, cor, fonte, raio, tamanho } from '@/tema/tokens';
+import { IlustracaoDoFarol, LAMPADA_NA_IMAGEM, PROPORCAO_DO_FAROL } from './Ilustracoes';
 
 export type EstadoNo = 'feita' | 'dominada' | 'atual' | 'bloqueada';
 /** Trecho do caminho entre dois nós: aceso (já percorrido) ou apagado (à frente). */
@@ -19,9 +20,14 @@ export type Ligacao = 'acesa' | 'apagada';
 export const ALTURA_DA_LINHA = 84;
 export const ALTURA_DO_FAROL = 120;
 export const COLUNA_DOS_NOS = 84;
-export const TAMANHO_DO_FAROL = 64;
-/** Onde fica a lâmpada dentro do ícone do farol (largura 1,5 × tamanho), em pontos. */
-export const LAMPADA_DO_FAROL = { x: TAMANHO_DO_FAROL * 0.75, y: TAMANHO_DO_FAROL / 4 };
+/** A ilustração do farol no alto da trilha. */
+export const ALTURA_DA_IMAGEM_DO_FAROL = 108;
+export const LARGURA_DA_IMAGEM_DO_FAROL = ALTURA_DA_IMAGEM_DO_FAROL * PROPORCAO_DO_FAROL;
+/** Onde fica a lâmpada dentro da ilustração, em pontos (o feixe sai daqui). */
+export const LAMPADA_DO_FAROL = {
+  x: LARGURA_DA_IMAGEM_DO_FAROL * LAMPADA_NA_IMAGEM.x,
+  y: ALTURA_DA_IMAGEM_DO_FAROL * LAMPADA_NA_IMAGEM.y,
+};
 
 type Props = {
   estado: EstadoNo;
@@ -79,8 +85,9 @@ export function NoTrilha({ estado, rotulo, sub, convite, farol = false, acima, a
   const rotuloAcessivel = `${rotulo}${sub ? `, ${sub}` : ''}${convite ? `. ${convite}` : ''}`;
 
   if (farol) {
-    const estadoDoFarol: EstadoDoFarol =
-      estado === 'feita' || estado === 'dominada' ? 'aceso' : estado === 'atual' ? 'atual' : 'apagado';
+    // Na trilha, o farol guia: a lâmpada fica acesa (é dela que sai o feixe até o nó de hoje).
+    // Quando o módulo termina, ele acende por inteiro, com os feixes abertos.
+    const acesoPorInteiro = estado === 'feita' || estado === 'dominada';
     return (
       <Pressable
         onPress={onPress}
@@ -91,7 +98,7 @@ export function NoTrilha({ estado, rotulo, sub, convite, farol = false, acima, a
           <Text style={[estilos.rotulo, atual ? { color: cor.luz } : null]}>{rotulo}</Text>
           {sub ? <Text style={estilos.sub}>{sub}</Text> : null}
         </View>
-        <IconeFarol tamanho={TAMANHO_DO_FAROL} estado={estadoDoFarol} />
+        <IlustracaoDoFarol estado={acesoPorInteiro ? 'aceso' : 'atual'} altura={ALTURA_DA_IMAGEM_DO_FAROL} decorativa />
       </Pressable>
     );
   }

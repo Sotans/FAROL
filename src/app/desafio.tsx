@@ -9,6 +9,8 @@ import { Botao } from '@/componentes/Botao';
 import { CelebracaoDeSequencia } from '@/componentes/CelebracaoDeSequencia';
 import { Chip } from '@/componentes/Chip';
 import { Farol } from '@/componentes/Farol';
+import { GuiaIlustrado, temGuiaIlustrado } from '@/componentes/Ilustracoes';
+import { carreiraPorId } from '@/carreiras/dados';
 import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Luzes } from '@/componentes/Luzes';
 import { Exercicio, type Situacao } from '@/componentes/Exercicio';
@@ -26,7 +28,9 @@ import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 /** T11f. O desafio "Pular pra cá?": 5 luzes, e passar marca as partes puladas como dominadas. */
 export default function Desafio() {
   const { ate } = useLocalSearchParams<{ ate?: string }>();
-  const { modulo, concluidas, indiceDoFarol, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
+  const { modulo, concluidas, indiceDoFarol, dominarAte, registrarRevisoes, celebracaoDeSequencia, carreira } =
+    useProgresso();
+  const c = carreiraPorId(carreira);
   // Fixado na abertura: um link com alvo inválido (não numérico, para trás ou além do farol) volta à trilha.
   const [alvoValido] = useState(() => alvoDoDesafio(ate, concluidas, indiceDoFarol));
   const alvo = alvoValido ?? 0;
@@ -68,7 +72,7 @@ export default function Desafio() {
     return (
       <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
         <View style={estilos.centro}>
-          <Farol />
+          {temGuiaIlustrado(c) ? <GuiaIlustrado carreira={c} pose="comemorando" altura={240} /> : <Farol />}
           <Text style={estilos.titulo}>Dominado!</Text>
           <Text
             style={

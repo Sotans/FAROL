@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Botao } from '@/componentes/Botao';
-import { Luz } from '@/componentes/Luz';
+import { FarolDeBoasVindas } from '@/componentes/Ilustracoes';
 import { cor, fonte, tamanho } from '@/tema/tokens';
 
 /** T1. Uma frase e um botão. Sem cadastro, sem permissões. */
@@ -11,7 +11,7 @@ export default function BoasVindas() {
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <View style={estilos.centro}>
-        <Luz />
+        <FarolDeBoasVindas largura={320} />
         <Text style={estilos.logo} accessibilityRole="header">
           FAROL
         </Text>
