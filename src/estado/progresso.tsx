@@ -3,7 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { CarreiraId } from '@/carreiras/dados';
 import type { TomDePele } from '@/componentes/Personagem';
 import type { Mapa } from '@/diagnostico/dados';
-import { totalDeNos, totalDePartes } from '@/licao/dados';
+import { moduloPorId, trilhaDePortugues } from '@/conteudo/trilha';
+import type { Modulo } from '@/conteudo/tipos';
 import type { ModoDeErro } from '@/licao/tipos';
 import { registrar, type Nota, type Revisoes } from '@/revisao/agenda';
 import { carregarEstado, salvarEstado } from '@/servicos/armazenamento';
@@ -17,6 +18,7 @@ import {
   type Conta,
 } from '@/servicos/nuvem';
 import { mesclar } from './mesclar';
+import { migrarProgresso, moduloLiberado, progressoDe, totalDeNos, type ProgressoDosModulos } from './modulos';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
@@ -31,13 +33,10 @@ export type Estado = {
   metaDiaria: MetaDiaria;
   /** Mapa do ponto de partida (diagnóstico). null = ainda não feito. */
   mapa: Mapa | null;
-  /**
-   * Nós concluídos em sequência (lições, desafio e, por último, o farol). O índice `concluidas` é o nó atual.
-   * Igual ao número de partes: o farol é o atual. Igual ao total de nós: farol aceso.
-   */
-  concluidas: number;
-  /** Partes marcadas como dominadas pelo desafio "Pular pra cá?". */
-  dominadas: number[];
+  /** O módulo em que a pessoa está estudando (id). */
+  moduloAtual: string;
+  /** Progresso de cada módulo da trilha: nós concluídos e partes dominadas. */
+  modulos: ProgressoDosModulos;
   licoesHoje: number;
   desafiosHoje: number;
   /** Dia (AAAA-MM-DD) a que os contadores "hoje" se referem. */
@@ -59,6 +58,18 @@ export type Estado = {
 export type StatusDaNuvem = 'desligada' | 'conectando' | 'conectada' | 'offline';
 
 type Progresso = Estado & {
+  /** O módulo em uso e o progresso nele (calculados a partir de `moduloAtual` e `modulos`). */
+  modulo: Modulo;
+  /** Nós concluídos no módulo em uso. O índice `concluidas` é o nó atual. */
+  concluidas: number;
+  dominadas: number[];
+  totalDePartes: number;
+  /** O farol é o nó logo depois da última parte. */
+  indiceDoFarol: number;
+  /** Partes mais o farol. `concluidas === totalDeNos` quer dizer farol aceso. */
+  totalDeNos: number;
+  /** Troca o módulo em uso, se estiver liberado. */
+  escolherModulo: (id: string) => void;
   /** false até o estado salvo ser lido do aparelho. */
   carregado: boolean;
   nuvem: StatusDaNuvem;
@@ -115,8 +126,8 @@ export const estadoInicial: Estado = {
   tomDoGuia: 'medio',
   metaDiaria: 1,
   mapa: null,
-  concluidas: 0,
-  dominadas: [],
+  moduloAtual: trilhaDePortugues[0].id,
+  modulos: {},
   licoesHoje: 0,
   desafiosHoje: 0,
   dia: hoje(),
@@ -191,7 +202,7 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     let ativo = true;
     carregarEstado(estadoInicial).then((salvo) => {
       if (!ativo) return;
-      setEstado(virarDia(salvo));
+      setEstado(virarDia(migrarProgresso(salvo, estadoInicial.moduloAtual) as Estado));
       setCarregado(true);
     });
     return () => {
@@ -209,7 +220,10 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   /** Aplica o que veio da nuvem: combina sem perder avanço e só então libera os envios. */
   const aplicarDaNuvem = useCallback(
     ({ remoto, contaDaNuvem }: { remoto: Partial<Estado> | null; contaDaNuvem: Conta | null }) => {
-      if (remoto) setEstado((e) => virarDia(mesclar(e, { ...estadoInicial, ...remoto })));
+      if (remoto)
+        setEstado((e) =>
+          virarDia(mesclar(e, migrarProgresso({ ...estadoInicial, ...remoto }, estadoInicial.moduloAtual) as Estado)),
+        );
       combinouComANuvem.current = true;
       setConta(contaDaNuvem);
       setNuvem('conectada');
@@ -312,9 +326,22 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     (xp: number) => {
       alterar((e) => {
         const atual = estudouHoje(virarDia(e), xp);
-        return { ...atual, concluidas: Math.min(atual.concluidas + 1, totalDeNos) };
+        const id = atual.moduloAtual;
+        const p = progressoDe(atual.modulos, id);
+        const concluidas = Math.min(p.concluidas + 1, totalDeNos(moduloPorId(id)));
+        return { ...atual, modulos: { ...atual.modulos, [id]: { ...p, concluidas } } };
       });
     },
+    [alterar],
+  );
+
+  const escolherModulo = useCallback(
+    (id: string) =>
+      alterar((e) => {
+        const indice = trilhaDePortugues.findIndex((m) => m.id === id);
+        if (indice < 0 || e.moduloAtual === id || !moduloLiberado(trilhaDePortugues, e.modulos, indice)) return e;
+        return { ...e, moduloAtual: id };
+      }),
     [alterar],
   );
 
@@ -328,12 +355,14 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   const dominarAte = useCallback(
     (ate: number) => {
       alterar((e) => {
+        const id = e.moduloAtual;
+        const p = progressoDe(e.modulos, id);
         const novas: number[] = [];
-        for (let i = e.concluidas; i < ate; i += 1) novas.push(i);
+        for (let i = p.concluidas; i < ate; i += 1) novas.push(i);
+        const concluidas = Math.min(Math.max(ate, p.concluidas), moduloPorId(id).partes.length);
         return {
           ...e,
-          concluidas: Math.min(Math.max(ate, e.concluidas), totalDePartes),
-          dominadas: [...e.dominadas, ...novas],
+          modulos: { ...e.modulos, [id]: { concluidas, dominadas: [...p.dominadas, ...novas] } },
           xp: e.xp + limites.xpDoDesafio,
         };
       });
@@ -360,9 +389,19 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const modulo = moduloPorId(estado.moduloAtual);
+  const progressoAtual = progressoDe(estado.modulos, modulo.id);
+
   const valor = useMemo(
     () => ({
       ...estado,
+      modulo,
+      concluidas: progressoAtual.concluidas,
+      dominadas: progressoAtual.dominadas,
+      totalDePartes: modulo.partes.length,
+      indiceDoFarol: modulo.partes.length,
+      totalDeNos: totalDeNos(modulo),
+      escolherModulo,
       carregado,
       nuvem,
       conta,
@@ -390,6 +429,9 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     }),
     [
       estado,
+      modulo,
+      progressoAtual,
+      escolherModulo,
       carregado,
       nuvem,
       conta,

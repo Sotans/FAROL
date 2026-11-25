@@ -1,0 +1,937 @@
+{
+  "id": "pt-virgula",
+  "materia": "portugues",
+  "nome": "Vírgula",
+  "incidencia": 0.076,
+  "banca": "Cebraspe",
+  "fontes": [
+    "Professor Décio Terror: raio-x de 1.661 questões de Português do Cebraspe (2025 e 2026): pontuação com 7,6%, 2º tema mais cobrado",
+    "Item 'emprego dos sinais de pontuação' do conteúdo programático de Língua Portuguesa, padrão nos editais de Cebraspe, FGV e FCC (a conferir nos editais das carreiras Administrativo, Tribunais e Policial)",
+    "Regras de vírgula da norma-padrão (a conferir em gramática normativa)"
+  ],
+  "duvidas": [
+    "Decidido na revisão de 2026-11-23: Parte 3, adjunto adverbial longo deslocado tratado como 'vírgula exigida pela regra tradicional de concursos', com a ressalva de que algumas gramáticas a consideram só recomendada.",
+    "Decidido: Parte 4, vírgula antes de 'e' com sujeitos diferentes é facultativa, salvo quando necessária para evitar ambiguidade.",
+    "Decidido: Parte 7, a falta de vírgula depois da oração adverbial anteposta é erro (respaldo gramatical e da Cebraspe).",
+    "Decidido: Parte 5, 'mas' seguido de vírgula sem intercalação ou outra justificativa sintática é incorreto."
+  ],
+  "partes": [
+    {
+      "nome": "A vírgula proibida",
+      "nuance": "Não se separa o sujeito do verbo, nem o verbo dos seus complementos.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "Não se usa vírgula entre o sujeito e o verbo da oração.",
+          "certo": true,
+          "explicacao": "Sujeito e verbo formam o núcleo da oração e não se separam por vírgula, mesmo quando o sujeito é longo.",
+          "dica": "Pense em quem pratica a ação e na própria ação."
+        },
+        {
+          "tipo": "completar",
+          "nivel": 1,
+          "enunciado": "Complete: Os candidatos ___ chegaram cedo ao local de prova.",
+          "opcoes": [
+            "sem vírgula",
+            "vírgula"
+          ],
+          "correta": 0,
+          "explicacao": "'Os candidatos' é o sujeito de 'chegaram'. Entre o sujeito e o verbo não cabe vírgula.",
+          "dica": "Quem chegou cedo?"
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada frase à sua avaliação.",
+          "pares": [
+            [
+              "Os servidores, receberam o aviso.",
+              "Separa o sujeito do verbo"
+            ],
+            [
+              "O diretor enviou, o relatório.",
+              "Separa o verbo do complemento"
+            ],
+            [
+              "O diretor enviou o relatório.",
+              "Pontuada corretamente"
+            ]
+          ],
+          "explicacao": "Sujeito e verbo, e verbo e complemento, não se separam por vírgula. Sem essas vírgulas, a frase fica correta.",
+          "dica": "Procure onde a vírgula corta uma ligação direta."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 2,
+          "enunciado": "Qual frase está pontuada corretamente?",
+          "opcoes": [
+            "A banca, divulgou o gabarito.",
+            "A banca divulgou, o gabarito.",
+            "A banca divulgou o gabarito."
+          ],
+          "correta": 2,
+          "explicacao": "'A banca' (sujeito) liga-se direto a 'divulgou' (verbo), que se liga direto a 'o gabarito' (complemento). Nenhuma vírgula cabe aí.",
+          "dica": "Quem divulgou? Divulgou o quê?"
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Coloque na ordem os passos para não errar a vírgula.",
+          "itens": [
+            "Encontre o verbo da oração",
+            "Pergunte quem pratica a ação: é o sujeito",
+            "Não coloque vírgula entre os dois"
+          ],
+          "explicacao": "Achar o verbo e depois o sujeito mostra onde a vírgula é proibida, mesmo quando o sujeito é longo.",
+          "dica": "Comece pela ação."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 2,
+          "trechos": [
+            "Todos os aprovados",
+            "na primeira fase,",
+            "farão a prova discursiva."
+          ],
+          "erro": 1,
+          "explicacao": "'Todos os aprovados na primeira fase' é o sujeito de 'farão'. A vírgula depois de 'fase' separa o sujeito do verbo.",
+          "dica": "Quem fará a prova discursiva?",
+          "armadilha": "sujeito longo convida a uma pausa, mas a vírgula continua proibida."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 3,
+          "enunciado": "Em qual frase a vírgula separa indevidamente o verbo do seu complemento?",
+          "opcoes": [
+            "O juiz determinou, a suspensão do prazo.",
+            "Ontem o juiz determinou a suspensão do prazo.",
+            "O juiz determinou a suspensão do prazo."
+          ],
+          "correta": 0,
+          "explicacao": "Quem determina, determina algo: 'a suspensão do prazo' é o complemento de 'determinou' e não pode ser separado dele por vírgula.",
+          "dica": "Determinou o quê?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'Os candidatos que se inscreveram no último dia do prazo, receberam um novo número de inscrição', a vírgula está correta, porque o sujeito é longo.",
+          "certo": false,
+          "explicacao": "Todo o trecho 'Os candidatos que se inscreveram no último dia do prazo' é o sujeito de 'receberam'. Por mais longo que seja, não se separa do verbo.",
+          "dica": "Quem recebeu o novo número?",
+          "armadilha": "a banca usa sujeitos longos justamente para a vírgula parecer natural."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 4,
+          "afirmacao": "Em 'É fundamental, que os candidatos leiam o edital', a vírgula está correta.",
+          "certo": false,
+          "explicacao": "'que os candidatos leiam o edital' é o sujeito de 'é fundamental'. Mesmo quando o sujeito é uma oração inteira, ele não se separa do verbo.",
+          "dica": "O que é fundamental?"
+        }
+      ]
+    },
+    {
+      "nome": "Aposto e vocativo",
+      "nuance": "O aposto explicativo e o vocativo ficam separados por vírgulas.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "O vocativo, termo usado para chamar alguém, é separado por vírgula.",
+          "certo": true,
+          "explicacao": "Vocativo chama o interlocutor: 'Candidatos, atenção.' Ele sempre vem separado por vírgula, no início, no meio ou no fim da frase.",
+          "dica": "Pense em como você chama alguém numa mensagem."
+        },
+        {
+          "tipo": "completar",
+          "nivel": 1,
+          "enunciado": "Complete: João ___ venha conferir o resultado.",
+          "opcoes": [
+            "sem vírgula",
+            "vírgula"
+          ],
+          "correta": 1,
+          "explicacao": "'João' é a pessoa chamada, o vocativo. Por isso leva vírgula: 'João, venha conferir o resultado.'",
+          "dica": "Alguém está sendo chamado?"
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada frase ao termo separado por vírgula nela.",
+          "pares": [
+            [
+              "Maria, a fiscal, chegou cedo.",
+              "Aposto"
+            ],
+            [
+              "Maria, chegue cedo.",
+              "Vocativo no início"
+            ],
+            [
+              "Chegue cedo, Maria.",
+              "Vocativo no fim"
+            ]
+          ],
+          "explicacao": "O aposto explica quem é Maria e fica entre vírgulas. O vocativo chama Maria e é separado por vírgula onde estiver.",
+          "dica": "Na frase, Maria está sendo chamada ou apresentada?"
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 2,
+          "enunciado": "Qual frase está pontuada corretamente?",
+          "opcoes": [
+            "Ana a coordenadora aprovou o edital.",
+            "Ana, a coordenadora, aprovou o edital.",
+            "Ana a coordenadora, aprovou o edital."
+          ],
+          "correta": 1,
+          "explicacao": "'a coordenadora' é aposto explicativo de 'Ana' e fica entre duas vírgulas. Na terceira opção, a vírgula sozinha separa o sujeito do verbo.",
+          "dica": "Quem é Ana? Essa explicação fica isolada.",
+          "armadilha": "abriu a vírgula do aposto, feche: o par de vírgulas é obrigatório."
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Monte a frase.",
+          "itens": [
+            "Senhores candidatos,",
+            "a prova",
+            "começa agora."
+          ],
+          "explicacao": "'Senhores candidatos' é vocativo e vem separado por vírgula do restante da frase.",
+          "dica": "Quem está sendo chamado vem primeiro."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 3,
+          "trechos": [
+            "O presidente da banca,",
+            "professor Luís",
+            "divulgou as notas."
+          ],
+          "erro": 1,
+          "explicacao": "O aposto 'professor Luís' precisa fechar com vírgula: 'O presidente da banca, professor Luís, divulgou as notas.'",
+          "dica": "Toda vírgula que abre uma explicação precisa de outra para fechar."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 3,
+          "enunciado": "Em qual frase a vírgula é obrigatória?",
+          "opcoes": [
+            "Bom dia, candidatos.",
+            "O mês de março chegou.",
+            "O rio Amazonas é extenso."
+          ],
+          "correta": 0,
+          "explicacao": "'candidatos' é vocativo e exige vírgula. Em 'o mês de março' e 'o rio Amazonas', o aposto só especifica o nome e não leva vírgula.",
+          "dica": "Alguém está sendo chamado?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'O escritor Machado de Assis fundou a Academia Brasileira de Letras', faltam vírgulas isolando 'Machado de Assis'.",
+          "certo": false,
+          "explicacao": "É aposto especificativo: ele individualiza 'o escritor' e não leva vírgulas. Só o aposto explicativo fica entre vírgulas.",
+          "dica": "O nome especifica qual escritor ou só acrescenta uma explicação?",
+          "armadilha": "aposto especificativo, como 'o escritor Machado de Assis', não leva vírgula."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 4,
+          "afirmacao": "Em 'Não desista candidato, a aprovação está perto', a pontuação está correta.",
+          "certo": false,
+          "explicacao": "O vocativo no meio da frase fica entre vírgulas: 'Não desista, candidato, a aprovação está perto.'",
+          "dica": "Onde está a pessoa chamada e quantas vírgulas a cercam?"
+        }
+      ]
+    },
+    {
+      "nome": "Adjunto adverbial deslocado",
+      "nuance": "Curto e deslocado, a vírgula é opcional; longo, a regra tradicional de concursos exige vírgula (algumas gramáticas a consideram só recomendada); entre o sujeito e o verbo, ficam duas vírgulas.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "Na frase 'Ontem, a banca publicou o edital', a vírgula depois de 'Ontem' é opcional.",
+          "certo": true,
+          "explicacao": "Adjunto adverbial curto deslocado para o início: a vírgula é facultativa. 'Ontem a banca publicou o edital' também está correto.",
+          "dica": "O termo deslocado é curto ou longo?"
+        },
+        {
+          "tipo": "completar",
+          "nivel": 1,
+          "enunciado": "Complete: Os candidatos, na semana passada ___ receberam o cartão de confirmação.",
+          "opcoes": [
+            "sem vírgula",
+            "vírgula"
+          ],
+          "correta": 1,
+          "explicacao": "Abriu vírgula antes de 'na semana passada', feche depois. O adjunto entre o sujeito e o verbo fica entre duas vírgulas.",
+          "dica": "Uma vírgula já foi aberta."
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada frase à regra da vírgula nela.",
+          "pares": [
+            [
+              "Ontem a prova acabou cedo.",
+              "Adjunto curto: vírgula opcional"
+            ],
+            [
+              "No último domingo do mês de março, a prova acabou cedo.",
+              "Adjunto longo: vírgula exigida"
+            ],
+            [
+              "A prova, ontem, acabou cedo.",
+              "Entre sujeito e verbo: duas vírgulas"
+            ]
+          ],
+          "explicacao": "Curto e deslocado, a vírgula é opcional; longo, a regra tradicional de concursos exige a vírgula; entre o sujeito e o verbo, ficam duas vírgulas.",
+          "dica": "Observe o tamanho do adjunto e onde ele está."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 2,
+          "enunciado": "Qual frase está pontuada corretamente?",
+          "opcoes": [
+            "Os aprovados, na próxima semana serão convocados.",
+            "Os aprovados, na próxima semana, serão convocados.",
+            "Os aprovados na próxima semana, serão convocados."
+          ],
+          "correta": 1,
+          "explicacao": "'na próxima semana' está entre o sujeito e o verbo, então fica entre duas vírgulas. Uma vírgula sozinha separaria o sujeito do verbo.",
+          "dica": "Conte as vírgulas em volta do termo deslocado."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 2,
+          "afirmacao": "Uma vírgula sozinha nunca pode separar o sujeito do verbo, mesmo que haja um adjunto adverbial entre eles.",
+          "certo": true,
+          "explicacao": "Com o adjunto intercalado, usam-se duas vírgulas ou nenhuma. Uma só separa o sujeito do verbo, como em 'Os alunos, ontem chegaram'.",
+          "dica": "Lembre da vírgula proibida."
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Monte a frase.",
+          "itens": [
+            "Na próxima segunda-feira,",
+            "a banca",
+            "divulgará",
+            "o gabarito."
+          ],
+          "explicacao": "O adjunto adverbial deslocado para o início é separado por vírgula do restante da oração.",
+          "dica": "A frase começa pela indicação de tempo."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 3,
+          "trechos": [
+            "A comissão,",
+            "por unanimidade",
+            "aprovou o recurso."
+          ],
+          "erro": 1,
+          "explicacao": "'por unanimidade' está entre o sujeito e o verbo. Abriu a vírgula antes, precisa fechar depois: 'A comissão, por unanimidade, aprovou o recurso.'",
+          "dica": "Toda vírgula que abre um termo intercalado precisa de outra."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'Em 2026, o órgão abrirá novo concurso', a retirada da vírgula após '2026' prejudicaria a correção gramatical.",
+          "certo": false,
+          "explicacao": "Adjunto adverbial curto anteposto: a vírgula é facultativa. Sem ela, a frase continua correta.",
+          "dica": "O adjunto deslocado é curto ou longo?",
+          "armadilha": "a banca cobra muito: retirar a vírgula de adjunto curto deslocado não gera erro."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 4,
+          "enunciado": "Em qual frase a vírgula é facultativa?",
+          "opcoes": [
+            "Hoje, os candidatos fizeram a prova.",
+            "Candidatos, façam a prova.",
+            "Ana, a fiscal, recolheu a prova."
+          ],
+          "correta": 0,
+          "explicacao": "'Hoje' é adjunto curto deslocado: vírgula opcional. As outras isolam um vocativo e um aposto, que exigem vírgula.",
+          "dica": "Duas das frases usam regras das partes anteriores."
+        }
+      ]
+    },
+    {
+      "nome": "Enumeração e o 'e'",
+      "nuance": "A vírgula separa os itens de uma enumeração; antes do 'e', só com sujeitos diferentes ou com o 'e' repetido.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "Em uma enumeração, os itens são separados por vírgula.",
+          "certo": true,
+          "explicacao": "Os itens de uma lista são separados por vírgula: 'caneta, documento e cartão'. O último item costuma vir ligado por 'e'.",
+          "dica": "Pense numa lista de material para a prova."
+        },
+        {
+          "tipo": "completar",
+          "nivel": 1,
+          "enunciado": "Complete: Leve caneta ___ documento e cartão de confirmação.",
+          "opcoes": [
+            "sem vírgula",
+            "vírgula"
+          ],
+          "correta": 1,
+          "explicacao": "É uma enumeração: 'caneta, documento e cartão'. A vírgula separa os itens; antes do 'e' final, normalmente não há vírgula.",
+          "dica": "Quantos itens há na lista?"
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 2,
+          "enunciado": "Qual enumeração está pontuada corretamente?",
+          "opcoes": [
+            "Estudei Português, Direito e Raciocínio Lógico.",
+            "Estudei Português Direito, e Raciocínio Lógico.",
+            "Estudei, Português, Direito e Raciocínio Lógico."
+          ],
+          "correta": 0,
+          "explicacao": "A vírgula separa os itens da lista, e o último vem com 'e'. Na terceira opção, a vírgula separa o verbo do complemento.",
+          "dica": "A lista começa depois do verbo."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 2,
+          "afirmacao": "Nunca se usa vírgula antes da conjunção 'e'.",
+          "certo": false,
+          "explicacao": "Pode haver vírgula antes de 'e' quando as orações têm sujeitos diferentes ('O fiscal entrou, e os candidatos se calaram') ou quando o 'e' se repete.",
+          "dica": "Pense em duas orações com sujeitos diferentes.",
+          "armadilha": "'nunca há vírgula antes de e' é um mito que a banca explora."
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada frase ao uso da vírgula antes do 'e'.",
+          "pares": [
+            [
+              "O juiz leu a sentença, e os advogados recorreram.",
+              "Sujeitos diferentes"
+            ],
+            [
+              "Estudou, e revisou, e praticou.",
+              "O 'e' se repete"
+            ],
+            [
+              "Comprei livros, cadernos e canetas.",
+              "Enumeração: sem vírgula antes do 'e'"
+            ]
+          ],
+          "explicacao": "Antes do 'e', a vírgula aparece com sujeitos diferentes ou com o 'e' repetido. Na enumeração simples, o último item vem sem vírgula.",
+          "dica": "Veja quem pratica cada ação."
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Monte a frase.",
+          "itens": [
+            "O fiscal recolheu as provas,",
+            "e os candidatos",
+            "deixaram a sala."
+          ],
+          "explicacao": "As orações têm sujeitos diferentes ('o fiscal' e 'os candidatos'), por isso a vírgula antes de 'e' é bem-vinda.",
+          "dica": "A frase começa pelo que o fiscal fez."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 3,
+          "trechos": [
+            "Levem RG,",
+            "CPF,",
+            "e comprovante de inscrição."
+          ],
+          "erro": 1,
+          "explicacao": "Na enumeração simples, o último item vem ligado por 'e' sem vírgula: 'RG, CPF e comprovante de inscrição'.",
+          "dica": "É uma lista com um só sujeito."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'A banca anulou a questão e os candidatos que recorreram ganharam o ponto', uma vírgula antes do 'e' seria justificada, pois as orações têm sujeitos diferentes.",
+          "certo": true,
+          "explicacao": "Sujeitos diferentes ('a banca' e 'os candidatos'): a vírgula é bem-vinda e ainda evita ler 'a questão e os candidatos' como uma coisa só.",
+          "dica": "Quem anulou? Quem ganhou o ponto?"
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 4,
+          "enunciado": "Em qual frase a vírgula antes do 'e' está bem empregada?",
+          "opcoes": [
+            "O professor corrigiu a prova, e a monitora conferiu as notas.",
+            "Comprei pão, leite, e café.",
+            "Os candidatos, e os fiscais chegaram cedo."
+          ],
+          "correta": 0,
+          "explicacao": "Na primeira, as orações têm sujeitos diferentes. Na segunda, é enumeração simples. Na terceira, a vírgula separa partes do sujeito do verbo.",
+          "dica": "Procure orações com sujeitos diferentes."
+        }
+      ]
+    },
+    {
+      "nome": "As conjunções",
+      "nuance": "'Mas' vem no início da oração, com vírgula antes; 'porém', 'contudo' e 'portanto' podem se deslocar e então ficam entre vírgulas.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "Usa-se vírgula antes da conjunção 'mas'.",
+          "certo": true,
+          "explicacao": "'Mas' liga orações com ideia de oposição e vem precedido de vírgula: 'Estudou muito, mas ficou na lista de espera.'",
+          "dica": "Pense numa frase com ideia de oposição."
+        },
+        {
+          "tipo": "completar",
+          "nivel": 1,
+          "enunciado": "Complete: A prova foi difícil ___ mas todos terminaram a tempo.",
+          "opcoes": [
+            "sem vírgula",
+            "vírgula"
+          ],
+          "correta": 1,
+          "explicacao": "Antes de 'mas', que introduz uma ideia de oposição, usa-se vírgula: 'A prova foi difícil, mas todos terminaram a tempo.'",
+          "dica": "Qual palavra liga as duas ideias?"
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada conjunção à ideia que ela expressa.",
+          "pares": [
+            [
+              "mas",
+              "Oposição"
+            ],
+            [
+              "portanto",
+              "Conclusão"
+            ],
+            [
+              "pois",
+              "Explicação"
+            ]
+          ],
+          "explicacao": "'Mas' opõe, 'portanto' conclui e 'pois', antes do verbo, explica. Saber a ideia ajuda a decidir a pontuação.",
+          "dica": "Pense em frases do dia a dia com cada uma."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 2,
+          "enunciado": "Qual frase está pontuada corretamente?",
+          "opcoes": [
+            "Ele estudou muito, mas não passou.",
+            "Ele estudou muito mas, não passou.",
+            "Ele, estudou muito mas não passou."
+          ],
+          "correta": 0,
+          "explicacao": "A vírgula vem antes de 'mas', não depois. Na terceira opção, a vírgula separa o sujeito 'Ele' do verbo.",
+          "dica": "A vírgula fica de qual lado do 'mas'?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 2,
+          "afirmacao": "'Porém', diferentemente de 'mas', pode aparecer no meio da oração, entre vírgulas.",
+          "certo": true,
+          "explicacao": "'Porém' pode se deslocar: 'A prova foi difícil. O resultado, porém, foi bom.' Deslocado, ele fica entre vírgulas. 'Mas' não se desloca.",
+          "dica": "Tente mover cada conjunção para o meio da frase."
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Monte a frase.",
+          "itens": [
+            "A prova foi longa,",
+            "mas",
+            "o tempo foi suficiente."
+          ],
+          "explicacao": "A vírgula vem antes de 'mas', que inicia a segunda oração.",
+          "dica": "A frase começa pela primeira ideia."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 3,
+          "trechos": [
+            "O resultado saiu.",
+            "A nota de corte,",
+            "porém",
+            "foi menor que a esperada."
+          ],
+          "erro": 2,
+          "explicacao": "'porém' está deslocado para o meio da oração e precisa de vírgulas dos dois lados: 'A nota de corte, porém, foi menor que a esperada.'",
+          "dica": "A conjunção deslocada fica isolada."
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'A banca anulou a questão. Os candidatos devem portanto receber o ponto', o 'portanto' deveria estar entre vírgulas.",
+          "certo": true,
+          "explicacao": "'portanto' está deslocado para o meio da oração, depois do verbo. Assim, fica entre vírgulas: 'devem, portanto, receber o ponto'.",
+          "dica": "A conjunção está no início ou no meio da oração?"
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 3,
+          "enunciado": "Em qual frase a conjunção está deslocada e, por isso, entre vírgulas?",
+          "opcoes": [
+            "O edital, contudo, foi mantido.",
+            "O edital foi mantido, mas houve recurso.",
+            "O edital foi mantido e publicado."
+          ],
+          "correta": 0,
+          "explicacao": "'contudo' está no meio da oração, entre o sujeito e o verbo. Deslocado, fica entre vírgulas.",
+          "dica": "Qual conjunção não está no começo da oração?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 4,
+          "afirmacao": "Em 'O curso é caro, mas, vale o investimento', a vírgula depois de 'mas' está correta.",
+          "certo": false,
+          "explicacao": "'Mas' inicia a oração e não se desloca: a vírgula vem antes dele, não depois. O certo é 'O curso é caro, mas vale o investimento.'",
+          "dica": "Compare com 'porém', que pode se deslocar.",
+          "armadilha": "a banca troca 'mas' por 'porém' e vice-versa para testar a vírgula."
+        }
+      ]
+    },
+    {
+      "nome": "Explicativa ou restritiva",
+      "nuance": "A oração com 'que' entre vírgulas explica e vale para todos; sem vírgulas, restringe, e isso muda o sentido.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "A oração com 'que' entre vírgulas acrescenta uma explicação sobre todo o termo anterior.",
+          "certo": true,
+          "explicacao": "Entre vírgulas, a oração é explicativa e vale para todos: 'Os candidatos, que estudaram, foram aprovados' quer dizer que todos estudaram.",
+          "dica": "Pense em 'todos' ou 'só alguns'."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 1,
+          "enunciado": "Em 'Os candidatos que estudaram foram aprovados', quem foi aprovado?",
+          "opcoes": [
+            "Só os candidatos que estudaram.",
+            "Todos os candidatos."
+          ],
+          "correta": 0,
+          "explicacao": "Sem vírgulas, a oração é restritiva: separa um grupo. Só os que estudaram foram aprovados.",
+          "dica": "Há vírgulas em volta de 'que estudaram'?"
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada frase ao que ela quer dizer.",
+          "pares": [
+            [
+              "Os servidores, que fizeram o curso, foram promovidos.",
+              "Todos foram promovidos"
+            ],
+            [
+              "Os servidores que fizeram o curso foram promovidos.",
+              "Só alguns foram promovidos"
+            ],
+            [
+              "A prova que caiu ontem foi anulada.",
+              "Identifica de qual prova se fala"
+            ]
+          ],
+          "explicacao": "Com vírgulas, a oração explica e vale para todos. Sem vírgulas, ela restringe ou identifica de quem se fala.",
+          "dica": "Procure as vírgulas em volta do 'que'."
+        },
+        {
+          "tipo": "completar",
+          "nivel": 2,
+          "enunciado": "Complete com a pontuação: Minha mãe ___ que é professora ___ me ajudou a estudar.",
+          "opcoes": [
+            "com vírgulas",
+            "sem vírgulas"
+          ],
+          "correta": 0,
+          "explicacao": "Mãe é uma só: a oração não pode restringir, só explicar. Por isso fica entre vírgulas.",
+          "dica": "Quantas mães a pessoa tem?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 2,
+          "afirmacao": "Tirar as vírgulas de uma oração explicativa pode mudar o sentido da frase.",
+          "certo": true,
+          "explicacao": "Sem as vírgulas, a oração passa a restringir: o que valia para todos passa a valer só para uma parte.",
+          "dica": "Compare 'todos' com 'só alguns'."
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Monte a frase.",
+          "itens": [
+            "O edital,",
+            "que saiu ontem,",
+            "prevê duas fases."
+          ],
+          "explicacao": "Há um só edital em questão: a oração 'que saiu ontem' explica e fica entre vírgulas.",
+          "dica": "A frase começa pelo sujeito."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 3,
+          "trechos": [
+            "O Sol,",
+            "que é uma estrela",
+            "ilumina a Terra."
+          ],
+          "erro": 1,
+          "explicacao": "O Sol é um só, então a oração é explicativa e precisa fechar com vírgula: 'O Sol, que é uma estrela, ilumina a Terra.'",
+          "dica": "A vírgula que abriu a explicação foi fechada?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'Os recursos que foram aceitos mudaram o gabarito', isolar 'que foram aceitos' entre vírgulas manteria o sentido original.",
+          "certo": false,
+          "explicacao": "Com vírgulas, a frase diria que todos os recursos foram aceitos. Sem vírgulas, só os aceitos mudaram o gabarito. O sentido muda.",
+          "dica": "Todos os recursos foram aceitos?",
+          "armadilha": "a banca pergunta se a inclusão das vírgulas 'altera o sentido', e não só se 'prejudica a correção'."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 4,
+          "enunciado": "Em qual frase a retirada das vírgulas mudaria o sentido?",
+          "opcoes": [
+            "Os candidatos, que chegaram atrasados, não entraram.",
+            "Ontem, a prova foi aplicada.",
+            "Em 2026, haverá novo concurso."
+          ],
+          "correta": 0,
+          "explicacao": "Sem as vírgulas, a primeira passaria a dizer que só os atrasados não entraram. Nas outras, o adjunto é curto e a vírgula é opcional.",
+          "dica": "Em qual delas há uma oração com 'que'?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 4,
+          "afirmacao": "Em 'Brasília, que é a capital do país, sediará a prova', as vírgulas podem ser retiradas sem prejuízo, pois a oração passaria a ser restritiva.",
+          "certo": false,
+          "explicacao": "Brasília é uma só: não há outras para restringir. A oração só pode ser explicativa, e as vírgulas são necessárias.",
+          "dica": "Existe mais de uma Brasília?"
+        }
+      ]
+    },
+    {
+      "nome": "Orações adverbiais deslocadas",
+      "nuance": "A oração adverbial no começo da frase pede vírgula; no fim, a vírgula costuma ser opcional.",
+      "questoes": [
+        {
+          "tipo": "certoErrado",
+          "nivel": 1,
+          "afirmacao": "Quando a oração adverbial vem no início da frase, usa-se vírgula depois dela.",
+          "certo": true,
+          "explicacao": "'Quando o edital saiu, os candidatos se inscreveram.' A oração de tempo, causa, condição etc., no início da frase, é separada por vírgula.",
+          "dica": "Pense em frases que começam com 'quando' ou 'se'."
+        },
+        {
+          "tipo": "completar",
+          "nivel": 1,
+          "enunciado": "Complete: Se você revisar todo dia ___ vai lembrar mais.",
+          "opcoes": [
+            "sem vírgula",
+            "vírgula"
+          ],
+          "correta": 1,
+          "explicacao": "A oração de condição 'Se você revisar todo dia' está no início da frase e é separada por vírgula.",
+          "dica": "A frase começa com uma condição."
+        },
+        {
+          "tipo": "ligarPares",
+          "nivel": 2,
+          "enunciado": "Ligue cada oração à ideia que ela expressa.",
+          "pares": [
+            [
+              "Quando o edital sair,",
+              "Tempo"
+            ],
+            [
+              "Se a nota for suficiente,",
+              "Condição"
+            ],
+            [
+              "Embora a prova fosse longa,",
+              "Concessão"
+            ]
+          ],
+          "explicacao": "As três são orações adverbiais no início da frase, por isso terminam com vírgula. Cada conjunção indica uma ideia.",
+          "dica": "Olhe a primeira palavra de cada oração."
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 2,
+          "enunciado": "Qual frase está pontuada corretamente?",
+          "opcoes": [
+            "Assim que a prova terminou, os fiscais recolheram as folhas.",
+            "Assim que a prova terminou os fiscais, recolheram as folhas.",
+            "Assim, que a prova terminou os fiscais recolheram as folhas."
+          ],
+          "correta": 0,
+          "explicacao": "A vírgula vem no fim da oração adverbial ('Assim que a prova terminou'). Na segunda opção, ela separa o sujeito do verbo.",
+          "dica": "Onde termina a oração que indica tempo?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 2,
+          "afirmacao": "Em 'Os candidatos se inscreveram quando o edital saiu', é obrigatório usar vírgula antes de 'quando'.",
+          "certo": false,
+          "explicacao": "A oração adverbial está no fim da frase, na ordem direta. Nesse caso, a vírgula não é obrigatória.",
+          "dica": "A oração de tempo está no início ou no fim?"
+        },
+        {
+          "tipo": "ordenar",
+          "nivel": 2,
+          "enunciado": "Monte a frase.",
+          "itens": [
+            "Se a nota de corte baixar,",
+            "você",
+            "será convocado."
+          ],
+          "explicacao": "A oração de condição vem primeiro e termina com vírgula.",
+          "dica": "A frase começa pela condição."
+        },
+        {
+          "tipo": "identificarErro",
+          "nivel": 3,
+          "trechos": [
+            "Como o sistema caiu",
+            "a banca",
+            "prorrogou o prazo."
+          ],
+          "erro": 0,
+          "explicacao": "A oração de causa 'Como o sistema caiu' está no início e pede vírgula. Sem ela, dá até para ler 'caiu a banca'.",
+          "dica": "Onde termina a causa e começa a consequência?"
+        },
+        {
+          "tipo": "certoErrado",
+          "nivel": 3,
+          "afirmacao": "Em 'Embora tenha estudado pouco, o candidato foi aprovado', a vírgula depois de 'pouco' separa indevidamente o sujeito do verbo.",
+          "certo": false,
+          "explicacao": "A vírgula separa a oração adverbial ('Embora tenha estudado pouco') da principal. O sujeito é 'o candidato', que segue ligado a 'foi aprovado'.",
+          "dica": "Qual é o sujeito de 'foi aprovado'?"
+        },
+        {
+          "tipo": "multipla",
+          "nivel": 4,
+          "enunciado": "Em qual frase a vírgula pode ser retirada sem prejuízo da correção?",
+          "opcoes": [
+            "O resultado sairá amanhã, conforme informou a banca.",
+            "Ana, a fiscal, recolheu as provas.",
+            "Candidatos, atenção ao horário."
+          ],
+          "correta": 0,
+          "explicacao": "Na primeira, a oração adverbial está no fim: a vírgula é opcional. Nas outras, ela isola aposto e vocativo, que a exigem.",
+          "dica": "Duas das frases usam regras de partes anteriores."
+        }
+      ]
+    }
+  ],
+  "farol": [
+    {
+      "tipo": "certoErrado",
+      "nivel": 3,
+      "afirmacao": "Em 'Os candidatos aprovados na primeira etapa da seleção, serão convocados por e-mail', a vírgula após 'seleção' está de acordo com a norma-padrão.",
+      "certo": false,
+      "explicacao": "Todo o trecho até 'seleção' é o sujeito de 'serão convocados'. A vírgula separa o sujeito do verbo.",
+      "dica": "Quem será convocado?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 3,
+      "afirmacao": "Em 'Professora, a sala de prova já está aberta', a vírgula isola um vocativo e não pode ser retirada.",
+      "certo": true,
+      "explicacao": "'Professora' é a pessoa chamada, o vocativo, que sempre vem separado por vírgula.",
+      "dica": "Alguém está sendo chamado?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 3,
+      "afirmacao": "Em 'No último ano, o número de inscritos dobrou', a retirada da vírgula prejudicaria a correção gramatical do texto.",
+      "certo": false,
+      "explicacao": "'No último ano' é adjunto adverbial curto deslocado: a vírgula é facultativa, e a frase sem ela continua correta.",
+      "dica": "O termo deslocado é curto ou longo?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 4,
+      "afirmacao": "Em 'O órgão, neste ano, ampliou o número de vagas', a supressão apenas da segunda vírgula manteria a correção gramatical.",
+      "certo": false,
+      "explicacao": "Sem a segunda vírgula, sobra uma só, que separa o sujeito 'O órgão' do verbo 'ampliou'. Ou ficam as duas, ou nenhuma.",
+      "dica": "O que a primeira vírgula separaria sozinha?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 3,
+      "afirmacao": "Em 'A banca publicou o gabarito, e os candidatos começaram a conferir as respostas', a vírgula antes de 'e' é justificada pelos sujeitos diferentes das orações.",
+      "certo": true,
+      "explicacao": "'A banca' e 'os candidatos' são sujeitos diferentes: nesse caso, a vírgula antes de 'e' é bem empregada.",
+      "dica": "Quem publicou? Quem começou a conferir?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 4,
+      "afirmacao": "Em 'O concurso foi adiado. As inscrições porém continuam abertas', o termo 'porém' deveria estar isolado por vírgulas.",
+      "certo": true,
+      "explicacao": "'porém' está deslocado para o meio da oração, entre o sujeito e o verbo. Deslocado, ele fica entre vírgulas.",
+      "dica": "A conjunção está no começo da oração?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 4,
+      "afirmacao": "Em 'Os candidatos que faltaram à primeira prova foram eliminados', a inserção de vírgulas após 'candidatos' e após 'prova' alteraria o sentido, pois indicaria que todos os candidatos faltaram.",
+      "certo": true,
+      "explicacao": "Com vírgulas, a oração vira explicativa e vale para todos: todos teriam faltado. Sem vírgulas, só os que faltaram foram eliminados.",
+      "dica": "Todos faltaram ou só alguns?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 4,
+      "afirmacao": "Em 'A Constituição, que é a lei maior do país, garante o acesso aos cargos públicos', as vírgulas podem ser retiradas sem prejuízo, por se tratar de oração restritiva.",
+      "certo": false,
+      "explicacao": "Há uma só Constituição em questão: a oração é explicativa, não restritiva, e as vírgulas são necessárias.",
+      "dica": "Existe mais de uma Constituição do país?"
+    },
+    {
+      "tipo": "certoErrado",
+      "nivel": 3,
+      "afirmacao": "Em 'Caso o candidato não compareça, será eliminado', a vírgula é empregada porque a oração adverbial está no início da frase.",
+      "certo": true,
+      "explicacao": "A oração de condição 'Caso o candidato não compareça' vem antes da principal e por isso é separada por vírgula.",
+      "dica": "A frase começa por qual ideia?"
+    },
+    {
+      "tipo": "multipla",
+      "nivel": 4,
+      "enunciado": "Assinale a frase pontuada de acordo com a norma-padrão.",
+      "opcoes": [
+        "Os servidores, que tomarem posse em março receberão o treinamento.",
+        "Os servidores que tomarem posse em março receberão o treinamento.",
+        "Os servidores que tomarem posse em março, receberão o treinamento.",
+        "Os servidores, que tomarem posse em março, receberão, o treinamento."
+      ],
+      "correta": 1,
+      "explicacao": "A oração restringe quais servidores: sem vírgulas. As outras deixam a vírgula aberta, separam o sujeito do verbo ou o verbo do complemento.",
+      "dica": "São todos os servidores ou só os que tomarem posse em março?"
+    },
+    {
+      "tipo": "identificarErro",
+      "nivel": 4,
+      "trechos": [
+        "Quando o resultado saiu,",
+        "os candidatos aprovados,",
+        "comemoraram",
+        "a conquista."
+      ],
+      "erro": 1,
+      "explicacao": "'os candidatos aprovados' é o sujeito de 'comemoraram'. A vírgula depois de 'aprovados' separa o sujeito do verbo.",
+      "dica": "Uma das vírgulas está certa por causa da oração de tempo; a outra, não."
+    }
+  ]
+}

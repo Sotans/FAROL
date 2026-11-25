@@ -23,11 +23,12 @@ type Props = {
 };
 
 const visual = {
-  normal: { fundo: cor.superficie, borda: cor.linha, texto: cor.texto },
+  // linhaForte: borda de controle com 3,45:1 sobre o fundo (a 'linha' tinha 1,5:1).
+  normal: { fundo: cor.superficie, borda: cor.linhaForte, texto: cor.texto },
   selecionada: { fundo: cor.selecionadaFundo, borda: cor.mare, texto: cor.texto },
   correta: { fundo: cor.acertoFundo, borda: cor.acerto, texto: cor.acerto },
   errada: { fundo: cor.atencaoFundo, borda: cor.atencao, texto: cor.atencao },
-  removida: { fundo: cor.superficie, borda: cor.linha, texto: cor.textoSuave },
+  removida: { fundo: cor.superficie, borda: cor.linhaForte, texto: cor.textoSuave },
 } as const;
 
 export function Opcao({ texto, estado, onPress, desabilitado = false, compacta = false }: Props) {
@@ -71,9 +72,13 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
           },
         ]}>
         <View style={estilos.linha}>
-          <Text style={[estilos.texto, { color: v.texto }]}>{texto}</Text>
+          {/* Removida: além de apagada, riscada e com ✕, para a mensagem não depender só da cor. */}
+          <Text style={[estilos.texto, { color: v.texto }, estado === 'removida' ? estilos.riscado : null]}>
+            {texto}
+          </Text>
           {estado === 'correta' ? <IconeVisto tamanho={18} cor={cor.acerto} /> : null}
           {estado === 'errada' ? <IconeFechar tamanho={18} cor={cor.atencao} /> : null}
+          {estado === 'removida' ? <IconeFechar tamanho={16} cor={cor.textoSuave} /> : null}
         </View>
       </Pressable>
     </Animated.View>
@@ -81,6 +86,7 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
 }
 
 const estilos = StyleSheet.create({
+  riscado: { textDecorationLine: 'line-through' },
   base: {
     minHeight: alvoMinimo + 4,
     borderRadius: raio.md + 2,

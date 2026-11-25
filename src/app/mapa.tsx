@@ -91,7 +91,7 @@ const estilos = StyleSheet.create({
   trilho: { height: 10, backgroundColor: cor.linha, borderRadius: raio.circulo, overflow: 'hidden' },
   preenchimento: { height: '100%', backgroundColor: cor.luz, borderRadius: raio.circulo },
   cartaoSub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
-  sugestao: { backgroundColor: 'rgba(43,95,217,0.22)', borderRadius: raio.lg, padding: 14 },
+  sugestao: { backgroundColor: cor.mareVeu, borderRadius: raio.lg, padding: 14 },
   sugestaoTexto: { fontFamily: fonte.texto, fontSize: tamanho.sm, lineHeight: 21, color: cor.texto },
   rodape: { paddingBottom: 12 },
 });

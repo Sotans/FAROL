@@ -53,7 +53,7 @@ export function Farol() {
   );
 }
 
-const luzSuave = 'rgba(255, 200, 87, 0.32)';
+const luzSuave = cor.luzBrilho;
 
 const estilos = StyleSheet.create({
   raiz: { width: LADO, height: 280, alignItems: 'center' },

@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Polygon, Stop } from 'react-native-svg';
 
 import { carreiraPorId } from '@/carreiras/dados';
+import { modulosEmRevisao, trilhaDePortugues } from '@/conteudo/trilha';
 import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import {
@@ -25,22 +26,23 @@ import {
   type EstadoNo,
   type Ligacao,
 } from '@/componentes/NoTrilha';
-import { textoDeDias, useProgresso, type StatusDaNuvem } from '@/estado/progresso';
-import { indiceDoFarol, moduloAtual, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
+import { farolAceso as farolDoModuloAceso, moduloLiberado, progressoDe, proximoModulo } from '@/estado/modulos';
+import { textoDeDias, useProgresso } from '@/estado/progresso';
 import {
   LIMIAR_DA_REVISAO_RAPIDA,
   QUESTOES_DA_REVISAO_RAPIDA,
   QUESTOES_DO_FAROL,
-  vencidasDoModulo,
+  vencidasDosModulos,
 } from '@/licao/montar';
-import { rotuloModoDeErro } from '@/licao/tipos';
 import { vencidas } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
-import { diagnosticoDoSom, tocar } from '@/servicos/som';
+import { acaoPrincipal } from '@/trilha/acoes';
 import {
   IconeAnelDaMeta,
   IconeBussola,
+  IconeCadeado,
   IconeEscudo,
+  IconeFarol,
   IconeLuzDaSequencia,
   IconeModulos,
   IconeRevisao,
@@ -48,22 +50,16 @@ import {
 } from '@/icones';
 import { alvoMinimo, cor, fonte, limites, movimento, raio, tamanho } from '@/tema/tokens';
 
-const textoDaNuvem: Record<StatusDaNuvem, string> = {
-  desligada: 'Nuvem desligada (falta o arquivo .env.local)',
-  conectando: 'Nuvem: conectando...',
-  conectada: 'Nuvem: progresso salvo (conta anônima)',
-  offline: 'Nuvem: sem conexão agora; tenta de novo ao abrir o app',
-};
-
 /** Espaço acima do farol, dentro da rolagem. O feixe usa a mesma medida. */
 const TOPO_DA_TRILHA = 8;
 const MARGEM_DO_FAROL = 8;
 
 /**
- * Onde o feixe apontou da última vez. Fica fora do componente para sobreviver à troca de tela:
- * ao voltar de uma lição concluída, o feixe sai do nó antigo e desce até o novo.
+ * Onde o feixe apontou da última vez, em cada módulo. Fica fora do componente para sobreviver à troca
+ * de tela: ao voltar de uma lição concluída, o feixe sai do nó antigo e desce até o novo. Guardado por
+ * módulo para que, ao trocar de módulo, o feixe não venha da posição do outro.
  */
-let ultimoAlvoDoFeixe: number | null = null;
+const ultimoAlvoDoFeixe = new Map<string, number>();
 
 const PoligonoAnimado = Animated.createAnimatedComponent(Polygon);
 
@@ -71,21 +67,32 @@ const PoligonoAnimado = Animated.createAnimatedComponent(Polygon);
  * O feixe do farol: sai da lâmpada e ilumina o nó de hoje. É o único movimento da trilha,
  * e acontece uma vez, quando a pessoa conclui uma parte.
  */
-function FeixeDoFarol({ largura, altura, alvoY }: { largura: number; altura: number; alvoY: number }) {
+function FeixeDoFarol({
+  moduloId,
+  largura,
+  altura,
+  alvoY,
+}: {
+  moduloId: string;
+  largura: number;
+  altura: number;
+  alvoY: number;
+}) {
   const reduzir = useReducedMotion();
-  const y = useSharedValue(ultimoAlvoDoFeixe ?? alvoY);
+  const y = useSharedValue(ultimoAlvoDoFeixe.get(moduloId) ?? alvoY);
   const lx = largura - MARGEM_DO_FAROL - TAMANHO_DO_FAROL * 1.5 + LAMPADA_DO_FAROL.x;
   const ly = TOPO_DA_TRILHA + (ALTURA_DO_FAROL - TAMANHO_DO_FAROL) / 2 + LAMPADA_DO_FAROL.y;
   const cx = COLUNA_DOS_NOS / 2;
 
   useEffect(() => {
-    if (reduzir || ultimoAlvoDoFeixe === null || ultimoAlvoDoFeixe === alvoY) {
+    const anterior = ultimoAlvoDoFeixe.get(moduloId);
+    if (reduzir || anterior === undefined || anterior === alvoY) {
       y.value = alvoY;
     } else {
       y.value = withTiming(alvoY, { duration: movimento.celebracaoMs, easing: Easing.inOut(Easing.cubic) });
     }
-    ultimoAlvoDoFeixe = alvoY;
-  }, [alvoY, reduzir, y]);
+    ultimoAlvoDoFeixe.set(moduloId, alvoY);
+  }, [moduloId, alvoY, reduzir, y]);
 
   const props = useAnimatedProps(() => {
     const dx = cx - lx;
@@ -132,21 +139,27 @@ export default function Trilha() {
     desafiosHoje,
     registrarDesafio,
     ganharDesafio,
-    reiniciar,
-    modoDeErro,
-    alternarModoDeErro,
     revisoes,
     nuvem,
     conta,
+    modulo,
+    modulos,
+    escolherModulo,
+    totalDePartes,
+    totalDeNos,
+    indiceDoFarol,
   } = useProgresso();
+  const nomeDoModulo = modulo.nome;
+  const partes = modulo.partes.map((p) => p.nome);
   const [cartaoAberto, setCartaoAberto] = useState(false);
   const [alvoDoPulo, setAlvoDoPulo] = useState<number | null>(null);
   const [limiteDeDesafio, setLimiteDeDesafio] = useState(false);
-  const [laboratorio, setLaboratorio] = useState(false);
+  const [listaAberta, setListaAberta] = useState(false);
   const [largura, setLargura] = useState(0);
   const [alturaVisivel, setAlturaVisivel] = useState(0);
   const rolagem = useRef<ScrollViewInstance>(null);
-  const jaCentrou = useRef(false);
+  // Em qual módulo a trilha já foi centrada: trocar de módulo centra de novo.
+  const centrouNoModulo = useRef<string | null>(null);
   const { aviso, mostrarAviso } = useAviso();
   // A hora de revisar depende do relógio: recalcula sempre que a trilha volta a aparecer.
   const [agora, setAgora] = useState(() => Date.now());
@@ -161,17 +174,19 @@ export default function Trilha() {
 
   // A trilha abre centrada no nó atual, e não no topo cheio de cadeados.
   useEffect(() => {
-    if (jaCentrou.current || alturaVisivel === 0) return;
-    jaCentrou.current = true;
+    if (centrouNoModulo.current === modulo.id || alturaVisivel === 0) return;
+    centrouNoModulo.current = modulo.id;
     const alvo = vezDoFarol || farolAceso ? 0 : centroDoAtual - alturaVisivel * 0.55;
     rolagem.current?.scrollTo({ y: Math.max(0, alvo), animated: false });
-  }, [alturaVisivel, centroDoAtual, vezDoFarol, farolAceso]);
+  }, [modulo.id, alturaVisivel, centroDoAtual, vezDoFarol, farolAceso]);
 
   // Primeiro acesso: valor antes de qualquer pedido (jornada, etapa 2).
   if (!onboardingConcluido) return <Redirect href="/boas-vindas" />;
 
   const c = carreiraPorId(carreira);
-  const paraRevisar = vencidasDoModulo(moduloAtual, vencidas(revisoes, new Date(agora)));
+  const numeroDoModulo = trilhaDePortugues.findIndex((m) => m.id === modulo.id) + 1;
+  // A Revisão rápida junta o que venceu em todos os módulos, não só no aberto.
+  const paraRevisar = vencidasDosModulos(trilhaDePortugues, vencidas(revisoes, new Date(agora)));
   const questoesDaRevisao = Math.min(paraRevisar.length, QUESTOES_DA_REVISAO_RAPIDA);
   // Convite para guardar o progresso: só depois de a pessoa ter recebido valor (2 partes) e só para conta anônima.
   const convidarParaGuardar = nuvem === 'conectada' && conta?.anonima === true && concluidas >= 2;
@@ -179,6 +194,17 @@ export default function Trilha() {
   const metaCumprida = licoesHoje >= metaDiaria;
   // Convite "Pular pra cá?" no nó dois à frente, quando existir.
   const noComConvite = concluidas + 2 < totalDePartes ? concluidas + 2 : null;
+  // O botão da base: a lição de hoje, o farol ou, com o farol aceso, o próximo módulo.
+  const proximo = proximoModulo(trilhaDePortugues, modulo.id);
+  const proximoLiberado =
+    proximo !== null && moduloLiberado(trilhaDePortugues, modulos, trilhaDePortugues.indexOf(proximo));
+  const acao = acaoPrincipal({
+    concluidas,
+    totalDePartes,
+    xpDaLicao: limites.xpDaLicao,
+    xpDoFarol: limites.xpDoFarol,
+    proximoModulo: proximoLiberado ? proximo : null,
+  });
 
   // "Para você": um assunto por vez, nesta ordem: revisão vencida, mapa não feito, guardar o progresso.
   const paraVoce: ParaVoce | null =
@@ -278,20 +304,33 @@ export default function Trilha() {
         </View>
       </View>
 
-      {/* Toque longo no banner abre o Laboratório (controles de demonstração). */}
+      {/* Toque longo no banner abre o Laboratório (ferramentas de teste, fora da trilha). */}
       <Pressable
         onLongPress={() => {
           haptico.selecao();
-          setLaboratorio((v) => !v);
+          router.push('/laboratorio');
         }}
         delayLongPress={700}
         accessible={false}
         style={estilos.banner}>
-        <View>
-          <Text style={estilos.bannerPequeno}>{`Português · Módulo 1${c ? ` · ${c.nome}` : ''}`}</Text>
+        <View style={estilos.bannerTextos}>
+          <Text style={estilos.bannerPequeno}>{`Português · Módulo ${numeroDoModulo}${c ? ` · ${c.nome}` : ''}`}</Text>
           <Text style={estilos.bannerTitulo}>{nomeDoModulo}</Text>
+          {/* Mesma linha em todos os módulos, para o banner (e a trilha abaixo dele) ter sempre a mesma altura. */}
+          <Text style={estilos.bannerLinha}>
+            {`${totalDePartes} partes e um farol${modulosEmRevisao.has(modulo.id) ? ' · conteúdo em revisão' : ''}`}
+          </Text>
         </View>
-        <IconeModulos tamanho={26} />
+        <Pressable
+          onPress={() => {
+            haptico.leve();
+            setListaAberta(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Ver os módulos de Português"
+          style={estilos.bannerBotao}>
+          <IconeModulos tamanho={26} />
+        </Pressable>
       </Pressable>
 
       {paraVoce ? (
@@ -322,9 +361,17 @@ export default function Trilha() {
         showsVerticalScrollIndicator={false}>
         <View style={estilos.trilha} onLayout={(e) => setLargura(e.nativeEvent.layout.width)}>
           {largura > 0 && !farolAceso && !vezDoFarol ? (
-            <FeixeDoFarol largura={largura} altura={alturaDaTrilha} alvoY={centroDoAtual} />
+            <FeixeDoFarol
+              key={`feixe-${modulo.id}`}
+              moduloId={modulo.id}
+              largura={largura}
+              altura={alturaDaTrilha}
+              alvoY={centroDoAtual}
+            />
           ) : null}
+          {/* As chaves com o id do módulo fazem cada módulo montar a trilha do zero. */}
           <NoTrilha
+            key={`farol-${modulo.id}`}
             farol
             estado={farolAceso ? 'feita' : vezDoFarol ? 'atual' : 'bloqueada'}
             rotulo={`Farol de ${nomeDoModulo}`}
@@ -335,7 +382,7 @@ export default function Trilha() {
             .map((_, i) => partes.length - 1 - i)
             .map((indice) => (
               <NoTrilha
-                key={indice}
+                key={`${modulo.id}-${indice}`}
                 estado={estadoDaParte(indice)}
                 rotulo={indice === concluidas ? `Parte ${indice + 1}, hoje` : `Parte ${indice + 1}`}
                 sub={partes[indice]}
@@ -346,48 +393,18 @@ export default function Trilha() {
               />
             ))}
         </View>
-
-        {laboratorio ? (
-          <View style={estilos.laboratorio}>
-            <Text style={estilos.laboratorioTitulo}>Laboratório (só para testes)</Text>
-            <Pressable onPress={alternarModoDeErro} style={estilos.rodapeDemo} accessibilityRole="button">
-              <Text style={estilos.rodapeDemoTexto}>
-                {`Experimento de erro: ${rotuloModoDeErro[modoDeErro]} (toque para trocar)`}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                tocar('licao');
-                setTimeout(() => mostrarAviso(diagnosticoDoSom('licao')), 400);
-              }}
-              style={estilos.rodapeDemo}
-              accessibilityRole="button">
-              <Text style={estilos.rodapeDemoTexto}>Testar som (diagnóstico)</Text>
-            </Pressable>
-            <Pressable onPress={() => router.push('/icones')} style={estilos.rodapeDemo} accessibilityRole="button">
-              <Text style={estilos.rodapeDemoTexto}>Ver catálogo de ícones</Text>
-            </Pressable>
-            <Pressable onPress={() => router.push('/conta')} style={estilos.rodapeDemo} accessibilityRole="button">
-              <Text style={estilos.rodapeDemoTexto}>
-                {conta && !conta.anonima && nuvem === 'conectada'
-                  ? `Nuvem: progresso salvo na conta ${conta.email ?? ''}`
-                  : textoDaNuvem[nuvem]}
-              </Text>
-            </Pressable>
-            <Pressable onPress={reiniciar} style={estilos.rodapeDemo} accessibilityRole="button">
-              <Text style={estilos.rodapeDemoTexto}>Reiniciar demonstração (volta ao início)</Text>
-            </Pressable>
-          </View>
-        ) : null}
       </ScrollView>
 
       {/* O botão grande da jornada (etapa 5): um toque começa a lição de hoje. */}
-      {!farolAceso ? (
+      {acao ? (
         <View style={estilos.rodape}>
           <Botao
-            rotulo={vezDoFarol ? 'Acender o farol' : `Continuar a Parte ${concluidas + 1}`}
-            sub={`+${vezDoFarol ? limites.xpDoFarol : limites.xpDaLicao} XP`}
-            onPress={() => router.push('/licao')}
+            rotulo={acao.rotulo}
+            sub={acao.tipo === 'proximoModulo' ? undefined : `+${acao.xp} XP`}
+            onPress={() => {
+              if (acao.tipo === 'proximoModulo') escolherModulo(acao.moduloId);
+              else router.push('/licao');
+            }}
           />
         </View>
       ) : null}
@@ -413,6 +430,65 @@ export default function Trilha() {
                   router.push('/licao');
                 }}
               />
+            </View>
+          </Animated.View>
+        </View>
+      ) : null}
+
+      {listaAberta ? (
+        <View style={StyleSheet.absoluteFill}>
+          <Pressable style={estilos.fundoCartao} onPress={() => setListaAberta(false)} accessibilityLabel="Fechar" />
+          <Animated.View entering={FadeInDown.duration(220)} style={[estilos.cartao, estilos.cartaoPulo]}>
+            <Text style={[estilos.cartaoTitulo, { color: cor.texto }]}>Módulos de Português</Text>
+            <Text style={[estilos.cartaoSub, { color: cor.textoSuave }]}>Na ordem do que mais cai nas provas.</Text>
+            <View style={estilos.lista}>
+              {trilhaDePortugues.map((m, i) => {
+                const liberado = moduloLiberado(trilhaDePortugues, modulos, i);
+                const aceso = farolDoModuloAceso(modulos, m);
+                const feitos = progressoDe(modulos, m.id).concluidas;
+                const situacao = aceso
+                  ? 'Farol aceso'
+                  : !liberado
+                    ? `Abre quando o farol de ${trilhaDePortugues[i - 1].nome} acender`
+                    : feitos > 0
+                      ? `${Math.min(feitos, m.partes.length)} de ${m.partes.length} partes`
+                      : 'Pronto para começar';
+                const emUso = m.id === modulo.id;
+                return (
+                  <Pressable
+                    key={m.id}
+                    onPress={() => {
+                      if (!liberado) {
+                        haptico.aviso();
+                        mostrarAviso(`Acenda o farol de ${trilhaDePortugues[i - 1].nome} para abrir este módulo.`);
+                        return;
+                      }
+                      haptico.selecao();
+                      escolherModulo(m.id);
+                      setListaAberta(false);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !liberado, selected: emUso }}
+                    accessibilityLabel={`Módulo ${i + 1}, ${m.nome}, ${situacao}`}
+                    style={[estilos.itemDaLista, emUso ? estilos.itemEmUso : null]}>
+                    <View style={estilos.itemIcone}>
+                      {aceso ? (
+                        <IconeFarol tamanho={28} estado="aceso" />
+                      ) : liberado ? (
+                        <IconeFarol tamanho={28} estado="atual" />
+                      ) : (
+                        <IconeCadeado tamanho={22} />
+                      )}
+                    </View>
+                    <View style={estilos.itemTextos}>
+                      <Text style={estilos.itemNome}>{`${i + 1}. ${m.nome}`}</Text>
+                      <Text style={estilos.itemSituacao}>
+                        {modulosEmRevisao.has(m.id) ? `${situacao} · em revisão` : situacao}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
           </Animated.View>
         </View>
@@ -492,8 +568,35 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  bannerTextos: { flex: 1 },
   bannerPequeno: { fontFamily: fonte.textoSemi, fontSize: tamanho.xs, color: cor.textoSobreMare },
   bannerTitulo: { fontFamily: fonte.titulo, fontSize: tamanho.lg, color: cor.textoSobreMare },
+  bannerLinha: { fontFamily: fonte.textoSemi, fontSize: tamanho.xs, color: cor.textoSobreMare, marginTop: 2 },
+  bannerBotao: {
+    width: alvoMinimo,
+    height: alvoMinimo,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -8,
+  },
+  lista: { marginTop: 14, gap: 8 },
+  itemDaLista: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 64,
+    paddingHorizontal: 12,
+    borderRadius: raio.md,
+    borderWidth: 1,
+    borderColor: cor.linhaForte,
+    backgroundColor: cor.fundo,
+  },
+  // Seleção em maré, como no resto do app: o âmbar fica para o próximo passo.
+  itemEmUso: { borderColor: cor.mare, backgroundColor: cor.selecionadaFundo },
+  itemIcone: { width: 44, alignItems: 'center' },
+  itemTextos: { flex: 1 },
+  itemNome: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.texto },
+  itemSituacao: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
   paraVoce: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -513,15 +616,6 @@ const estilos = StyleSheet.create({
   paraVoceSub: { fontFamily: fonte.texto, fontSize: tamanho.xs, color: cor.textoSuave },
   rolagem: { paddingBottom: 24 },
   trilha: { paddingTop: TOPO_DA_TRILHA },
-  laboratorio: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderColor: cor.linha,
-    paddingTop: 10,
-  },
-  laboratorioTitulo: { fontFamily: fonte.textoSemi, fontSize: tamanho.xs, color: cor.textoSuave, textAlign: 'center' },
-  rodapeDemo: { alignSelf: 'center', padding: 12, marginTop: 4, minHeight: alvoMinimo, justifyContent: 'center' },
-  rodapeDemoTexto: { fontFamily: fonte.texto, fontSize: tamanho.xs, color: cor.textoSuave, textAlign: 'center' },
   rodape: { paddingTop: 10, paddingBottom: 12 },
   fundoCartao: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: cor.sobreposicao },
   cartao: {

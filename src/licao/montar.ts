@@ -89,15 +89,17 @@ export function montarFarol(modulo: Modulo, semente: number): Questao[] {
 }
 
 /**
- * Revisão rápida: as questões vencidas do módulo (de qualquer parte e do farol), começando pelas
- * mais atrasadas, em dificuldade crescente. Não ensina nada novo e não avança a trilha.
+ * Revisão rápida: as questões vencidas dos módulos da trilha (de qualquer parte e do farol), começando
+ * pelas mais atrasadas, em dificuldade crescente. Não ensina nada novo e não avança a trilha.
  */
-export function montarRevisaoRapida(modulo: Modulo, vencidas: readonly string[]): Questao[] {
+export function montarRevisaoRapida(modulos: readonly Modulo[], vencidas: readonly string[]): Questao[] {
   const disponiveis = new Map<string, Questao>();
-  modulo.partes.forEach((parte) =>
-    parte.questoes.forEach((q) => disponiveis.set(q.id, { ...q, origem: `Revisão · ${parte.nome}` })),
-  );
-  modulo.farol.forEach((q) => disponiveis.set(q.id, { ...q, origem: 'Revisão · Farol' }));
+  for (const modulo of modulos) {
+    modulo.partes.forEach((parte) =>
+      parte.questoes.forEach((q) => disponiveis.set(q.id, { ...q, origem: `Revisão · ${parte.nome}` })),
+    );
+    modulo.farol.forEach((q) => disponiveis.set(q.id, { ...q, origem: `Revisão · Farol de ${modulo.nome}` }));
+  }
   const escolhidas = vencidas
     .map((id) => disponiveis.get(id))
     .filter((q): q is Questao => q !== undefined)
@@ -105,9 +107,11 @@ export function montarRevisaoRapida(modulo: Modulo, vencidas: readonly string[])
   return porNivel(escolhidas);
 }
 
-/** Quantas questões vencidas pertencem a este módulo. */
-export function vencidasDoModulo(modulo: Modulo, vencidas: readonly string[]): string[] {
-  const ids = new Set([...modulo.partes.flatMap((p) => p.questoes.map((q) => q.id)), ...modulo.farol.map((q) => q.id)]);
+/** Quais questões vencidas pertencem a estes módulos. */
+export function vencidasDosModulos(modulos: readonly Modulo[], vencidas: readonly string[]): string[] {
+  const ids = new Set(
+    modulos.flatMap((m) => [...m.partes.flatMap((p) => p.questoes.map((q) => q.id)), ...m.farol.map((q) => q.id)]),
+  );
   return vencidas.filter((id) => ids.has(id));
 }
 

@@ -5,7 +5,7 @@ import {
   montarFarol,
   montarLicao,
   montarRevisaoRapida,
-  vencidasDoModulo,
+  vencidasDosModulos,
   ORIGEM_DO_FAROL,
   QUESTOES_DE_BOAS_VINDAS,
   QUESTOES_DE_REVISAO,
@@ -83,21 +83,21 @@ describe('revisão espaçada nas lições', () => {
 
 describe('montarRevisaoRapida', () => {
   it('usa só as vencidas do módulo, com rótulo de revisão', () => {
-    const r = montarRevisaoRapida(modulo, ['cr-p3-02', 'outro-modulo-01', 'cr-farol-04']);
+    const r = montarRevisaoRapida([modulo], ['cr-p3-02', 'outro-modulo-01', 'cr-farol-04']);
     expect(ids(r).sort()).toEqual(['cr-farol-04', 'cr-p3-02']);
-    expect(r.find((q) => q.id === 'cr-farol-04')?.origem).toBe('Revisão · Farol');
+    expect(r.find((q) => q.id === 'cr-farol-04')?.origem).toBe('Revisão · Farol de Crase');
     expect(r.find((q) => q.id === 'cr-p3-02')?.origem).toBe('Revisão · Locuções com crase');
   });
 
   it('limita o tamanho, priorizando as mais atrasadas', () => {
     const todas = modulo.partes.flatMap((p) => ids(p.questoes));
-    const r = montarRevisaoRapida(modulo, todas);
+    const r = montarRevisaoRapida([modulo], todas);
     expect(r).toHaveLength(QUESTOES_DA_REVISAO_RAPIDA);
     expect(ids(r).sort()).toEqual(todas.slice(0, QUESTOES_DA_REVISAO_RAPIDA).sort());
   });
 
   it('conta só as vencidas que são deste módulo', () => {
-    expect(vencidasDoModulo(modulo, ['cr-p1-01', 'pt-virgula-p1-01', 'cr-farol-01'])).toEqual([
+    expect(vencidasDosModulos([modulo], ['cr-p1-01', 'pt-virgula-p1-01', 'cr-farol-01'])).toEqual([
       'cr-p1-01',
       'cr-farol-01',
     ]);

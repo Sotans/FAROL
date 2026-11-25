@@ -72,12 +72,11 @@ export function explicarErro(erro: unknown): { mensagem: string; saida: Saida } 
  * O convite de cadastro depois de cada lição (decisão de 2026-11-21): nunca obrigatório,
  * mas repetido até a pessoa se cadastrar. O texto fala do que ela tem a perder, e muda
  * com o tempo para não cansar: primeiro a conquista, depois a sequência, depois as lições.
+ * Cabe numa linha, abaixo do CONTINUAR, que é o único botão principal do fim da lição.
  */
 export function motivoParaCadastrar(p: { primeiraLicao: boolean; sequencia: number; concluidas: number }): string {
-  if (p.primeiraLicao) return 'Sua primeira conquista está só neste aparelho. Com o cadastro, ela fica guardada.';
-  if (p.sequencia >= 2)
-    return `Sua sequência de ${p.sequencia} dias está só neste aparelho. Com o cadastro, ela fica guardada na sua conta.`;
-  if (p.concluidas >= 2)
-    return `Suas ${p.concluidas} lições estão só neste aparelho. Com o cadastro, você não perde nada se trocar de celular.`;
-  return 'Seu progresso está só neste aparelho. Com o cadastro, você não perde nada se trocar de celular.';
+  if (p.primeiraLicao) return 'Sua primeira conquista está só neste aparelho.';
+  if (p.sequencia >= 2) return `Seus ${p.sequencia} dias estão só neste aparelho.`;
+  if (p.concluidas >= 2) return `Suas ${p.concluidas} lições estão só neste aparelho.`;
+  return 'Seu progresso está só neste aparelho.';
 }

@@ -29,6 +29,11 @@ export const cor = {
   selecionadaFundo: '#1B3A78',
   acertoFundo: '#123A33',
   atencaoFundo: '#3B2330',
+  /** Véus e contornos translúcidos: fundos de destaque suave. */
+  luzVeu: 'rgba(255,200,87,0.12)',
+  luzContorno: 'rgba(255,200,87,0.4)',
+  luzBrilho: 'rgba(255,200,87,0.32)',
+  mareVeu: 'rgba(43,95,217,0.22)',
 } as const;
 
 // Nomes registrados em useFonts (ver src/app/_layout.tsx).
@@ -43,7 +48,8 @@ export const fonte = {
   conquista: 'Fraunces_600SemiBold',
 } as const;
 
-export const tamanho = { xs: 12, sm: 14, md: 16, lg: 20, xl: 24, xxl: 32 } as const;
+/** Nada abaixo de 12 (xs): quem estuda cansado, à noite, precisa ler sem esforço. */
+export const tamanho = { xs: 12, sm: 14, md: 16, lg: 20, xl: 24, xxl: 32, logo: 40, celebracao: 56 } as const;
 export const espaco = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32 } as const;
 export const raio = { sm: 8, md: 12, lg: 16, circulo: 9999 } as const;
 export const movimento = { microMs: 120, pequenoMs: 250, medioMs: 500, celebracaoMs: 1800 } as const;

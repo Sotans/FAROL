@@ -16,7 +16,6 @@ import type { EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useDesafio } from '@/desafio/useDesafio';
 import { useProgresso } from '@/estado/progresso';
-import { moduloAtual, nomeDoModulo } from '@/licao/dados';
 import { montarDesafio } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
@@ -27,9 +26,10 @@ import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 export default function Desafio() {
   const { ate } = useLocalSearchParams<{ ate?: string }>();
   const alvo = Number(ate ?? 0);
-  const { concluidas, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
+  const { modulo, concluidas, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
+  const nomeDoModulo = modulo.nome;
   // O conteúdo das partes que serão puladas.
-  const [questoes] = useState(() => montarDesafio(moduloAtual, concluidas, alvo, Date.now()));
+  const [questoes] = useState(() => montarDesafio(modulo, concluidas, alvo, Date.now()));
   const desafio = useDesafio(questoes);
   const { questao: q, fase, selecionada } = desafio;
 

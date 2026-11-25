@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { IconeFaisca } from '@/icones';
-import { cor, fonte, raio } from '@/tema/tokens';
+import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 
 /**
  * Contador de acertos seguidos na barra da lição.
@@ -54,5 +54,5 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  texto: { fontFamily: fonte.tituloMedio, fontSize: 14, color: cor.luz },
+  texto: { fontFamily: fonte.tituloMedio, fontSize: tamanho.sm, color: cor.luz },
 });

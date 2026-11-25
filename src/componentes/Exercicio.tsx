@@ -261,13 +261,13 @@ function LigarPares({ questao, situacao, onErrarPar, onConcluirPares }: Props & 
 type EstadoBloco = EstadoOpcao | 'vazio' | 'ligado';
 
 const visual: Record<EstadoBloco, { fundo: string; borda: string; texto: string; opacidade: number }> = {
-  normal: { fundo: cor.superficie, borda: cor.linha, texto: cor.texto, opacidade: 1 },
+  normal: { fundo: cor.superficie, borda: cor.linhaForte, texto: cor.texto, opacidade: 1 },
   selecionada: { fundo: cor.selecionadaFundo, borda: cor.mare, texto: cor.texto, opacidade: 1 },
   correta: { fundo: cor.acertoFundo, borda: cor.acerto, texto: cor.acerto, opacidade: 1 },
   errada: { fundo: cor.atencaoFundo, borda: cor.atencao, texto: cor.atencao, opacidade: 1 },
-  removida: { fundo: cor.superficie, borda: cor.linha, texto: cor.textoSuave, opacidade: 0.45 },
+  removida: { fundo: cor.superficie, borda: cor.linhaForte, texto: cor.textoSuave, opacidade: 0.45 },
   // O lugar do bloco fica marcado no banco, para nada pular de posição.
-  vazio: { fundo: 'transparent', borda: cor.linha, texto: 'transparent', opacidade: 1 },
+  vazio: { fundo: 'transparent', borda: cor.linhaForte, texto: 'transparent', opacidade: 1 },
   ligado: { fundo: cor.acertoFundo, borda: cor.acerto, texto: cor.acerto, opacidade: 0.5 },
 };
 
@@ -326,7 +326,13 @@ function Bloco({
             borderStyle: estado === 'vazio' ? 'dashed' : 'solid',
           },
         ]}>
-        <Text style={[estilos.blocoTexto, variante === 'trecho' ? estilos.trechoTexto : null, { color: v.texto }]}>
+        <Text
+          style={[
+            estilos.blocoTexto,
+            variante === 'trecho' ? estilos.trechoTexto : null,
+            { color: v.texto },
+            estado === 'removida' ? estilos.riscado : null,
+          ]}>
           {texto}
         </Text>
       </Pressable>
@@ -335,6 +341,7 @@ function Bloco({
 }
 
 const estilos = StyleSheet.create({
+  riscado: { textDecorationLine: 'line-through' },
   opcoes: { gap: 10 },
   fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   frase: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },

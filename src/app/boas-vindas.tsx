@@ -32,7 +32,7 @@ export default function BoasVindas() {
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo, paddingHorizontal: 16 },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  logo: { fontFamily: fonte.titulo, fontSize: 40, letterSpacing: 6, color: cor.texto, marginTop: -8 },
+  logo: { fontFamily: fonte.titulo, fontSize: tamanho.logo, letterSpacing: 6, color: cor.texto, marginTop: -8 },
   promessa: {
     fontFamily: fonte.texto,
     fontSize: tamanho.lg,

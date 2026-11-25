@@ -47,7 +47,7 @@ describe('motivoParaCadastrar', () => {
   it('na primeira lição, fala da primeira conquista', () =>
     expect(motivoParaCadastrar({ primeiraLicao: true, sequencia: 1, concluidas: 1 })).toMatch(/primeira conquista/));
   it('com sequência, fala dos dias', () =>
-    expect(motivoParaCadastrar({ primeiraLicao: false, sequencia: 4, concluidas: 3 })).toMatch(/sequência de 4 dias/));
+    expect(motivoParaCadastrar({ primeiraLicao: false, sequencia: 4, concluidas: 3 })).toMatch(/4 dias/));
   it('sem sequência, fala das lições', () =>
     expect(motivoParaCadastrar({ primeiraLicao: false, sequencia: 1, concluidas: 3 })).toMatch(/3 lições/));
   it('no começo, fala do progresso', () =>

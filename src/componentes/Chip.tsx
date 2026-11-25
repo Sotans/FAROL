@@ -6,10 +6,7 @@ import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 type Props = { texto: string; tom?: 'luz' | 'mare'; icone?: ReactNode };
 
 export function Chip({ texto, tom = 'mare', icone }: Props) {
-  const cores =
-    tom === 'luz'
-      ? { texto: cor.luz, fundo: 'rgba(255,200,87,0.12)' }
-      : { texto: cor.mareClaro, fundo: 'rgba(43,95,217,0.2)' };
+  const cores = tom === 'luz' ? { texto: cor.luz, fundo: cor.luzVeu } : { texto: cor.mareClaro, fundo: cor.mareVeu };
   return (
     <View style={[estilos.chip, { backgroundColor: cores.fundo }]}>
       {icone}

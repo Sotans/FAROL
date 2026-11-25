@@ -13,7 +13,7 @@ import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useProgresso } from '@/estado/progresso';
-import { indiceDoFarol, moduloAtual } from '@/licao/dados';
+import { trilhaDePortugues } from '@/conteudo/trilha';
 import { montarBoasVindas, montarFarol, montarLicao, montarRevisaoRapida } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { useLicao } from '@/licao/useLicao';
@@ -26,16 +26,25 @@ export default function Licao() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
   const boasVindas = modo === 'boas-vindas';
   const revisaoRapida = modo === 'revisao';
-  const { concluir, concluirRevisao, registrarRevisoes, concluidas, revisoes, modoDeErro, celebracaoDeSequencia } =
-    useProgresso();
+  const {
+    modulo,
+    indiceDoFarol,
+    concluir,
+    concluirRevisao,
+    registrarRevisoes,
+    concluidas,
+    revisoes,
+    modoDeErro,
+    celebracaoDeSequencia,
+  } = useProgresso();
   // Fixados na abertura: `concluidas` muda ao concluir, antes de a tela sair.
   const [farol] = useState(() => !boasVindas && !revisaoRapida && concluidas === indiceDoFarol);
   const [questoes] = useState(() => {
     const agora = new Date();
-    if (boasVindas) return montarBoasVindas(moduloAtual);
-    if (revisaoRapida) return montarRevisaoRapida(moduloAtual, vencidas(revisoes, agora));
-    if (farol) return montarFarol(moduloAtual, agora.getTime());
-    return montarLicao(moduloAtual, concluidas, agora.getTime(), vencidas(revisoes, agora));
+    if (boasVindas) return montarBoasVindas(modulo);
+    if (revisaoRapida) return montarRevisaoRapida(trilhaDePortugues, vencidas(revisoes, agora));
+    if (farol) return montarFarol(modulo, agora.getTime());
+    return montarLicao(modulo, concluidas, agora.getTime(), vencidas(revisoes, agora));
   });
   const licao = useLicao(questoes, modoDeErro);
   const { questao: q, fase, selecionada, removidas } = licao;
@@ -254,8 +263,8 @@ const estilos = StyleSheet.create({
   caixaDica: {
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: 'rgba(255,200,87,0.12)',
-    borderColor: 'rgba(255,200,87,0.4)',
+    backgroundColor: cor.luzVeu,
+    borderColor: cor.luzContorno,
     borderWidth: 1,
     borderRadius: raio.md,
     padding: 12,

@@ -7,8 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Botao } from '@/componentes/Botao';
 import { Farol } from '@/componentes/Farol';
 import { motivoParaCadastrar } from '@/conta/regras';
+import { trilhaDePortugues } from '@/conteudo/trilha';
+import { proximoModulo } from '@/estado/modulos';
 import { textoDeDias, useProgresso } from '@/estado/progresso';
-import { indiceDoFarol, nomeDoModulo, partes, totalDeNos, totalDePartes } from '@/licao/dados';
 import { QUESTOES_DO_FAROL } from '@/licao/montar';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
@@ -29,7 +30,23 @@ export default function Conclusao() {
     farol?: string;
     revisao?: string;
   }>();
-  const { concluidas, licoesHoje, sequencia, metaDiaria, mapa, nuvem, conta } = useProgresso();
+  const {
+    modulo,
+    escolherModulo,
+    concluidas,
+    totalDePartes,
+    totalDeNos,
+    indiceDoFarol,
+    licoesHoje,
+    sequencia,
+    metaDiaria,
+    mapa,
+    nuvem,
+    conta,
+  } = useProgresso();
+  const nomeDoModulo = modulo.nome;
+  const partes = modulo.partes.map((p) => p.nome);
+  const proximo = proximoModulo(trilhaDePortugues, modulo.id);
   const primeiraLicao = primeira === '1';
   const acendeuOFarol = farol === '1';
   const fezRevisao = revisao === '1';
@@ -143,10 +160,31 @@ export default function Conclusao() {
           ) : moduloConcluido ? (
             <>
               <Text style={estilos.cartaoTitulo}>{`O farol de ${nomeDoModulo} está aceso.`}</Text>
-              <Text style={estilos.cartaoSub}>Os próximos módulos chegam nas próximas versões.</Text>
+              {proximo ? (
+                <View style={estilos.proxima}>
+                  <Text style={estilos.proximaTitulo}>{proximo.nome}</Text>
+                  <Text
+                    style={estilos.proximaSub}>{`Próximo módulo · ${proximo.partes.length} partes e um farol`}</Text>
+                </View>
+              ) : (
+                <Text style={estilos.cartaoSub}>Os próximos módulos chegam nas próximas versões.</Text>
+              )}
               <View style={estilos.botoes}>
-                <Botao rotulo="Voltar à trilha" onPress={() => router.replace('/')} />
+                {proximo ? (
+                  <Botao
+                    rotulo="Ir para o próximo módulo"
+                    onPress={() => {
+                      escolherModulo(proximo.id);
+                      router.replace('/');
+                    }}
+                  />
+                ) : (
+                  <Botao rotulo="Voltar à trilha" onPress={() => router.replace('/')} />
+                )}
                 {convidarParaCadastro ? <LinhaDeCadastro motivo={motivo} /> : null}
+                {proximo ? (
+                  <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.replace('/')} />
+                ) : null}
               </View>
             </>
           ) : vezDoFarol ? (
@@ -171,7 +209,7 @@ export default function Conclusao() {
             <>
               <Text style={estilos.cartaoTitulo}>{frase}</Text>
               <View style={estilos.proxima}>
-                <Text style={estilos.proximaTitulo}>{partes[concluidas]}</Text>
+                <Text style={estilos.proximaTitulo}>{`${nomeDoModulo}: ${partes[concluidas]}`}</Text>
                 <Text
                   style={
                     estilos.proximaSub
@@ -250,7 +288,7 @@ const estilos = StyleSheet.create({
   },
   cartaoTitulo: { fontFamily: fonte.titulo, fontSize: tamanho.lg, lineHeight: 26, color: cor.texto },
   cartaoSub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
-  proxima: { backgroundColor: 'rgba(43,95,217,0.22)', borderRadius: raio.md, padding: 12, marginTop: 8 },
+  proxima: { backgroundColor: cor.mareVeu, borderRadius: raio.md, padding: 12, marginTop: 8 },
   proximaTitulo: { fontFamily: fonte.tituloMedio, fontSize: tamanho.md, color: cor.texto },
   proximaSub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
   botoes: { marginTop: 14, gap: 8 },

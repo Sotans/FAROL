@@ -13,7 +13,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import { cor, fonte, raio } from '@/tema/tokens';
+import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 
 const RAIOS = 8;
 const FAISCAS = 12;
@@ -136,6 +136,12 @@ const estilos = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 14,
   },
-  numero: { fontFamily: fonte.titulo, fontSize: 56, lineHeight: 60, color: cor.textoSobreLuz },
-  rotulo: { fontFamily: fonte.tituloMedio, fontSize: 14, letterSpacing: 0.5, color: cor.textoSobreLuz, marginTop: -2 },
+  numero: { fontFamily: fonte.titulo, fontSize: tamanho.celebracao, lineHeight: 60, color: cor.textoSobreLuz },
+  rotulo: {
+    fontFamily: fonte.tituloMedio,
+    fontSize: tamanho.sm,
+    letterSpacing: 0.5,
+    color: cor.textoSobreLuz,
+    marginTop: -2,
+  },
 });

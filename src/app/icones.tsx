@@ -203,7 +203,7 @@ const estilos = StyleSheet.create({
   titulo: { fontFamily: fonte.titulo, fontSize: tamanho.lg, color: cor.texto },
   corpo: { paddingHorizontal: 16, paddingBottom: 40, gap: 22 },
   secao: { gap: 10 },
-  secaoTitulo: { fontFamily: fonte.textoSemi, fontSize: 12, letterSpacing: 0.8, color: cor.textoSuave },
+  secaoTitulo: { fontFamily: fonte.textoSemi, fontSize: tamanho.xs, letterSpacing: 0.8, color: cor.textoSuave },
   grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   item: {
     width: '31%',
@@ -215,6 +215,6 @@ const estilos = StyleSheet.create({
   },
   desenho: { height: 64, alignItems: 'center', justifyContent: 'center' },
   desenhoAlto: { height: 96 },
-  nome: { fontFamily: fonte.texto, fontSize: 12, color: cor.textoSuave, textAlign: 'center' },
+  nome: { fontFamily: fonte.texto, fontSize: tamanho.xs, color: cor.textoSuave, textAlign: 'center' },
   no: { width: 52, height: 52, borderRadius: raio.circulo, alignItems: 'center', justifyContent: 'center' },
 });
