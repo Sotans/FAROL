@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -14,6 +14,7 @@ import { Luzes } from '@/componentes/Luzes';
 import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
 import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
+import { alvoDoDesafio } from '@/desafio/alvo';
 import { useDesafio } from '@/desafio/useDesafio';
 import { useProgresso } from '@/estado/progresso';
 import { montarDesafio } from '@/licao/montar';
@@ -25,13 +26,18 @@ import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 /** T11f. O desafio "Pular pra cá?": 5 luzes, e passar marca as partes puladas como dominadas. */
 export default function Desafio() {
   const { ate } = useLocalSearchParams<{ ate?: string }>();
-  const alvo = Number(ate ?? 0);
-  const { modulo, concluidas, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
+  const { modulo, concluidas, indiceDoFarol, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
+  // Fixado na abertura: um link com alvo inválido (não numérico, para trás ou além do farol) volta à trilha.
+  const [alvoValido] = useState(() => alvoDoDesafio(ate, concluidas, indiceDoFarol));
+  const alvo = alvoValido ?? 0;
   const nomeDoModulo = modulo.nome;
   // O conteúdo das partes que serão puladas.
-  const [questoes] = useState(() => montarDesafio(modulo, concluidas, alvo, Date.now()));
+  const [questoes] = useState(() =>
+    alvoValido === null ? [] : montarDesafio(modulo, concluidas, alvoValido, Date.now()),
+  );
   const desafio = useDesafio(questoes);
   const { questao: q, fase, selecionada } = desafio;
+  if (alvoValido === null || !q) return <Redirect href="/" />;
 
   const primeiraPulada = concluidas + 1;
   const ultimaPulada = alvo;

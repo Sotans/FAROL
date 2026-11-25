@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import type { CarreiraId } from '@/carreiras/dados';
 import type { TomDePele } from '@/componentes/Personagem';
@@ -17,6 +18,7 @@ import {
   sairDaConta,
   type Conta,
 } from '@/servicos/nuvem';
+import { hoje, virarDia } from './dia';
 import { mesclar } from './mesclar';
 import { migrarProgresso, moduloLiberado, progressoDe, totalDeNos, type ProgressoDosModulos } from './modulos';
 import { haptico } from '@/servicos/haptico';
@@ -39,6 +41,8 @@ export type Estado = {
   modulos: ProgressoDosModulos;
   licoesHoje: number;
   desafiosHoje: number;
+  /** Dicas usadas hoje (limite diário em limites.dicasPorDia; o vídeo recompensado devolve dicas). */
+  dicasHoje: number;
   /** Dia (AAAA-MM-DD) a que os contadores "hoje" se referem. */
   dia: string;
   ultimoDiaDeEstudo: string | null;
@@ -54,8 +58,11 @@ export type Estado = {
   atualizadoEm: string | null;
 };
 
-/** desligada: sem .env.local. conectando: ao abrir. conectada: em dia com a nuvem. offline: falhou; tenta na próxima abertura. */
-export type StatusDaNuvem = 'desligada' | 'conectando' | 'conectada' | 'offline';
+/**
+ * desligada: sem .env.local. conectando: ao abrir. conectada: em dia com a nuvem. offline: falhou; tenta na próxima abertura.
+ * desatualizada: a conta tem progresso gravado por um app mais novo; este app não envia nada até ser atualizado.
+ */
+export type StatusDaNuvem = 'desligada' | 'conectando' | 'conectada' | 'offline' | 'desatualizada';
 
 type Progresso = Estado & {
   /** O módulo em uso e o progresso nele (calculados a partir de `moduloAtual` e `modulos`). */
@@ -104,21 +111,17 @@ type Progresso = Estado & {
   registrarDesafio: () => void;
   /** Anúncio recompensado (SIMULADO): concede mais um desafio hoje. */
   ganharDesafio: () => void;
+  /** Gasta uma dica do dia. */
+  registrarDica: () => void;
+  /** Anúncio recompensado (SIMULADO): devolve as dicas do dia. */
+  ganharDicas: () => void;
+  /** Aplica a virada do dia, se ela já aconteceu (por exemplo, com o app aberto desde ontem). */
+  atualizarDia: () => void;
   reiniciar: () => void;
   alternarModoDeErro: () => void;
 };
 
-function hoje(): string {
-  const d = new Date();
-  const mes = String(d.getMonth() + 1).padStart(2, '0');
-  const dia = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${mes}-${dia}`;
-}
-
-function diasEntre(a: string, b: string): number {
-  const ms = Date.parse(`${b}T00:00:00`) - Date.parse(`${a}T00:00:00`);
-  return Math.round(ms / 86_400_000);
-}
+export { hoje, virarDia };
 
 export const estadoInicial: Estado = {
   onboardingConcluido: false,
@@ -130,6 +133,7 @@ export const estadoInicial: Estado = {
   modulos: {},
   licoesHoje: 0,
   desafiosHoje: 0,
+  dicasHoje: 0,
   dia: hoje(),
   ultimoDiaDeEstudo: null,
   sequencia: 0,
@@ -140,23 +144,12 @@ export const estadoInicial: Estado = {
   atualizadoEm: null,
 };
 
-/**
- * Virada de dia: zera os contadores "hoje".
- * Regra PROVISÓRIA da sequência de dias (decisão em aberto em docs/03, seção 4): com dois ou mais
- * dias sem estudar, a sequência volta a zero, em silêncio e sem mensagem de culpa.
- */
-function virarDia(e: Estado): Estado {
-  const atual = hoje();
-  if (e.dia === atual) return e;
-  let sequencia = e.sequencia;
-  if (e.ultimoDiaDeEstudo && diasEntre(e.ultimoDiaDeEstudo, atual) >= 2) sequencia = 0;
-  return { ...e, dia: atual, licoesHoje: 0, desafiosHoje: 0, sequencia };
-}
+type DaNuvem = { remoto: Partial<Estado> | null; bloqueado: boolean; contaDaNuvem: Conta | null };
 
 /** Busca na nuvem o progresso e a conta deste aparelho, sem mexer no estado. */
-async function baixarDaNuvem(): Promise<{ remoto: Partial<Estado> | null; contaDaNuvem: Conta | null }> {
-  const remoto = await baixarProgresso<Partial<Estado>>();
-  return { remoto, contaDaNuvem: await contaAtual() };
+async function baixarDaNuvem(): Promise<DaNuvem> {
+  const { estado: remoto, bloqueado } = await baixarProgresso<Partial<Estado>>();
+  return { remoto, bloqueado, contaDaNuvem: await contaAtual() };
 }
 
 /** Uma sessão concluída hoje: conta para a meta, a sequência de dias e o XP. */
@@ -210,26 +203,54 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Grava toda mudança, depois de carregado.
+  // Grava no aparelho depois de meio segundo sem mudanças (cada resposta muda o estado; o estado
+  // inteiro, com os cartões de revisão, não precisa ser regravado a cada toque).
+  const estadoAtual = useRef(estado);
+  const gravacaoPendente = useRef(false);
   useEffect(() => {
-    if (carregado) salvarEstado(estado);
+    estadoAtual.current = estado;
+    if (!carregado) return;
+    gravacaoPendente.current = true;
+    const espera = setTimeout(() => {
+      gravacaoPendente.current = false;
+      salvarEstado(estado);
+    }, 500);
+    return () => clearTimeout(espera);
   }, [estado, carregado]);
+
+  // Ao sair para o segundo plano, grava o que estiver pendente (o sistema pode fechar o app).
+  // Ao voltar, aplica a virada do dia: o app pode ter ficado aberto desde ontem.
+  useEffect(() => {
+    if (!carregado) return;
+    const assinatura = AppState.addEventListener('change', (situacao) => {
+      if (situacao === 'active') {
+        setEstado((e) => virarDia(e));
+      } else if (gravacaoPendente.current) {
+        gravacaoPendente.current = false;
+        salvarEstado(estadoAtual.current);
+      }
+    });
+    return () => assinatura.remove();
+  }, [carregado]);
 
   const [conta, setConta] = useState<Conta | null>(null);
 
   /** Aplica o que veio da nuvem: combina sem perder avanço e só então libera os envios. */
-  const aplicarDaNuvem = useCallback(
-    ({ remoto, contaDaNuvem }: { remoto: Partial<Estado> | null; contaDaNuvem: Conta | null }) => {
-      if (remoto)
-        setEstado((e) =>
-          virarDia(mesclar(e, migrarProgresso({ ...estadoInicial, ...remoto }, estadoInicial.moduloAtual) as Estado)),
-        );
-      combinouComANuvem.current = true;
-      setConta(contaDaNuvem);
-      setNuvem('conectada');
-    },
-    [],
-  );
+  const aplicarDaNuvem = useCallback(({ remoto, bloqueado, contaDaNuvem }: DaNuvem) => {
+    setConta(contaDaNuvem);
+    if (bloqueado) {
+      // Progresso de um app mais novo: não combina nem envia, para não apagar o que está lá.
+      combinouComANuvem.current = false;
+      setNuvem('desatualizada');
+      return;
+    }
+    if (remoto)
+      setEstado((e) =>
+        virarDia(mesclar(e, migrarProgresso({ ...estadoInicial, ...remoto }, estadoInicial.moduloAtual) as Estado)),
+      );
+    combinouComANuvem.current = true;
+    setNuvem('conectada');
+  }, []);
 
   const falhouANuvem = useCallback((erro: unknown) => {
     avisarFalhaDaNuvem('baixar o progresso', erro);
@@ -382,6 +403,23 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     [alterar],
   );
 
+  const registrarDica = useCallback(
+    () =>
+      alterar((e) => {
+        const atual = virarDia(e);
+        return { ...atual, dicasHoje: atual.dicasHoje + 1 };
+      }),
+    [alterar],
+  );
+
+  const ganharDicas = useCallback(
+    () => alterar((e) => ({ ...e, dicasHoje: Math.max(0, e.dicasHoje - limites.dicasPorDia) })),
+    [alterar],
+  );
+
+  // Não é uma mudança feita pela pessoa: não recebe carimbo de tempo.
+  const atualizarDia = useCallback(() => setEstado((e) => virarDia(e)), []);
+
   const reiniciar = useCallback(() => alterar(() => ({ ...estadoInicial, dia: hoje() })), [alterar]);
 
   const alternarModoDeErro = useCallback(
@@ -424,6 +462,9 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       dominarAte,
       registrarDesafio,
       ganharDesafio,
+      registrarDica,
+      ganharDicas,
+      atualizarDia,
       reiniciar,
       alternarModoDeErro,
     }),
@@ -454,6 +495,9 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
       dominarAte,
       registrarDesafio,
       ganharDesafio,
+      registrarDica,
+      ganharDicas,
+      atualizarDia,
       reiniciar,
       alternarModoDeErro,
     ],

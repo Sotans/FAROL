@@ -12,6 +12,7 @@ const base: Estado = {
   modulos: {},
   licoesHoje: 0,
   desafiosHoje: 0,
+  dicasHoje: 0,
   dia: '2026-11-21',
   ultimoDiaDeEstudo: null,
   sequencia: 0,

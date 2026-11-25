@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
+import { decidirVersao, migrarVersao, VERSAO_DO_PROGRESSO } from '@/estado/versao';
+
 /**
  * A nuvem do FAROL (Supabase; submetas 2.5 e 3.5).
  * O aparelho continua sendo a fonte principal: o app funciona igual sem nuvem e sem internet.
@@ -23,9 +25,6 @@ function baseDoEndereco(endereco: string | undefined): string | undefined {
 
 const url = baseDoEndereco(process.env.EXPO_PUBLIC_SUPABASE_URL);
 const chave = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-/** Versão do formato do progresso salvo na nuvem; muda quando o tipo Estado mudar de forma incompatível. */
-export const VERSAO_DO_PROGRESSO = 1;
 
 const cliente: SupabaseClient | null =
   url && chave
@@ -65,8 +64,12 @@ async function garantirSessao(): Promise<string> {
   return nova.user.id;
 }
 
-/** O progresso guardado na nuvem, ou null se ainda não houver. */
-export async function baixarProgresso<T>(): Promise<T | null> {
+/**
+ * O progresso guardado na nuvem. `estado` é null se ainda não houver.
+ * `bloqueado` é true quando a nuvem tem um formato mais novo que este app: nesse caso o app
+ * não pode enviar nada, para não sobrescrever o progresso gravado por um app mais novo.
+ */
+export async function baixarProgresso<T>(): Promise<{ estado: T | null; bloqueado: boolean }> {
   const id = await garantirSessao();
   const { data, error } = await exigirCliente()
     .from('progresso')
@@ -74,8 +77,11 @@ export async function baixarProgresso<T>(): Promise<T | null> {
     .eq('user_id', id)
     .maybeSingle();
   if (error) throw error;
-  if (!data || data.versao !== VERSAO_DO_PROGRESSO) return null;
-  return data.estado as T;
+  if (!data) return { estado: null, bloqueado: false };
+  const decisao = decidirVersao(data.versao);
+  if (decisao === 'bloquear') return { estado: null, bloqueado: true };
+  const estado = decisao === 'migrar' ? migrarVersao(data.estado, data.versao) : data.estado;
+  return { estado: estado as T, bloqueado: false };
 }
 
 /** Grava o progresso na nuvem (substitui a versão anterior). */
