@@ -109,25 +109,37 @@ export default function Licao() {
           <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={licao.progresso} />
-        <Pressable
-          onPress={licao.usarDica}
-          accessibilityRole="button"
-          accessibilityLabel={`Dica, ${licao.dicasRestantes} restantes`}
-          style={estilos.dica}>
-          <IconeLanterna tamanho={20} acesa={licao.dicasRestantes > 0} />
-          <Text style={estilos.dicaTexto}>{licao.dicasRestantes}</Text>
-        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
-        <Chip
-          texto={
-            boasVindas
-              ? 'Lição de boas-vindas'
-              : (q.origem ?? `${rotuloTipo[q.tipo]}${q.modo === 'imediato' ? ' · imediato' : ''}`)
-          }
-          tom={boasVindas || q.origem ? 'luz' : 'mare'}
-        />
+        {/* A dica fica na linha do tipo de questão: sempre no mesmo lugar e longe das respostas. */}
+        <View style={estilos.linhaDoTipo}>
+          <View style={estilos.chip}>
+            <Chip
+              texto={
+                boasVindas
+                  ? 'Lição de boas-vindas'
+                  : (q.origem ?? `${rotuloTipo[q.tipo]}${q.modo === 'imediato' ? ' · imediato' : ''}`)
+              }
+              tom={boasVindas || q.origem ? 'luz' : 'mare'}
+            />
+          </View>
+          <Pressable
+            onPress={licao.usarDica}
+            accessibilityRole="button"
+            accessibilityLabel={
+              licao.dicasRestantes > 0
+                ? `Ver uma dica. ${licao.dicasRestantes} restantes hoje`
+                : 'Dicas de hoje acabaram. Ver como ganhar mais'
+            }
+            hitSlop={6}
+            style={estilos.dica}>
+            <IconeLanterna tamanho={18} acesa={licao.dicasRestantes > 0} />
+            <Text style={[estilos.dicaTexto, licao.dicasRestantes > 0 ? null : estilos.dicaSemSaldo]}>
+              {`Dica · ${licao.dicasRestantes}`}
+            </Text>
+          </Pressable>
+        </View>
         <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
 
         {licao.dicaAberta ? (
@@ -243,18 +255,21 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo },
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 6 },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
+  linhaDoTipo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  chip: { flexShrink: 1 },
   dica: {
-    minHeight: 40,
+    minHeight: 36,
     paddingHorizontal: 12,
     borderRadius: raio.circulo,
     borderWidth: 1,
-    borderColor: cor.linha,
+    borderColor: cor.linhaForte,
     flexDirection: 'row',
-    gap: 4,
+    gap: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
+  dicaSemSaldo: { color: cor.textoSuave },
   corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
   empurra: { flexGrow: 1, minHeight: 0 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
