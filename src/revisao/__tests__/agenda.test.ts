@@ -1,4 +1,13 @@
-import { idBase, notaDaQuestao, registrar, revisar, vencidas, type Revisoes } from '@/revisao/agenda';
+import {
+  idBase,
+  notaDaQuestao,
+  proximaRevisao,
+  registrar,
+  revisar,
+  vencemNosProximosDias,
+  vencidas,
+  type Revisoes,
+} from '@/revisao/agenda';
 
 const agora = new Date('2026-11-21T10:00:00.000Z');
 const minutos = (n: number) => new Date(agora.getTime() + n * 60_000);
@@ -74,5 +83,26 @@ describe('registrar e vencidas', () => {
     expect(vencidas(r2, agora)).toEqual([]);
     expect(vencidas(r2, minutos(30))).toEqual(['erro1', 'erro2']);
     expect(vencidas(r2, dias(60))).toEqual(['erro1', 'erro2', 'acerto']);
+  });
+});
+
+describe('proximaRevisao e vencemNosProximosDias', () => {
+  const revisoes: Revisoes = {
+    vencida: { ...revisar(undefined, 'bom', agora), dueAt: dias(-1).toISOString() },
+    amanha: { ...revisar(undefined, 'bom', agora), dueAt: dias(1).toISOString() },
+    semana: { ...revisar(undefined, 'bom', agora), dueAt: dias(5).toISOString() },
+    longe: { ...revisar(undefined, 'bom', agora), dueAt: dias(20).toISOString() },
+  };
+
+  it('a próxima é a mais cedo entre as que ainda não venceram', () => {
+    expect(proximaRevisao(revisoes, agora)?.toISOString()).toBe(dias(1).toISOString());
+  });
+
+  it('sem revisões agendadas, não há próxima', () => {
+    expect(proximaRevisao({}, agora)).toBeNull();
+  });
+
+  it('conta só as que vencem dentro da janela', () => {
+    expect(vencemNosProximosDias(revisoes, agora, 7)).toBe(2);
   });
 });

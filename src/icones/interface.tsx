@@ -6,11 +6,14 @@ import ChartColumn from 'lucide-react-native/icons/chart-column';
 import Check from 'lucide-react-native/icons/check';
 import Download from 'lucide-react-native/icons/download';
 import Flag from 'lucide-react-native/icons/flag';
+import History from 'lucide-react-native/icons/history';
 import FlaskConical from 'lucide-react-native/icons/flask-conical';
 import House from 'lucide-react-native/icons/house';
 import Info from 'lucide-react-native/icons/info';
+import Lighthouse from 'lucide-react-native/icons/lighthouse';
 import LockKeyhole from 'lucide-react-native/icons/lock-keyhole';
 import Mail from 'lucide-react-native/icons/mail';
+import Newspaper from 'lucide-react-native/icons/newspaper';
 import Route from 'lucide-react-native/icons/route';
 import ShieldCheck from 'lucide-react-native/icons/shield-check';
 import UserRound from 'lucide-react-native/icons/user-round';
@@ -65,3 +68,8 @@ export const IconeEmValidacao = criar(Info, cor.texto, 'IconeEmValidacao');
 export const IconeSom = criar(Volume2, cor.texto, 'IconeSom');
 export const IconeSemSom = criar(VolumeX, cor.textoSuave, 'IconeSemSom');
 export const IconeLaboratorio = criar(FlaskConical, cor.texto, 'IconeLaboratorio');
+
+// Barra de abas: Trilha (o farol em traço, sem luz), Revisar e Notícias. A aba Você usa o avatar do guia.
+export const IconeAbaTrilha = criar(Lighthouse, cor.textoSuave, 'IconeAbaTrilha');
+export const IconeAbaRevisar = criar(History, cor.textoSuave, 'IconeAbaRevisar');
+export const IconeAbaNoticias = criar(Newspaper, cor.textoSuave, 'IconeAbaNoticias');

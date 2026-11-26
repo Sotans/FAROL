@@ -296,7 +296,7 @@ export default function Trilha() {
   }
 
   return (
-    <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
+    <SafeAreaView style={estilos.tela} edges={['top']}>
       <View style={estilos.cabeca}>
         {/* A sequência aparece quando passa de zero: a conversa não começa pelo zero. */}
         {sequencia > 0 ? (

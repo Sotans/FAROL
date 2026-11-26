@@ -1,4 +1,4 @@
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -44,6 +44,8 @@ const nomesDasCores: Record<CorDoCabelo, string> = {
 
 /** T2b. O guia se apresenta: alguém da sua carreira, com a luz do farol. A pessoa escolhe como ele é. */
 export default function Guia() {
+  // Vindo da aba Você: as escolhas já ficam salvas ao tocar; o botão só volta.
+  const editar = useLocalSearchParams<{ modo?: string }>().modo === 'editar';
   const {
     carreira,
     tomDoGuia,
@@ -62,7 +64,13 @@ export default function Guia() {
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={estilos.centro} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeInDown.delay(500).duration(350)}>
-          <Balao texto={`Oi! Eu vou te acompanhar na sua trilha de ${c.nome}. Vamos começar pequeno?`} />
+          <Balao
+            texto={
+              editar
+                ? 'Quer mudar meu visual? Cada escolha fica salva na hora.'
+                : `Oi! Eu vou te acompanhar na sua trilha de ${c.nome}. Vamos começar pequeno?`
+            }
+          />
         </Animated.View>
         <Animated.View entering={FadeInDown.duration(400)}>
           <Personagem {...aparencia} expressao="acenando" tamanho={140} />
@@ -109,7 +117,11 @@ export default function Guia() {
         </Animated.View>
       </ScrollView>
       <View style={estilos.rodape}>
-        <Botao rotulo="Vamos lá" onPress={() => router.push('/meta')} />
+        {editar ? (
+          <Botao rotulo="Pronto" onPress={() => (router.canGoBack() ? router.back() : router.replace('/voce'))} />
+        ) : (
+          <Botao rotulo="Vamos lá" onPress={() => router.push('/meta')} />
+        )}
       </View>
     </SafeAreaView>
   );
