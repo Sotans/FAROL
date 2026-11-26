@@ -44,8 +44,6 @@ export const fonte = {
   textoSemi: 'Inter_600SemiBold',
   /** Rótulo de botão: Inter 700, em caixa normal. */
   botao: 'Inter_700Bold',
-  /** Só nos momentos de conquista (farol aceso, mapa do ponto de partida). */
-  conquista: 'Fraunces_600SemiBold',
 } as const;
 
 /** Nada abaixo de 12 (xs): quem estuda cansado, à noite, precisa ler sem esforço. */

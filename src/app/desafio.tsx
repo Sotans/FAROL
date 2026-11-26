@@ -143,7 +143,10 @@ export default function Desafio() {
       </View>
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
-        <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
+        <Chip
+          texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`}
+          tom="mare"
+        />
         <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
         {/* As respostas ocupam o meio do espaço livre, entre o enunciado e o Confirmar. */}
         <View style={estilos.areaDeResposta}>

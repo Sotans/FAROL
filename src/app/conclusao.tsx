@@ -272,8 +272,7 @@ const estilos = StyleSheet.create({
     paddingVertical: 16,
   },
   titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xl, color: cor.texto, textAlign: 'center' },
-  // Conquista com voz própria: a Fraunces só aparece em momentos como este.
-  tituloConquista: { fontFamily: fonte.conquista, fontSize: tamanho.xxl, color: cor.luzClara, textAlign: 'center' },
+  tituloConquista: { fontFamily: fonte.titulo, fontSize: tamanho.xxl, color: cor.luzClara, textAlign: 'center' },
   xp: { fontFamily: fonte.titulo, fontSize: tamanho.xxl, color: cor.acerto },
   detalhe: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, textAlign: 'center' },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 6 },

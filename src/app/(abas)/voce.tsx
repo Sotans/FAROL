@@ -1,4 +1,5 @@
 import { router, type Href } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +12,7 @@ import { textoDeDias, useProgresso } from '@/estado/progresso';
 import { IconeCadeado, IconeEstrelaDeLuz, IconeSeta } from '@/icones';
 import { conquistas, faroisAcesos, formatarNumero } from '@/perfil/resumo';
 import { haptico } from '@/servicos/haptico';
-import { cor, fonte, raio, tamanho } from '@/tema/tokens';
+import { cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 /**
  * Aba Você: o perfil. O que a pessoa já conquistou (XP, dias seguidos, faróis e conquistas) e os
@@ -31,6 +32,11 @@ export default function Voce() {
     fezOMapa: p.mapa !== null,
   });
   const alcancadas = lista.filter((x) => x.alcancada).length;
+  // No começo, uma parede de cadeados só diz "você não tem nada": mostra as conquistas
+  // alcançadas e as 2 próximas; o resto fica a um toque.
+  const [todas, setTodas] = useState(false);
+  const proximas = lista.filter((x) => !x.alcancada).slice(0, 2);
+  const visiveis = todas ? lista : lista.filter((x) => x.alcancada || proximas.includes(x));
 
   const contaTexto = !p.conta ? 'Neste aparelho' : p.conta.anonima ? 'Sem e-mail' : (p.conta.email ?? 'Com e-mail');
 
@@ -70,10 +76,15 @@ export default function Voce() {
         </View>
 
         <View style={estilos.numeros}>
-          <Numero valor={formatarNumero(p.xp)} rotulo="XP" />
-          <Numero valor={String(p.sequencia)} rotulo={p.sequencia === 1 ? 'dia seguido' : 'dias seguidos'} />
-          <Numero valor={String(farois)} rotulo={farois === 1 ? 'farol aceso' : 'faróis acesos'} />
+          <Numero valor={p.xp} texto={formatarNumero(p.xp)} rotulo="XP" />
+          <Numero valor={p.sequencia} rotulo={p.sequencia === 1 ? 'dia seguido' : 'dias seguidos'} />
+          <Numero valor={farois} rotulo={farois === 1 ? 'farol aceso' : 'faróis acesos'} />
         </View>
+        {p.xp === 0 ? (
+          <Text style={estilos.convite}>
+            {`Sua primeira lição vale +${limites.xpDaLicao} XP e já acende a primeira conquista.`}
+          </Text>
+        ) : null}
 
         <View style={estilos.secao}>
           <View style={estilos.secaoCabeca}>
@@ -81,7 +92,7 @@ export default function Voce() {
             <Text style={estilos.secaoContagem}>{`${alcancadas} de ${lista.length}`}</Text>
           </View>
           <View style={estilos.grade}>
-            {lista.map((x) => (
+            {visiveis.map((x) => (
               <View
                 key={x.id}
                 style={[estilos.conquista, x.alcancada ? estilos.conquistaAlcancada : null]}
@@ -97,6 +108,20 @@ export default function Voce() {
               </View>
             ))}
           </View>
+          {visiveis.length < lista.length || todas ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                haptico.selecao();
+                setTodas((t) => !t);
+              }}
+              hitSlop={8}
+              style={estilos.verTodas}>
+              <Text style={estilos.verTodasTexto}>
+                {todas ? 'Mostrar menos' : `Ver todas as ${lista.length} conquistas`}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <View style={estilos.ajustes}>
@@ -131,10 +156,11 @@ export default function Voce() {
   );
 }
 
-function Numero({ valor, rotulo }: { valor: string; rotulo: string }) {
+/** Número do perfil: em âmbar quando já é conquista; zerado, fica em cor suave (nada a celebrar ainda). */
+function Numero({ valor, texto = String(valor), rotulo }: { valor: number; texto?: string; rotulo: string }) {
   return (
-    <View style={estilos.numero} accessible accessibilityLabel={`${valor} ${rotulo}`}>
-      <Text style={estilos.numeroValor}>{valor}</Text>
+    <View style={estilos.numero} accessible accessibilityLabel={`${texto} ${rotulo}`}>
+      <Text style={[estilos.numeroValor, valor === 0 ? estilos.numeroZerado : null]}>{texto}</Text>
       <Text style={estilos.numeroRotulo}>{rotulo}</Text>
     </View>
   );
@@ -144,7 +170,7 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo },
   rolagem: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 32, gap: 24 },
   cabeca: { alignItems: 'center', gap: 6 },
-  titulo: { fontFamily: fonte.conquista, fontSize: tamanho.xxl - 4, color: cor.texto, marginTop: 6 },
+  titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xl, color: cor.texto, marginTop: 6 },
   sub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
   numeros: { flexDirection: 'row', gap: 10 },
   numero: {
@@ -157,16 +183,26 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  numeroValor: { fontFamily: fonte.conquista, fontSize: tamanho.xl + 2, color: cor.luz },
+  numeroValor: { fontFamily: fonte.titulo, fontSize: tamanho.xl + 2, color: cor.luz },
+  numeroZerado: { color: cor.textoSuave },
+  convite: {
+    fontFamily: fonte.texto,
+    fontSize: tamanho.sm,
+    lineHeight: 21,
+    color: cor.texto,
+    textAlign: 'center',
+    marginTop: -10,
+  },
+  verTodas: { alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 },
+  verTodasTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.mareClaro },
   numeroRotulo: { fontFamily: fonte.texto, fontSize: tamanho.xs, color: cor.textoSuave, textAlign: 'center' },
   secao: { gap: 12 },
   secaoCabeca: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   secaoTitulo: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, color: cor.texto },
   secaoContagem: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave },
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  grade: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 },
   conquista: {
-    width: '48%',
-    flexGrow: 1,
+    width: '48.5%',
     backgroundColor: cor.superficie,
     borderColor: cor.linhaForte,
     borderWidth: 1,
@@ -174,7 +210,8 @@ const estilos = StyleSheet.create({
     padding: 12,
     gap: 4,
   },
-  conquistaAlcancada: { borderColor: cor.luzContorno, backgroundColor: cor.luzVeu },
+  // Alcançada: só a borda e o selo em âmbar (o véu âmbar sobre o azul ficava acastanhado).
+  conquistaAlcancada: { borderColor: cor.luzContorno },
   selo: {
     width: 34,
     height: 34,

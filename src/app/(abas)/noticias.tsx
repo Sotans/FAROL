@@ -78,7 +78,7 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo },
   rolagem: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 32 },
   cabeca: { gap: 14, marginBottom: 16 },
-  titulo: { fontFamily: fonte.conquista, fontSize: tamanho.xxl - 4, color: cor.texto },
+  titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xl, color: cor.texto },
   filtros: { flexDirection: 'row', gap: 8 },
   filtro: {
     minHeight: 36,

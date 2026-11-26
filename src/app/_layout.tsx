@@ -1,4 +1,3 @@
-import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
 import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import { useFonts } from 'expo-font';
@@ -20,7 +19,6 @@ export default function LayoutRaiz() {
     Inter_700Bold,
     Nunito_700Bold,
     Nunito_800ExtraBold,
-    Fraunces_600SemiBold,
   });
 
   if (!carregou && !erro) return null;

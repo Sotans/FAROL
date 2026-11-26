@@ -85,8 +85,7 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo, paddingHorizontal: 16 },
   corpo: { paddingTop: 20, paddingBottom: 16, gap: 12 },
   guia: { alignItems: 'center' },
-  // O mapa é uma conquista: título com a voz das conquistas (Fraunces).
-  titulo: { fontFamily: fonte.conquista, fontSize: tamanho.xxl - 2, color: cor.luzClara },
+  titulo: { fontFamily: fonte.titulo, fontSize: tamanho.xxl - 2, color: cor.luzClara },
   sub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, marginTop: -6, marginBottom: 6 },
   cartao: {
     backgroundColor: cor.superficie,

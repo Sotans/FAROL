@@ -116,10 +116,7 @@ export default function Licao() {
         {/* A dica fica na linha do tipo de questão: sempre no mesmo lugar e longe das respostas. */}
         <View style={estilos.linhaDoTipo}>
           <View style={estilos.chip}>
-            <Chip
-              texto={boasVindas ? 'Lição de boas-vindas' : (q.origem ?? rotuloTipo[q.tipo])}
-              tom={boasVindas || q.origem ? 'luz' : 'mare'}
-            />
+            <Chip texto={boasVindas ? 'Lição de boas-vindas' : (q.origem ?? rotuloTipo[q.tipo])} tom="mare" />
           </View>
           <Pressable
             onPress={licao.usarDica}
@@ -266,7 +263,8 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
+  // Só a lanterna é âmbar: o texto da dica é informação, não o próximo passo.
+  dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.texto },
   dicaSemSaldo: { color: cor.textoSuave },
   corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
   areaDeResposta: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },
