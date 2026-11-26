@@ -76,6 +76,11 @@ export default function Laboratorio() {
           onPressDepois={() => Alert.alert('Som', diagnosticoDoSom('licao'))}
         />
         <Item
+          titulo="Novos tipos de questão"
+          valor="12 questões de exemplo: arrastar, montar e ajustar. Não conta para a trilha"
+          onPress={() => router.push({ pathname: '/licao', params: { modo: 'demonstracao' } })}
+        />
+        <Item
           titulo="Catálogo de ícones e guias"
           valor="Todos os desenhos do app"
           onPress={() => router.push('/icones')}

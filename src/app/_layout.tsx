@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
 
 import { ProgressoProvider, useProgresso } from '@/estado/progresso';
@@ -24,10 +25,13 @@ export default function LayoutRaiz() {
   if (!carregou && !erro) return null;
 
   return (
-    <ProgressoProvider>
-      <StatusBar style="light" />
-      <Telas />
-    </ProgressoProvider>
+    // A raiz dos gestos (arrastar as fichas das questões) envolve o app inteiro.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ProgressoProvider>
+        <StatusBar style="light" />
+        <Telas />
+      </ProgressoProvider>
+    </GestureHandlerRootView>
   );
 }
 

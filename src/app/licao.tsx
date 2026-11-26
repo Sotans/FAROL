@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,9 +15,10 @@ import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
 import { useProgresso } from '@/estado/progresso';
 import { quebrarEnunciado } from '@/licao/enunciado';
+import { questoesDeDemonstracao } from '@/conteudo/demonstracao';
 import { trilhaDePortugues } from '@/conteudo/trilha';
 import { montarBoasVindas, montarFarol, montarLicao, montarRevisaoRapida } from '@/licao/montar';
-import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
+import { ehDeEscolha, ehInterativa, rotuloTipo } from '@/licao/tipos';
 import { useLicao } from '@/licao/useLicao';
 import { vencidas } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
@@ -27,6 +29,8 @@ export default function Licao() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
   const boasVindas = modo === 'boas-vindas';
   const revisaoRapida = modo === 'revisao';
+  // Laboratório: os tipos novos de questão, sem contar para a trilha, a meta ou a revisão.
+  const demonstracao = modo === 'demonstracao';
   const {
     modulo,
     indiceDoFarol,
@@ -39,9 +43,10 @@ export default function Licao() {
     celebracaoDeSequencia,
   } = useProgresso();
   // Fixados na abertura: `concluidas` muda ao concluir, antes de a tela sair.
-  const [farol] = useState(() => !boasVindas && !revisaoRapida && concluidas === indiceDoFarol);
+  const [farol] = useState(() => !boasVindas && !revisaoRapida && !demonstracao && concluidas === indiceDoFarol);
   const [questoes] = useState(() => {
     const agora = new Date();
+    if (demonstracao) return questoesDeDemonstracao;
     if (boasVindas) return montarBoasVindas(modulo);
     if (revisaoRapida) return montarRevisaoRapida(trilhaDePortugues, vencidas(revisoes, agora));
     if (farol) return montarFarol(modulo, agora.getTime());
@@ -55,7 +60,11 @@ export default function Licao() {
     fase === 'guiada' || fase === 'seguir' ? 'revelada' : fase === 'acerto' || fase === 'erro' ? fase : 'respondendo';
   // Toda questão confere no Confirmar (apagado até haver resposta), menos ligar pares, que confere par a par.
   const pedeConfirmacao = q.tipo !== 'ligarPares';
-  const podeConfirmar = q.tipo === 'ordenar' ? licao.ordem.length === q.itens.length : selecionada !== null;
+  const podeConfirmar = ehInterativa(q)
+    ? licao.respostaPronta
+    : q.tipo === 'ordenar'
+      ? licao.ordem.length === q.itens.length
+      : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
     if (fase === 'acerto') return i === correta ? 'correta' : removidas.includes(i) ? 'removida' : 'normal';
@@ -74,6 +83,11 @@ export default function Licao() {
 
   function continuar() {
     if (licao.proxima()) {
+      if (demonstracao) {
+        if (router.canGoBack()) router.back();
+        else router.dismissTo('/');
+        return;
+      }
       registrarRevisoes(licao.notas);
       if (revisaoRapida) concluirRevisao(limites.xpDaRevisao);
       else concluir(farol ? limites.xpDoFarol : limites.xpDaLicao);
@@ -160,6 +174,8 @@ export default function Licao() {
             onRemover={licao.removerDaOrdem}
             onErrarPar={licao.errarPar}
             onConcluirPares={licao.concluirPares}
+            resposta={licao.resposta}
+            onMudarResposta={licao.mudarResposta}
           />
         </View>
 

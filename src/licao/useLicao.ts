@@ -5,8 +5,9 @@ import { notaDaQuestao, type Nota } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
+import { conferirInterativa, respostaCompleta, type RespostaInterativa } from './interativas';
 import { ordemEstaCorreta } from './respostas';
-import { ehDeEscolha, type ModoDeErro, type Questao } from './tipos';
+import { ehDeEscolha, ehInterativa, type ModoDeErro, type Questao } from './tipos';
 
 export type Fase = 'respondendo' | 'acerto' | 'erro' | 'guiada' | 'seguir';
 
@@ -32,6 +33,8 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   const [removidas, setRemovidas] = useState<number[]>([]);
   // Ordenar: índices de `itens` na ordem em que a pessoa tocou.
   const [ordem, setOrdem] = useState<number[]>([]);
+  // Questões interativas (arrastar, ajustar): a resposta montada e se a pessoa já mexeu (a régua sempre tem valor).
+  const [resposta, setResposta] = useState<RespostaInterativa | null>(null);
   const [erros, setErros] = useState(0);
   // Revisão espaçada: a nota de cada questão original, decidida na primeira vez que ela é resolvida.
   const [notas, setNotas] = useState<Record<string, Nota>>({});
@@ -121,8 +124,21 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     setSelecionada(i);
   }
 
+  /** Questões interativas: a resposta montada até aqui (cada arraste, toque ou ajuste). */
+  function mudarResposta(r: RespostaInterativa) {
+    if (fase === 'respondendo') setResposta(r);
+  }
+
+  /** A resposta da questão interativa já pode ir para o Confirmar? */
+  const respostaPronta = ehInterativa(questao) && respostaCompleta(questao, resposta);
+
   function confirmar() {
     if (fase !== 'respondendo') return;
+    if (ehInterativa(questao)) {
+      if (resposta && respostaCompleta(questao, resposta))
+        aplicarResultado(conferirInterativa(questao, resposta), null);
+      return;
+    }
     if (questao.tipo === 'ordenar') aplicarResultado(ordemEstaCorreta(questao, ordem), null);
     else if (selecionada !== null) conferir(selecionada);
   }
@@ -164,6 +180,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   function tentarDeNovo() {
     setSelecionada(null);
     setOrdem([]);
+    setResposta(null);
     setFase('respondendo');
   }
 
@@ -194,6 +211,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     setSelecionada(null);
     setRemovidas([]);
     setOrdem([]);
+    setResposta(null);
     setErros(0);
     setDicaAberta(false);
     return false;
@@ -207,6 +225,8 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     selecionada,
     removidas,
     ordem,
+    resposta,
+    respostaPronta,
     notas,
     dicasRestantes,
     dicaAberta,
@@ -217,6 +237,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     progresso,
     escolher,
     confirmar,
+    mudarResposta,
     adicionarAOrdem,
     removerDaOrdem,
     errarPar,

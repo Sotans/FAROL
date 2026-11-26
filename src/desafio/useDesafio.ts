@@ -5,8 +5,9 @@ import type { Nota } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { limites } from '@/tema/tokens';
+import { conferirInterativa, respostaCompleta, type RespostaInterativa } from '@/licao/interativas';
 import { ordemEstaCorreta } from '@/licao/respostas';
-import { ehDeEscolha, type Questao } from '@/licao/tipos';
+import { ehDeEscolha, ehInterativa, type Questao } from '@/licao/tipos';
 
 export type FaseDoDesafio = 'respondendo' | 'acerto' | 'erro' | 'venceu' | 'apagou';
 
@@ -22,6 +23,7 @@ export function useDesafio(questoes: Questao[]) {
   const [fase, setFase] = useState<FaseDoDesafio>('respondendo');
   const [selecionada, setSelecionada] = useState<number | null>(null);
   const [ordem, setOrdem] = useState<number[]>([]);
+  const [resposta, setResposta] = useState<RespostaInterativa | null>(null);
   // Revisão espaçada: no desafio não há dica nem nova tentativa, então é acerto (bom) ou erro.
   const [notas, setNotas] = useState<Record<string, Nota>>({});
   const [luzes, setLuzes] = useState<number>(limites.luzesDoDesafio);
@@ -73,8 +75,18 @@ export function useDesafio(questoes: Questao[]) {
     if (ehDeEscolha(questao)) setSelecionada(i);
   }
 
+  function mudarResposta(r: RespostaInterativa) {
+    if (fase === 'respondendo') setResposta(r);
+  }
+
+  const respostaPronta = !!questao && ehInterativa(questao) && respostaCompleta(questao, resposta);
+
   function confirmar() {
     if (fase !== 'respondendo') return;
+    if (ehInterativa(questao)) {
+      if (resposta && respostaCompleta(questao, resposta)) aplicarResultado(conferirInterativa(questao, resposta));
+      return;
+    }
     if (questao.tipo === 'ordenar') aplicarResultado(ordemEstaCorreta(questao, ordem));
     else if (selecionada !== null) conferir(selecionada);
   }
@@ -105,6 +117,7 @@ export function useDesafio(questoes: Questao[]) {
     setIndice(indice + 1);
     setSelecionada(null);
     setOrdem([]);
+    setResposta(null);
     setFase('respondendo');
   }
 
@@ -115,6 +128,8 @@ export function useDesafio(questoes: Questao[]) {
     fase,
     selecionada,
     ordem,
+    resposta,
+    respostaPronta,
     notas,
     luzes,
     acertos,
@@ -122,6 +137,7 @@ export function useDesafio(questoes: Questao[]) {
     progresso: (indice + (fase === 'acerto' || fase === 'erro' ? 1 : 0)) / questoes.length,
     escolher,
     confirmar,
+    mudarResposta,
     adicionarAOrdem,
     removerDaOrdem,
     errarPar,

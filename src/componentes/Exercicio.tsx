@@ -13,11 +13,20 @@ import Animated, {
 
 import { IconeSeta } from '@/icones';
 import { colunaDaDireita, ordemDeExibicao, parEstaCorreto } from '@/licao/respostas';
-import type { Questao, QuestaoDeOrdenar, QuestaoDePares } from '@/licao/tipos';
+import type { RespostaInterativa } from '@/licao/interativas';
+import {
+  ehInterativa,
+  type Questao,
+  type QuestaoDeEscolha,
+  type QuestaoDeOrdenar,
+  type QuestaoDePares,
+} from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { alvoMinimo, cor, fonte, raio, tamanho } from '@/tema/tokens';
 import { Opcao, type EstadoOpcao } from './Opcao';
+import { Quadro } from './questoes/comum';
+import { QuestaoInterativa } from './questoes/QuestaoInterativa';
 
 /**
  * Situação da questão vista pela área de resposta:
@@ -42,6 +51,9 @@ type Props = {
   /** Ligar pares. */
   onErrarPar: () => void;
   onConcluirPares: () => void;
+  /** Questões interativas (arrastar, ajustar): a resposta montada, guardada no motor da lição. */
+  resposta: RespostaInterativa | null;
+  onMudarResposta: (r: RespostaInterativa) => void;
 };
 
 /**
@@ -51,6 +63,15 @@ type Props = {
 export function Exercicio(props: Props) {
   const { questao: q } = props;
 
+  if (ehInterativa(q))
+    return (
+      <QuestaoInterativa
+        questao={q}
+        situacao={props.situacao}
+        resposta={props.resposta}
+        onMudar={props.onMudarResposta}
+      />
+    );
   if (q.tipo === 'ordenar') return <Ordenar {...props} questao={q} />;
   if (q.tipo === 'ligarPares') return <LigarPares {...props} questao={q} />;
 
@@ -74,6 +95,7 @@ export function Exercicio(props: Props) {
   // Múltipla escolha e completar: botões na largura toda, um embaixo do outro.
   return (
     <View style={estilos.opcoes}>
+      <ApoioDaEscolha questao={q} mostrada={opcaoMostrada(q, props.estadoDaOpcao)} />
       {q.opcoes.map((texto, i) => (
         <Opcao
           key={`${q.id}-${i}`}
@@ -85,6 +107,63 @@ export function Exercicio(props: Props) {
       ))}
     </View>
   );
+}
+
+// ---------- Apoio das escolhas novas (caso, lei, passo a passo) ----------
+
+/** A opção que aparece no texto: a certa, quando revelada; senão, a que a pessoa escolheu. */
+function opcaoMostrada(q: QuestaoDeEscolha, estado: (i: number) => EstadoOpcao): number | null {
+  const indices = q.opcoes.map((_, i) => i);
+  return (
+    indices.find((i) => estado(i) === 'correta') ??
+    indices.find((i) => estado(i) === 'selecionada' || estado(i) === 'errada') ??
+    null
+  );
+}
+
+/** Divide o texto na lacuna "___" e põe a opção mostrada (ou a linha vazia) no lugar. */
+function comLacuna(texto: string, preenchida: string | null) {
+  const [antes, depois] = texto.split('___');
+  return (
+    <Text style={estilos.apoioTexto}>
+      {antes}
+      <Text style={estilos.lacuna}>{preenchida ?? '______'}</Text>
+      {depois ?? ''}
+    </Text>
+  );
+}
+
+function ApoioDaEscolha({ questao: q, mostrada }: { questao: QuestaoDeEscolha; mostrada: number | null }) {
+  const escolhida = mostrada === null ? null : q.opcoes[mostrada];
+  if (q.tipo === 'casoConcreto' && q.contexto)
+    return (
+      <View style={estilos.caso}>
+        <Text style={estilos.apoioTexto}>{q.contexto}</Text>
+      </View>
+    );
+  if (q.tipo === 'lacunaLei' && q.texto) return <Quadro titulo={q.fonte}>{comLacuna(q.texto, escolhida)}</Quadro>;
+  if (q.tipo === 'passoAPasso' && q.passos)
+    return (
+      <View style={estilos.passos}>
+        {q.passos.map((p, i) => (
+          <View key={i} style={[estilos.passo, p.includes('___') ? estilos.passoQueFalta : null]}>
+            <Text style={estilos.passoNumero}>{i + 1}</Text>
+            <View style={{ flex: 1 }}>
+              {p.includes('___') ? comLacuna(p, escolhida) : <Text style={estilos.apoioTexto}>{p}</Text>}
+            </View>
+          </View>
+        ))}
+        {q.resultados ? (
+          <View style={estilos.passo}>
+            <Text style={estilos.passoNumero}>{q.passos.length + 1}</Text>
+            <Text style={[estilos.apoioTexto, mostrada === null ? { color: cor.textoSuave } : null]}>
+              {mostrada === null ? 'O total depende do passo que falta.' : q.resultados[mostrada]}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    );
+  return null;
 }
 
 // ---------- Ordenar ----------
@@ -341,6 +420,36 @@ function Bloco({
 
 const estilos = StyleSheet.create({
   riscado: { textDecorationLine: 'line-through' },
+  apoioTexto: { fontFamily: fonte.texto, fontSize: tamanho.md, lineHeight: 24, color: cor.texto },
+  lacuna: { fontFamily: fonte.textoSemi, color: cor.luz, textDecorationLine: 'underline' },
+  caso: {
+    backgroundColor: cor.superficie,
+    borderLeftWidth: 3,
+    borderLeftColor: cor.mareClaro,
+    borderRadius: raio.sm,
+    padding: 12,
+  },
+  passos: { gap: 8, marginBottom: 6 },
+  passo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: cor.superficie,
+    borderRadius: raio.md,
+    padding: 10,
+  },
+  passoQueFalta: { backgroundColor: 'transparent', borderWidth: 2, borderStyle: 'dashed', borderColor: cor.luz },
+  passoNumero: {
+    width: 26,
+    height: 26,
+    borderRadius: raio.circulo,
+    backgroundColor: cor.linha,
+    textAlign: 'center',
+    lineHeight: 26,
+    fontFamily: fonte.textoSemi,
+    fontSize: tamanho.xs,
+    color: cor.texto,
+  },
   opcoes: { gap: 12 },
   frase: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   ordenar: { gap: 22 },

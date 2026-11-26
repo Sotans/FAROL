@@ -1,6 +1,7 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,7 +22,7 @@ import { useDesafio } from '@/desafio/useDesafio';
 import { useProgresso } from '@/estado/progresso';
 import { quebrarEnunciado } from '@/licao/enunciado';
 import { montarDesafio } from '@/licao/montar';
-import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
+import { ehDeEscolha, ehInterativa, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
 import { IconeFaisca, IconeFechar } from '@/icones';
 import { entradaComMola } from '@/tema/movimento';
@@ -57,7 +58,11 @@ export default function Desafio() {
   const situacao: Situacao = fase === 'acerto' ? 'acerto' : fase === 'respondendo' ? 'respondendo' : 'revelada';
   // Toda questão confere no Confirmar (apagado até haver resposta), menos ligar pares, que confere par a par.
   const pedeConfirmacao = q.tipo !== 'ligarPares';
-  const podeConfirmar = q.tipo === 'ordenar' ? desafio.ordem.length === q.itens.length : selecionada !== null;
+  const podeConfirmar = ehInterativa(q)
+    ? desafio.respostaPronta
+    : q.tipo === 'ordenar'
+      ? desafio.ordem.length === q.itens.length
+      : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
     if (fase === 'acerto') return i === correta ? 'correta' : 'normal';
@@ -165,6 +170,8 @@ export default function Desafio() {
             onRemover={desafio.removerDaOrdem}
             onErrarPar={desafio.errarPar}
             onConcluirPares={desafio.concluirPares}
+            resposta={desafio.resposta}
+            onMudarResposta={desafio.mudarResposta}
           />
         </View>
       </ScrollView>
