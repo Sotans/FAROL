@@ -1,9 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated, { SlideInDown } from 'react-native-reanimated';
+import Animated, { SlideInDown, useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { NumeroQueConta } from '@/componentes/animados/IconesAnimados';
 import { Botao } from '@/componentes/Botao';
 import { Farol } from '@/componentes/Farol';
 import { GuiaIlustrado, temGuiaIlustrado } from '@/componentes/Ilustracoes';
@@ -16,6 +17,7 @@ import { QUESTOES_DO_FAROL } from '@/licao/montar';
 import { haptico } from '@/servicos/haptico';
 import { tocar } from '@/servicos/som';
 import { IconeAnelDaMeta, IconeEscudo, IconeFaisca, IconeLuzDaSequencia } from '@/icones';
+import { entradaComMola } from '@/tema/movimento';
 import { alvoMinimo, cor, fonte, limites, raio, tamanho } from '@/tema/tokens';
 
 const frases = [
@@ -25,6 +27,7 @@ const frases = [
 ];
 
 export default function Conclusao() {
+  const reduzir = useReducedMotion();
   const { acertos, total, primeira, farol, revisao } = useLocalSearchParams<{
     acertos?: string;
     total?: string;
@@ -118,8 +121,10 @@ export default function Conclusao() {
           <Text style={estilos.detalhe}>Dia 1 concluído. Você começou, e é isso que importa.</Text>
         ) : null}
         <View style={estilos.linha}>
-          <IconeFaisca tamanho={30} />
-          <Text style={estilos.xp}>{`+${xp} XP`}</Text>
+          <Animated.View entering={entradaComMola(reduzir)}>
+            <IconeFaisca tamanho={30} />
+          </Animated.View>
+          <NumeroQueConta valor={xp} formatar={(n) => `+${n} XP`} style={estilos.xp} />
         </View>
         {/* Celebração densa: três números numa fila, sem linhas soltas. */}
         <View style={estilos.numeros}>
@@ -162,7 +167,7 @@ export default function Conclusao() {
               </Text>
               <View style={estilos.botoes}>
                 <Botao rotulo="Descobrir meu ponto de partida" onPress={() => router.replace('/diagnostico')} />
-                <Botao rotulo="Mais tarde" variante="terciario" onPress={() => router.replace('/')} />
+                <Botao rotulo="Mais tarde" variante="terciario" onPress={() => router.dismissTo('/')} />
               </View>
             </>
           ) : moduloConcluido ? (
@@ -183,15 +188,15 @@ export default function Conclusao() {
                     rotulo="Ir para o próximo módulo"
                     onPress={() => {
                       escolherModulo(proximo.id);
-                      router.replace('/');
+                      router.dismissTo('/');
                     }}
                   />
                 ) : (
-                  <Botao rotulo="Voltar à trilha" onPress={() => router.replace('/')} />
+                  <Botao rotulo="Voltar à trilha" onPress={() => router.dismissTo('/')} />
                 )}
                 {convidarParaCadastro ? <LinhaDeCadastro motivo={motivo} /> : null}
                 {proximo ? (
-                  <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.replace('/')} />
+                  <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.dismissTo('/')} />
                 ) : null}
               </View>
             </>
@@ -210,7 +215,7 @@ export default function Conclusao() {
                   onPress={() => router.replace('/licao')}
                 />
                 {convidarParaCadastro ? <LinhaDeCadastro motivo={motivo} /> : null}
-                <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.replace('/')} />
+                <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.dismissTo('/')} />
               </View>
             </>
           ) : (
@@ -226,7 +231,7 @@ export default function Conclusao() {
               <View style={estilos.botoes}>
                 <Botao rotulo="Continuar" sub={`+${limites.xpDaLicao} XP`} onPress={() => router.replace('/licao')} />
                 {convidarParaCadastro ? <LinhaDeCadastro motivo={motivo} /> : null}
-                <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.replace('/')} />
+                <Botao rotulo="Terminar por hoje" variante="terciario" onPress={() => router.dismissTo('/')} />
               </View>
             </>
           )}

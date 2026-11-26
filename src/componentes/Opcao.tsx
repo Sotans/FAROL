@@ -9,8 +9,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { IconeFechar, IconeVisto } from '@/icones';
+import { IconeFechar } from '@/icones';
 import { alvoMinimo, cor, fonte, raio, tamanho } from '@/tema/tokens';
+import { IconeVistoDesenhado } from './animados/IconesAnimados';
 
 export type EstadoOpcao = 'normal' | 'selecionada' | 'correta' | 'errada' | 'removida';
 
@@ -74,7 +75,7 @@ export function Opcao({ texto, estado, onPress, desabilitado = false }: Props) {
           <Text style={[estilos.texto, { color: v.texto }, estado === 'removida' ? estilos.riscado : null]}>
             {texto}
           </Text>
-          {estado === 'correta' ? <IconeVisto tamanho={18} cor={cor.acerto} /> : null}
+          {estado === 'correta' ? <IconeVistoDesenhado tamanho={18} cor={cor.acerto} /> : null}
           {estado === 'errada' ? <IconeFechar tamanho={18} cor={cor.atencao} /> : null}
           {estado === 'removida' ? <IconeFechar tamanho={16} cor={cor.textoSuave} /> : null}
         </View>

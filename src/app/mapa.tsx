@@ -42,12 +42,14 @@ export default function MapaDoPontoDePartida() {
         <Text style={estilos.sub}>Sua trilha foi ajustada a partir daqui.</Text>
 
         {materias.map((m, i) => (
-          <Animated.View key={m} entering={FadeInDown.delay(200 + i * 250).duration(350)}>
+          <Animated.View key={m} entering={FadeInDown.delay(200 + i * 60).duration(350)}>
             <CartaoDaMateria nome={rotuloMateria[m]} resultado={mapa[m]} />
           </Animated.View>
         ))}
 
-        <Animated.View entering={FadeInDown.delay(800).duration(350)} style={estilos.sugestao}>
+        <Animated.View
+          entering={FadeInDown.delay(200 + materias.length * 60 + 150).duration(350)}
+          style={estilos.sugestao}>
           <Text style={estilos.sugestaoTexto}>
             {podePular
               ? 'Sugestão: você já conhece crase. Na trilha, use "Pular pra cá?" para provar e avançar.'
@@ -56,7 +58,7 @@ export default function MapaDoPontoDePartida() {
         </Animated.View>
       </ScrollView>
       <View style={estilos.rodape}>
-        <Botao rotulo="Ver minha trilha" onPress={() => router.replace('/')} />
+        <Botao rotulo="Ver minha trilha" onPress={() => router.dismissTo('/')} />
       </View>
     </SafeAreaView>
   );

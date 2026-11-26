@@ -137,7 +137,7 @@ export default function ContaTela() {
 
   function confirmarSaida() {
     const sair = () => {
-      void sairDaConta().then(() => router.replace('/'));
+      void sairDaConta().then(() => router.dismissTo('/'));
     };
     const texto = 'Seu progresso continua guardado na conta. Neste aparelho, o app recomeça.';
     if (Platform.OS === 'web') {
@@ -161,7 +161,7 @@ export default function ContaTela() {
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <View style={estilos.topo}>
         <Pressable
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+          onPress={() => (router.canGoBack() ? router.back() : router.dismissTo('/'))}
           accessibilityRole="button"
           accessibilityLabel="Fechar"
           style={estilos.fechar}>
@@ -189,7 +189,7 @@ export default function ContaTela() {
               <Text style={[estilos.titulo, estilos.textoCentro]}>{t.pronto}</Text>
               <Text style={[estilos.sub, estilos.textoCentro]}>{t.prontoSub}</Text>
               <View style={estilos.acoes}>
-                <Botao rotulo="Voltar à trilha" onPress={() => router.replace('/')} />
+                <Botao rotulo="Voltar à trilha" onPress={() => router.dismissTo('/')} />
               </View>
             </Animated.View>
           ) : (

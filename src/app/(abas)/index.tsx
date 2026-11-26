@@ -3,7 +3,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import Animated, {
   Easing,
+  FadeIn,
   FadeInDown,
+  FadeOut,
   useAnimatedProps,
   useReducedMotion,
   useSharedValue,
@@ -14,6 +16,7 @@ import Svg, { Defs, LinearGradient, Polygon, Stop } from 'react-native-svg';
 
 import { carreiraPorId } from '@/carreiras/dados';
 import { modulosEmRevisao, trilhaDePortugues } from '@/conteudo/trilha';
+import { AnelDaMetaQueEnche, LuzDaSequenciaQueAcende } from '@/componentes/animados/IconesAnimados';
 import { Aviso, useAviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import {
@@ -38,17 +41,8 @@ import {
 import { vencidas } from '@/revisao/agenda';
 import { haptico } from '@/servicos/haptico';
 import { acaoPrincipal } from '@/trilha/acoes';
-import {
-  IconeAnelDaMeta,
-  IconeBussola,
-  IconeCadeado,
-  IconeEscudo,
-  IconeFarol,
-  IconeLuzDaSequencia,
-  IconeModulos,
-  IconeRevisao,
-  IconeSeta,
-} from '@/icones';
+import { IconeBussola, IconeCadeado, IconeEscudo, IconeFarol, IconeModulos, IconeRevisao, IconeSeta } from '@/icones';
+import { duracao } from '@/tema/movimento';
 import { alvoMinimo, cor, fonte, limites, movimento, raio, tamanho } from '@/tema/tokens';
 
 /** Espaço acima do farol, dentro da rolagem. O feixe usa a mesma medida. */
@@ -299,16 +293,16 @@ export default function Trilha() {
     <SafeAreaView style={estilos.tela} edges={['top']}>
       <View style={estilos.cabeca}>
         {/* A sequência aparece quando passa de zero: a conversa não começa pelo zero. */}
-        {sequencia > 0 ? (
-          <View style={estilos.indicador}>
-            <IconeLuzDaSequencia tamanho={22} />
-            <Text style={estilos.sequencia}>{textoDeDias(sequencia)}</Text>
-          </View>
-        ) : (
-          <View />
-        )}
+        {/* Montada mesmo no zero (invisível), para a luz acender quando o 1º dia chega. */}
+        <View
+          style={[estilos.indicador, sequencia > 0 ? null : estilos.oculto]}
+          importantForAccessibility={sequencia > 0 ? 'auto' : 'no-hide-descendants'}
+          accessibilityElementsHidden={sequencia === 0}>
+          <LuzDaSequenciaQueAcende tamanho={22} dias={sequencia} />
+          {sequencia > 0 ? <Text style={estilos.sequencia}>{textoDeDias(sequencia)}</Text> : null}
+        </View>
         <View style={estilos.indicador}>
-          <IconeAnelDaMeta tamanho={20} progresso={feitasHoje / metaDiaria} />
+          <AnelDaMetaQueEnche tamanho={20} progresso={feitasHoje / metaDiaria} />
           <Text style={[estilos.meta, metaCumprida ? { color: cor.luz } : null]}>
             {metaCumprida ? 'Meta de hoje cumprida' : `Meta de hoje: ${feitasHoje} de ${metaDiaria}`}
           </Text>
@@ -423,7 +417,10 @@ export default function Trilha() {
       <Aviso texto={aviso} />
 
       {cartaoAberto && !farolAceso ? (
-        <View style={StyleSheet.absoluteFill}>
+        <Animated.View
+          entering={FadeIn.duration(duracao.transicao)}
+          exiting={FadeOut.duration(duracao.transicao)}
+          style={StyleSheet.absoluteFill}>
           <Pressable style={estilos.fundoCartao} onPress={() => setCartaoAberto(false)} accessibilityLabel="Fechar" />
           <Animated.View entering={FadeInDown.duration(220)} style={estilos.cartao}>
             <Text style={estilos.cartaoTitulo}>{vezDoFarol ? `Farol de ${nomeDoModulo}` : partes[concluidas]}</Text>
@@ -443,11 +440,14 @@ export default function Trilha() {
               />
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
       ) : null}
 
       {listaAberta ? (
-        <View style={StyleSheet.absoluteFill}>
+        <Animated.View
+          entering={FadeIn.duration(duracao.transicao)}
+          exiting={FadeOut.duration(duracao.transicao)}
+          style={StyleSheet.absoluteFill}>
           <Pressable style={estilos.fundoCartao} onPress={() => setListaAberta(false)} accessibilityLabel="Fechar" />
           <Animated.View entering={FadeInDown.duration(220)} style={[estilos.cartao, estilos.cartaoPulo]}>
             <Text style={[estilos.cartaoTitulo, { color: cor.texto }]}>Módulos de Português</Text>
@@ -502,11 +502,14 @@ export default function Trilha() {
               })}
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
       ) : null}
 
       {alvoDoPulo !== null ? (
-        <View style={StyleSheet.absoluteFill}>
+        <Animated.View
+          entering={FadeIn.duration(duracao.transicao)}
+          exiting={FadeOut.duration(duracao.transicao)}
+          style={StyleSheet.absoluteFill}>
           <Pressable
             style={estilos.fundoCartao}
             onPress={() => {
@@ -552,7 +555,7 @@ export default function Trilha() {
               />
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
       ) : null}
     </SafeAreaView>
   );
@@ -560,6 +563,7 @@ export default function Trilha() {
 
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo, paddingHorizontal: 16 },
+  oculto: { opacity: 0 },
   cabeca: {
     flexDirection: 'row',
     justifyContent: 'space-between',

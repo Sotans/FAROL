@@ -1,11 +1,13 @@
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeOut, useReducedMotion } from 'react-native-reanimated';
 
 import { carreiraPorId } from '@/carreiras/dados';
 import { useProgresso } from '@/estado/progresso';
 import { IconeAbaNoticias, IconeAbaRevisar, IconeAbaTrilha, IconePerfil } from '@/icones';
 import { haptico } from '@/servicos/haptico';
+import { duracao, entradaSuave } from '@/tema/movimento';
 import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 import { AvatarDoGuia } from './Personagem';
 
@@ -25,6 +27,7 @@ const abas: Record<string, { rotulo: string; icone: (c: string) => ReactNode }> 
 export function BarraDeAbas({ state, descriptors, navigateToTab, insets }: BottomTabBarProps) {
   const { carreira, tomDoGuia, cabeloDoGuia, corDoCabeloDoGuia } = useProgresso();
   const c = carreiraPorId(carreira);
+  const reduzir = useReducedMotion();
 
   return (
     <View style={[estilos.barra, { paddingBottom: Math.max(insets.bottom, 10) }]} accessibilityRole="tablist">
@@ -47,25 +50,36 @@ export function BarraDeAbas({ state, descriptors, navigateToTab, insets }: Botto
               navigateToTab(rota.key);
             }}
             style={estilos.aba}>
-            <View style={[estilos.pilula, ativa ? estilos.pilulaAtiva : null]}>
-              {rota.name === 'voce' && c ? (
-                <View style={[estilos.avatar, ativa ? estilos.avatarAtivo : null]}>
-                  <AvatarDoGuia
-                    carreira={c}
-                    tom={tomDoGuia}
-                    cabelo={cabeloDoGuia}
-                    corDoCabelo={corDoCabeloDoGuia}
-                    tamanho={24}
-                    comLuz={false}
-                  />
-                </View>
-              ) : (
-                aba.icone(corDoIcone)
-              )}
+            <View style={estilos.pilula}>
+              {/* A pílula da aba ativa surge em 150 ms; a troca de tela em si é instantânea. */}
+              {ativa ? (
+                <Animated.View
+                  entering={entradaSuave(duracao.toque, reduzir)}
+                  exiting={FadeOut.duration(duracao.toque)}
+                  style={[StyleSheet.absoluteFill, estilos.pilulaAtiva]}
+                />
+              ) : null}
+              {/* O ícone fica numa camada acima da pílula animada (que cria a própria camada ao animar). */}
+              <View style={estilos.icone}>
+                {rota.name === 'voce' && c ? (
+                  <View style={[estilos.avatar, ativa ? estilos.avatarAtivo : null]}>
+                    <AvatarDoGuia
+                      carreira={c}
+                      tom={tomDoGuia}
+                      cabelo={cabeloDoGuia}
+                      corDoCabelo={corDoCabeloDoGuia}
+                      tamanho={24}
+                      comLuz={false}
+                    />
+                  </View>
+                ) : (
+                  aba.icone(corDoIcone)
+                )}
+              </View>
               {marcador ? (
-                <View style={estilos.marcador}>
+                <Animated.View key={marcador} entering={entradaSuave(duracao.toque, reduzir)} style={estilos.marcador}>
                   <Text style={estilos.marcadorTexto}>{marcador}</Text>
-                </View>
+                </Animated.View>
               ) : null}
             </View>
             <Text style={[estilos.rotulo, ativa ? estilos.rotuloAtivo : null]}>{aba.rotulo}</Text>
@@ -87,7 +101,8 @@ const estilos = StyleSheet.create({
   },
   aba: { flex: 1, alignItems: 'center', gap: 4, minHeight: 52 },
   pilula: { width: 60, height: 32, borderRadius: raio.circulo, alignItems: 'center', justifyContent: 'center' },
-  pilulaAtiva: { backgroundColor: cor.selecionadaFundo },
+  icone: { zIndex: 1 },
+  pilulaAtiva: { backgroundColor: cor.selecionadaFundo, borderRadius: raio.circulo },
   avatar: { borderRadius: raio.circulo, borderWidth: 2, borderColor: cor.linhaForte, overflow: 'hidden' },
   avatarAtivo: { borderColor: cor.mareClaro },
   marcador: {

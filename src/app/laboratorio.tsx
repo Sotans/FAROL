@@ -27,7 +27,7 @@ export default function Laboratorio() {
   function confirmarReinicio() {
     const fazer = () => {
       reiniciar();
-      router.replace('/');
+      router.dismissTo('/');
     };
     const texto = 'O progresso deste aparelho volta ao início.';
     if (Platform.OS === 'web') {

@@ -82,7 +82,7 @@ export default function Diagnostico() {
         <Pressable
           onPress={() => {
             haptico.selecao();
-            router.replace('/');
+            router.dismissTo('/');
           }}
           accessibilityRole="button"
           accessibilityLabel="Fazer o mapa mais tarde"

@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { carreiraPorId } from '@/carreiras/dados';
+import { SeloQueAcende } from '@/componentes/animados/IconesAnimados';
 import { Aviso, useAviso } from '@/componentes/Aviso';
 import { AvatarDoGuia } from '@/componentes/Personagem';
 import { trilhaDePortugues } from '@/conteudo/trilha';
@@ -86,9 +87,11 @@ export default function Voce() {
                 style={[estilos.conquista, x.alcancada ? estilos.conquistaAlcancada : null]}
                 accessible
                 accessibilityLabel={`${x.titulo}. ${x.descricao}. ${x.alcancada ? 'Conquistada' : 'Ainda não'}`}>
-                <View style={[estilos.selo, x.alcancada ? estilos.seloAceso : null]}>
-                  {x.alcancada ? <IconeEstrelaDeLuz tamanho={20} /> : <IconeCadeado tamanho={18} />}
-                </View>
+                <SeloQueAcende id={x.id} alcancada={x.alcancada}>
+                  <View style={[estilos.selo, x.alcancada ? estilos.seloAceso : null]}>
+                    {x.alcancada ? <IconeEstrelaDeLuz tamanho={20} /> : <IconeCadeado tamanho={18} />}
+                  </View>
+                </SeloQueAcende>
                 <Text style={[estilos.conquistaTitulo, x.alcancada ? null : estilos.apagado]}>{x.titulo}</Text>
                 <Text style={estilos.conquistaDescricao}>{x.descricao}</Text>
               </View>
@@ -180,7 +183,6 @@ const estilos = StyleSheet.create({
     borderColor: cor.linhaForte,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
   },
   seloAceso: { backgroundColor: cor.luz, borderColor: cor.relevoLuz },
   conquistaTitulo: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm + 1, color: cor.texto },

@@ -48,6 +48,15 @@ function Telas() {
   if (!carregado) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: cor.fundo }, animation: 'fade' }} />
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: cor.fundo }, animation: 'fade' }}>
+      {/* Momentos de foco sobem de baixo, por cima das abas. */}
+      <Stack.Screen name="licao" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="desafio" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="diagnostico" options={{ animation: 'slide_from_bottom' }} />
+      {/* O onboarding é uma sequência de passos: cada tela entra pela direita. */}
+      <Stack.Screen name="carreira" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="guia" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="meta" options={{ animation: 'slide_from_right' }} />
+    </Stack>
   );
 }
