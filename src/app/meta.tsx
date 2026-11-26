@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,10 +17,17 @@ const opcoes: { meta: MetaDiaria; titulo: string; sub: string }[] = [
 /** T3. A meta mínima já vem marcada. O app nunca empurra uma meta maior. */
 export default function Meta() {
   const { metaDiaria, definirMetaDiaria, concluirOnboarding } = useProgresso();
+  // Vindo da aba Você: só troca a meta e volta.
+  const editar = useLocalSearchParams<{ modo?: string }>().modo === 'editar';
   const [escolhida, setEscolhida] = useState<MetaDiaria>(metaDiaria);
 
   function confirmar() {
     definirMetaDiaria(escolhida);
+    if (editar) {
+      if (router.canGoBack()) router.back();
+      else router.replace('/voce');
+      return;
+    }
     concluirOnboarding();
     // Limpa as telas do onboarding da pilha e vai direto para a primeira lição.
     if (router.canDismiss()) router.dismissAll();
@@ -56,7 +63,7 @@ export default function Meta() {
         <Text style={estilos.nota}>Você pode mudar quando quiser.</Text>
       </View>
       <View style={estilos.rodape}>
-        <Botao rotulo="Confirmar" onPress={confirmar} />
+        <Botao rotulo={editar ? 'Salvar' : 'Confirmar'} onPress={confirmar} />
       </View>
     </SafeAreaView>
   );

@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { IconeFechar, IconeLanterna, IconeVisto } from '@/icones';
+import { IconeFechar, IconeLanterna } from '@/icones';
+import { IconeVistoDesenhado } from './animados/IconesAnimados';
 import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 import { Botao } from './Botao';
 
@@ -28,7 +29,7 @@ const visual = {
 };
 
 function IconeDoTipo({ tipo }: { tipo: Props['tipo'] }) {
-  if (tipo === 'acerto') return <IconeVisto tamanho={20} cor={cor.acerto} />;
+  if (tipo === 'acerto') return <IconeVistoDesenhado tamanho={20} cor={cor.acerto} />;
   if (tipo === 'erro') return <IconeFechar tamanho={20} cor={cor.atencao} />;
   if (tipo === 'guiada') return <IconeLanterna tamanho={20} cor={cor.atencao} />;
   return null;

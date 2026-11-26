@@ -14,6 +14,9 @@ export {
   type EstadoDoFarol,
 } from './conquistas';
 export {
+  IconeAbaNoticias,
+  IconeAbaRevisar,
+  IconeAbaTrilha,
   IconeBaixar,
   IconeCadeado,
   IconeEmail,

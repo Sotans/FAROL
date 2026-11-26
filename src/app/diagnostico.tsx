@@ -82,7 +82,7 @@ export default function Diagnostico() {
         <Pressable
           onPress={() => {
             haptico.selecao();
-            router.replace('/');
+            router.dismissTo('/');
           }}
           accessibilityRole="button"
           accessibilityLabel="Fazer o mapa mais tarde"
@@ -93,7 +93,7 @@ export default function Diagnostico() {
       </View>
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
-        <Chip texto={`Mapa · pergunta ${indice + 1} de ${total}`} tom="luz" />
+        <Chip texto={`Mapa · pergunta ${indice + 1} de ${total}`} tom="mare" />
         <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
         <View style={estilos.areaDeResposta}>
           <View style={estilos.opcoes}>

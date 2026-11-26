@@ -4,6 +4,7 @@ import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from '
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LanternaQueAcende } from '@/componentes/animados/IconesAnimados';
 import { BarraProgresso } from '@/componentes/BarraProgresso';
 import { Botao } from '@/componentes/Botao';
 import { CelebracaoDeSequencia } from '@/componentes/CelebracaoDeSequencia';
@@ -93,12 +94,12 @@ export default function Licao() {
     haptico.selecao();
     if (Platform.OS === 'web') {
       // Alert.alert não funciona no navegador.
-      if (window.confirm('Sair da lição? Guardamos onde você parou.')) router.replace('/');
+      if (window.confirm('Sair da lição? Guardamos onde você parou.')) router.dismissTo('/');
       return;
     }
     Alert.alert('Sair da lição?', 'Guardamos onde você parou.', [
       { text: 'Continuar a lição', style: 'cancel' },
-      { text: 'Sair', onPress: () => router.replace('/') },
+      { text: 'Sair', onPress: () => router.dismissTo('/') },
     ]);
   }
 
@@ -115,10 +116,7 @@ export default function Licao() {
         {/* A dica fica na linha do tipo de questão: sempre no mesmo lugar e longe das respostas. */}
         <View style={estilos.linhaDoTipo}>
           <View style={estilos.chip}>
-            <Chip
-              texto={boasVindas ? 'Lição de boas-vindas' : (q.origem ?? rotuloTipo[q.tipo])}
-              tom={boasVindas || q.origem ? 'luz' : 'mare'}
-            />
+            <Chip texto={boasVindas ? 'Lição de boas-vindas' : (q.origem ?? rotuloTipo[q.tipo])} tom="mare" />
           </View>
           <Pressable
             onPress={licao.usarDica}
@@ -130,7 +128,7 @@ export default function Licao() {
             }
             hitSlop={6}
             style={estilos.dica}>
-            <IconeLanterna tamanho={18} acesa={licao.dicasRestantes > 0} />
+            <LanternaQueAcende tamanho={18} acesa={licao.dicasRestantes > 0} gatilho={licao.dicasRestantes} />
             <Text style={[estilos.dicaTexto, licao.dicasRestantes > 0 ? null : estilos.dicaSemSaldo]}>
               {`Dica · ${licao.dicasRestantes}`}
             </Text>
@@ -265,7 +263,8 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
+  // Só a lanterna é âmbar: o texto da dica é informação, não o próximo passo.
+  dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.texto },
   dicaSemSaldo: { color: cor.textoSuave },
   corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
   areaDeResposta: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },

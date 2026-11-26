@@ -1,4 +1,3 @@
-import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
 import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import { useFonts } from 'expo-font';
@@ -20,7 +19,6 @@ export default function LayoutRaiz() {
     Inter_700Bold,
     Nunito_700Bold,
     Nunito_800ExtraBold,
-    Fraunces_600SemiBold,
   });
 
   if (!carregou && !erro) return null;
@@ -48,6 +46,15 @@ function Telas() {
   if (!carregado) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: cor.fundo }, animation: 'fade' }} />
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: cor.fundo }, animation: 'fade' }}>
+      {/* Momentos de foco sobem de baixo, por cima das abas. */}
+      <Stack.Screen name="licao" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="desafio" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="diagnostico" options={{ animation: 'slide_from_bottom' }} />
+      {/* O onboarding é uma sequência de passos: cada tela entra pela direita. */}
+      <Stack.Screen name="carreira" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="guia" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="meta" options={{ animation: 'slide_from_right' }} />
+    </Stack>
   );
 }

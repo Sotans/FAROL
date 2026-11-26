@@ -1,9 +1,10 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { NumeroQueConta } from '@/componentes/animados/IconesAnimados';
 import { BarraProgresso } from '@/componentes/BarraProgresso';
 import { Botao } from '@/componentes/Botao';
 import { CelebracaoDeSequencia } from '@/componentes/CelebracaoDeSequencia';
@@ -23,6 +24,7 @@ import { montarDesafio } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
 import { IconeFaisca, IconeFechar } from '@/icones';
+import { entradaComMola } from '@/tema/movimento';
 import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 
 /** T11f. O desafio "Pular pra cá?": 5 luzes, e passar marca as partes puladas como dominadas. */
@@ -40,6 +42,7 @@ export default function Desafio() {
     alvoValido === null ? [] : montarDesafio(modulo, concluidas, alvoValido, Date.now()),
   );
   const desafio = useDesafio(questoes);
+  const reduzir = useReducedMotion();
   const { questao: q, fase, selecionada } = desafio;
   if (alvoValido === null || !q) return <Redirect href="/" />;
 
@@ -66,7 +69,7 @@ export default function Desafio() {
   function vencer() {
     registrarRevisoes(desafio.notas);
     dominarAte(alvo);
-    router.replace('/');
+    router.dismissTo('/');
   }
 
   if (fase === 'venceu') {
@@ -80,8 +83,10 @@ export default function Desafio() {
               estilos.detalhe
             }>{`Você acertou ${desafio.acertos} de ${desafio.total}. Em ${nomeDoModulo}, ${descricaoDasPartes} ${primeiraPulada === ultimaPulada ? 'fica marcada' : 'ficam marcadas'} como dominada${primeiraPulada === ultimaPulada ? '' : 's'}.`}</Text>
           <View style={estilos.linhaXp}>
-            <IconeFaisca tamanho={30} />
-            <Text style={estilos.xp}>{`+${limites.xpDoDesafio} XP`}</Text>
+            <Animated.View entering={entradaComMola(reduzir)}>
+              <IconeFaisca tamanho={30} />
+            </Animated.View>
+            <NumeroQueConta valor={limites.xpDoDesafio} formatar={(n) => `+${n} XP`} style={estilos.xp} />
           </View>
           <Text style={estilos.detalhe}>
             Vamos te perguntar sobre isso de novo daqui a alguns dias, só para garantir.
@@ -109,7 +114,7 @@ export default function Desafio() {
             rotulo="Fazer as lições"
             onPress={() => {
               registrarRevisoes(desafio.notas);
-              router.replace('/');
+              router.dismissTo('/');
             }}
           />
         </View>
@@ -123,7 +128,7 @@ export default function Desafio() {
         <Pressable
           onPress={() => {
             haptico.selecao();
-            router.replace('/');
+            router.dismissTo('/');
           }}
           accessibilityRole="button"
           accessibilityLabel="Sair do desafio"
@@ -138,7 +143,10 @@ export default function Desafio() {
       </View>
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
-        <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
+        <Chip
+          texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`}
+          tom="mare"
+        />
         <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
         {/* As respostas ocupam o meio do espaço livre, entre o enunciado e o Confirmar. */}
         <View style={estilos.areaDeResposta}>

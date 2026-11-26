@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 
 import type { CarreiraId } from '@/carreiras/dados';
 import type { Cabelo, CorDoCabelo, TomDePele } from '@/componentes/Personagem';
+import { esquecerVistos } from '@/componentes/animados/vistos';
 import type { Mapa } from '@/diagnostico/dados';
 import { moduloPorId, trilhaDePortugues } from '@/conteudo/trilha';
 import type { Modulo } from '@/conteudo/tipos';
@@ -294,6 +295,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   const sair = useCallback(async () => {
     combinouComANuvem.current = false;
     await sairDaConta();
+    // O progresso recomeça: as animações também (o 1º dia volta a acender).
+    esquecerVistos();
     setEstado({ ...estadoInicial, dia: hoje() });
     setConta(null);
     setNuvem('conectando');
@@ -435,7 +438,10 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   // Não é uma mudança feita pela pessoa: não recebe carimbo de tempo.
   const atualizarDia = useCallback(() => setEstado((e) => virarDia(e)), []);
 
-  const reiniciar = useCallback(() => alterar(() => ({ ...estadoInicial, dia: hoje() })), [alterar]);
+  const reiniciar = useCallback(() => {
+    esquecerVistos();
+    alterar(() => ({ ...estadoInicial, dia: hoje() }));
+  }, [alterar]);
 
   const alternarModoDeErro = useCallback(
     () => setModoDeErro((m) => (m === 'tentar-de-novo' ? 'pular-para-o-fim' : 'tentar-de-novo')),

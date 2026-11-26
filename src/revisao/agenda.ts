@@ -116,3 +116,24 @@ export function vencidas(revisoes: Revisoes, agora: Date): string[] {
     .sort((a, b) => a[1] - b[1])
     .map(([id]) => id);
 }
+
+/** Quando vence a próxima revisão que ainda não venceu; null se não houver nenhuma agendada. */
+export function proximaRevisao(revisoes: Revisoes, agora: Date): Date | null {
+  const limite = agora.getTime();
+  let proxima: number | null = null;
+  for (const c of Object.values(revisoes)) {
+    const vence = Date.parse(c.dueAt);
+    if (vence > limite && (proxima === null || vence < proxima)) proxima = vence;
+  }
+  return proxima === null ? null : new Date(proxima);
+}
+
+/** Quantas questões ainda não venceram, mas vencem nos próximos `dias` dias. */
+export function vencemNosProximosDias(revisoes: Revisoes, agora: Date, dias: number): number {
+  const inicio = agora.getTime();
+  const fim = inicio + dias * 86_400_000;
+  return Object.values(revisoes).filter((c) => {
+    const vence = Date.parse(c.dueAt);
+    return vence > inicio && vence <= fim;
+  }).length;
+}
