@@ -117,8 +117,8 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
     }
     if (fase !== 'respondendo') return;
     if (removidas.includes(i)) return;
-    if (questao.modo === 'imediato') conferir(i);
-    else setSelecionada(i);
+    // Toda escolha passa por Confirmar: tocar só seleciona (e dá para trocar antes de conferir).
+    setSelecionada(i);
   }
 
   function confirmar() {

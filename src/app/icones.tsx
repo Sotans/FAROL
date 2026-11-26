@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { carreiras } from '@/carreiras/dados';
+import { GuiaIlustrado, IlustracaoDoFarol, temGuiaIlustrado } from '@/componentes/Ilustracoes';
 import {
   AvatarDoGuia,
   cabelos,
@@ -97,6 +98,30 @@ export default function Icones() {
           <Item nome="Aceso">
             <IconeFarol tamanho={56} estado="aceso" />
           </Item>
+        </Secao>
+
+        <Secao titulo="Ilustrações · farol">
+          <Item nome="Apagado" alto>
+            <IlustracaoDoFarol estado="apagado" altura={92} />
+          </Item>
+          <Item nome="Lâmpada acesa" alto>
+            <IlustracaoDoFarol estado="atual" altura={92} />
+          </Item>
+          <Item nome="Aceso" alto>
+            <IlustracaoDoFarol estado="aceso" altura={92} />
+          </Item>
+        </Secao>
+
+        <Secao titulo="Ilustrações · guia (momentos especiais)">
+          {carreiras
+            .filter((c) => temGuiaIlustrado(c))
+            .flatMap((c) =>
+              (['acenando', 'comemorando'] as const).map((pose) => (
+                <Item key={`${c.id}-${pose}`} nome={`${c.nome} · ${pose}`} alto>
+                  <GuiaIlustrado carreira={c} pose={pose} altura={92} />
+                </Item>
+              )),
+            )}
         </Secao>
 
         <Secao titulo="Conquistas">

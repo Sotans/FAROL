@@ -9,14 +9,16 @@ import { Botao } from '@/componentes/Botao';
 import { CelebracaoDeSequencia } from '@/componentes/CelebracaoDeSequencia';
 import { Chip } from '@/componentes/Chip';
 import { Farol } from '@/componentes/Farol';
+import { GuiaIlustrado, temGuiaIlustrado } from '@/componentes/Ilustracoes';
+import { carreiraPorId } from '@/carreiras/dados';
 import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Luzes } from '@/componentes/Luzes';
 import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
-import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { alvoDoDesafio } from '@/desafio/alvo';
 import { useDesafio } from '@/desafio/useDesafio';
 import { useProgresso } from '@/estado/progresso';
+import { quebrarEnunciado } from '@/licao/enunciado';
 import { montarDesafio } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
@@ -26,7 +28,9 @@ import { alvoMinimo, cor, fonte, limites, tamanho } from '@/tema/tokens';
 /** T11f. O desafio "Pular pra cá?": 5 luzes, e passar marca as partes puladas como dominadas. */
 export default function Desafio() {
   const { ate } = useLocalSearchParams<{ ate?: string }>();
-  const { modulo, concluidas, indiceDoFarol, dominarAte, registrarRevisoes, celebracaoDeSequencia } = useProgresso();
+  const { modulo, concluidas, indiceDoFarol, dominarAte, registrarRevisoes, celebracaoDeSequencia, carreira } =
+    useProgresso();
+  const c = carreiraPorId(carreira);
   // Fixado na abertura: um link com alvo inválido (não numérico, para trás ou além do farol) volta à trilha.
   const [alvoValido] = useState(() => alvoDoDesafio(ate, concluidas, indiceDoFarol));
   const alvo = alvoValido ?? 0;
@@ -48,7 +52,8 @@ export default function Desafio() {
   const correta = deEscolha ? q.correta : -1;
   // No desafio não há nova tentativa: depois de um erro, a solução aparece.
   const situacao: Situacao = fase === 'acerto' ? 'acerto' : fase === 'respondendo' ? 'respondendo' : 'revelada';
-  const pedeConfirmacao = q.tipo === 'ordenar' || (deEscolha && q.modo === 'confirmar');
+  // Toda questão confere no Confirmar (apagado até haver resposta), menos ligar pares, que confere par a par.
+  const pedeConfirmacao = q.tipo !== 'ligarPares';
   const podeConfirmar = q.tipo === 'ordenar' ? desafio.ordem.length === q.itens.length : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
@@ -68,7 +73,7 @@ export default function Desafio() {
     return (
       <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
         <View style={estilos.centro}>
-          <Farol />
+          {temGuiaIlustrado(c) ? <GuiaIlustrado carreira={c} pose="comemorando" altura={240} /> : <Farol />}
           <Text style={estilos.titulo}>Dominado!</Text>
           <Text
             style={
@@ -126,7 +131,6 @@ export default function Desafio() {
           <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={desafio.progresso} />
-        <SequenciaDeAcertos valor={desafio.acertosSeguidos} />
       </View>
 
       <View style={estilos.luzes}>
@@ -135,25 +139,26 @@ export default function Desafio() {
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
-        <Text style={estilos.enunciado}>{q.enunciado}</Text>
-        {/* Em telas altas, as respostas descem para a zona do polegar; o enunciado fica no topo. */}
-        <View style={estilos.empurra} />
-        <Exercicio
-          key={q.id}
-          questao={q}
-          situacao={situacao}
-          estadoDaOpcao={estadoDaOpcao}
-          opcaoDesabilitada={() => fase !== 'respondendo'}
-          onEscolher={(i) => {
-            haptico.selecao();
-            desafio.escolher(i);
-          }}
-          ordem={desafio.ordem}
-          onAdicionar={desafio.adicionarAOrdem}
-          onRemover={desafio.removerDaOrdem}
-          onErrarPar={desafio.errarPar}
-          onConcluirPares={desafio.concluirPares}
-        />
+        <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
+        {/* As respostas ocupam o meio do espaço livre, entre o enunciado e o Confirmar. */}
+        <View style={estilos.areaDeResposta}>
+          <Exercicio
+            key={q.id}
+            questao={q}
+            situacao={situacao}
+            estadoDaOpcao={estadoDaOpcao}
+            opcaoDesabilitada={() => fase !== 'respondendo'}
+            onEscolher={(i) => {
+              haptico.selecao();
+              desafio.escolher(i);
+            }}
+            ordem={desafio.ordem}
+            onAdicionar={desafio.adicionarAOrdem}
+            onRemover={desafio.removerDaOrdem}
+            onErrarPar={desafio.errarPar}
+            onConcluirPares={desafio.concluirPares}
+          />
+        </View>
       </ScrollView>
 
       <View style={estilos.rodapeFixo}>
@@ -162,10 +167,9 @@ export default function Desafio() {
             <Botao rotulo="Confirmar" desabilitado={!podeConfirmar} onPress={desafio.confirmar} />
           </View>
         ) : null}
-        {fase === 'respondendo' && !pedeConfirmacao ? (
-          <Text style={estilos.toque}>
-            {q.tipo === 'ligarPares' ? 'Ligue cada item ao seu par' : 'Toque na resposta'}
-          </Text>
+        {/* Sem "Toque na resposta": as opções já dizem o que fazer. O gesto de ligar pares é o único que precisa de instrução. */}
+        {fase === 'respondendo' && q.tipo === 'ligarPares' ? (
+          <Text style={estilos.toque}>Ligue cada item ao seu par</Text>
         ) : null}
         {fase === 'acerto' ? (
           <FolhaFeedback
@@ -199,9 +203,9 @@ const estilos = StyleSheet.create({
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 6 },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
   luzes: { paddingVertical: 6 },
-  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
-  empurra: { flexGrow: 1, minHeight: 0 },
-  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
+  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
+  areaDeResposta: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },
+  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
   rodapeFixo: { justifyContent: 'flex-end' },
   rodape: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },
   toque: {

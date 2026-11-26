@@ -11,8 +11,8 @@ import { Chip } from '@/componentes/Chip';
 import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
-import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useProgresso } from '@/estado/progresso';
+import { quebrarEnunciado } from '@/licao/enunciado';
 import { trilhaDePortugues } from '@/conteudo/trilha';
 import { montarBoasVindas, montarFarol, montarLicao, montarRevisaoRapida } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
@@ -52,8 +52,8 @@ export default function Licao() {
   const correta = deEscolha ? q.correta : -1;
   const situacao: Situacao =
     fase === 'guiada' || fase === 'seguir' ? 'revelada' : fase === 'acerto' || fase === 'erro' ? fase : 'respondendo';
-  // Ordenar sempre confirma: a sequência só faz sentido completa.
-  const pedeConfirmacao = q.tipo === 'ordenar' || (deEscolha && q.modo === 'confirmar');
+  // Toda questão confere no Confirmar (apagado até haver resposta), menos ligar pares, que confere par a par.
+  const pedeConfirmacao = q.tipo !== 'ligarPares';
   const podeConfirmar = q.tipo === 'ordenar' ? licao.ordem.length === q.itens.length : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
@@ -109,27 +109,34 @@ export default function Licao() {
           <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={licao.progresso} />
-        <SequenciaDeAcertos valor={licao.acertosSeguidos} />
-        <Pressable
-          onPress={licao.usarDica}
-          accessibilityRole="button"
-          accessibilityLabel={`Dica, ${licao.dicasRestantes} restantes`}
-          style={estilos.dica}>
-          <IconeLanterna tamanho={20} acesa={licao.dicasRestantes > 0} />
-          <Text style={estilos.dicaTexto}>{licao.dicasRestantes}</Text>
-        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
-        <Chip
-          texto={
-            boasVindas
-              ? 'Lição de boas-vindas'
-              : (q.origem ?? `${rotuloTipo[q.tipo]}${q.modo === 'imediato' ? ' · imediato' : ''}`)
-          }
-          tom={boasVindas || q.origem ? 'luz' : 'mare'}
-        />
-        <Text style={estilos.enunciado}>{q.enunciado}</Text>
+        {/* A dica fica na linha do tipo de questão: sempre no mesmo lugar e longe das respostas. */}
+        <View style={estilos.linhaDoTipo}>
+          <View style={estilos.chip}>
+            <Chip
+              texto={boasVindas ? 'Lição de boas-vindas' : (q.origem ?? rotuloTipo[q.tipo])}
+              tom={boasVindas || q.origem ? 'luz' : 'mare'}
+            />
+          </View>
+          <Pressable
+            onPress={licao.usarDica}
+            accessibilityRole="button"
+            accessibilityLabel={
+              licao.dicasRestantes > 0
+                ? `Ver uma dica. ${licao.dicasRestantes} restantes hoje`
+                : 'Dicas de hoje acabaram. Ver como ganhar mais'
+            }
+            hitSlop={6}
+            style={estilos.dica}>
+            <IconeLanterna tamanho={18} acesa={licao.dicasRestantes > 0} />
+            <Text style={[estilos.dicaTexto, licao.dicasRestantes > 0 ? null : estilos.dicaSemSaldo]}>
+              {`Dica · ${licao.dicasRestantes}`}
+            </Text>
+          </Pressable>
+        </View>
+        <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
 
         {licao.dicaAberta ? (
           <Animated.View entering={FadeInDown} style={estilos.caixaDica}>
@@ -138,24 +145,25 @@ export default function Licao() {
           </Animated.View>
         ) : null}
 
-        {/* Em telas altas, as respostas descem para a zona do polegar; o enunciado fica no topo. */}
-        <View style={estilos.empurra} />
-        <Exercicio
-          key={q.id}
-          questao={q}
-          situacao={situacao}
-          estadoDaOpcao={estadoDaOpcao}
-          opcaoDesabilitada={opcaoDesabilitada}
-          onEscolher={(i) => {
-            haptico.selecao();
-            licao.escolher(i);
-          }}
-          ordem={licao.ordem}
-          onAdicionar={licao.adicionarAOrdem}
-          onRemover={licao.removerDaOrdem}
-          onErrarPar={licao.errarPar}
-          onConcluirPares={licao.concluirPares}
-        />
+        {/* As respostas ocupam o meio do espaço livre, entre o enunciado e o Confirmar. */}
+        <View style={estilos.areaDeResposta}>
+          <Exercicio
+            key={q.id}
+            questao={q}
+            situacao={situacao}
+            estadoDaOpcao={estadoDaOpcao}
+            opcaoDesabilitada={opcaoDesabilitada}
+            onEscolher={(i) => {
+              haptico.selecao();
+              licao.escolher(i);
+            }}
+            ordem={licao.ordem}
+            onAdicionar={licao.adicionarAOrdem}
+            onRemover={licao.removerDaOrdem}
+            onErrarPar={licao.errarPar}
+            onConcluirPares={licao.concluirPares}
+          />
+        </View>
 
         {licao.avisoDeLimite ? (
           <Animated.View entering={FadeInDown} style={estilos.aviso}>
@@ -177,10 +185,9 @@ export default function Licao() {
             <Botao rotulo="Confirmar" desabilitado={!podeConfirmar} onPress={licao.confirmar} />
           </View>
         ) : null}
-        {fase === 'respondendo' && !pedeConfirmacao ? (
-          <Text style={estilos.toque}>
-            {q.tipo === 'ligarPares' ? 'Ligue cada item ao seu par' : 'Toque na resposta'}
-          </Text>
+        {/* Sem "Toque na resposta": as opções já dizem o que fazer. O gesto de ligar pares é o único que precisa de instrução. */}
+        {fase === 'respondendo' && q.tipo === 'ligarPares' ? (
+          <Text style={estilos.toque}>Ligue cada item ao seu par</Text>
         ) : null}
         {fase === 'acerto' ? (
           <FolhaFeedback
@@ -245,21 +252,24 @@ const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo },
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 6 },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
+  linhaDoTipo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  chip: { flexShrink: 1 },
   dica: {
-    minHeight: 40,
+    minHeight: 36,
     paddingHorizontal: 12,
     borderRadius: raio.circulo,
     borderWidth: 1,
-    borderColor: cor.linha,
+    borderColor: cor.linhaForte,
     flexDirection: 'row',
-    gap: 4,
+    gap: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
-  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
-  empurra: { flexGrow: 1, minHeight: 0 },
-  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
+  dicaSemSaldo: { color: cor.textoSuave },
+  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
+  areaDeResposta: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },
+  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
   caixaDica: {
     flexDirection: 'row',
     gap: 8,

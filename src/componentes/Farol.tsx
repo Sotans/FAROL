@@ -10,12 +10,27 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { cor, raio } from '@/tema/tokens';
+import { cor } from '@/tema/tokens';
+import { IlustracaoDoFarol, LAMPADA_NA_IMAGEM, PROPORCAO_DO_FAROL } from './Ilustracoes';
 
-const LADO = 240;
-const CENTRO = LADO / 2;
+const LARGURA = 240;
+const ALTURA_DA_IMAGEM = 250;
+const LARGURA_DA_IMAGEM = ALTURA_DA_IMAGEM * PROPORCAO_DO_FAROL;
+/** Centro da lâmpada dentro do quadro: os feixes giram em volta dele. */
+const LAMPADA = {
+  x: (LARGURA - LARGURA_DA_IMAGEM) / 2 + LARGURA_DA_IMAGEM * LAMPADA_NA_IMAGEM.x,
+  y: ALTURA_DA_IMAGEM * LAMPADA_NA_IMAGEM.y,
+};
+/** Os feixes vivem num quadrado com centro na lâmpada. */
+const LADO_DOS_FEIXES = 280;
+const META = LADO_DOS_FEIXES / 2;
+const COMPRIMENTO = 130;
+const ABERTURA = 22;
 
-/** O farol da conclusão: surge e a luz gira (ver docs/08-design-sensorial.md). Provisório até o ícone final. */
+/**
+ * O farol da conclusão: a ilustração com a lâmpada acesa, e os feixes girando em volta dela
+ * (docs/08-design-sensorial.md). Surge com uma mola; com "reduzir movimento", aparece parado.
+ */
 export function Farol() {
   const reduzir = useReducedMotion();
   const giro = useSharedValue(0);
@@ -40,15 +55,12 @@ export function Farol() {
 
   return (
     <Animated.View style={[estilos.raiz, geral]} accessible accessibilityLabel="Um farol acende sua luz">
+      {/* Os feixes ficam atrás da ilustração: saem da lâmpada e passam por trás da torre. */}
       <Animated.View style={[estilos.feixes, feixes]}>
         <View style={estilos.feixeDireita} />
         <View style={estilos.feixeEsquerda} />
       </Animated.View>
-      <View style={estilos.torre}>
-        <View style={estilos.faixa} />
-        <View style={[estilos.faixa, { marginTop: 22 }]} />
-      </View>
-      <View style={estilos.lampada} />
+      <IlustracaoDoFarol estado="atual" altura={ALTURA_DA_IMAGEM} decorativa />
     </Animated.View>
   );
 }
@@ -56,57 +68,38 @@ export function Farol() {
 const luzSuave = cor.luzBrilho;
 
 const estilos = StyleSheet.create({
-  raiz: { width: LADO, height: 280, alignItems: 'center' },
-  feixes: { position: 'absolute', top: 0, left: 0, width: LADO, height: LADO },
+  raiz: { width: LARGURA, height: ALTURA_DA_IMAGEM, alignItems: 'center' },
+  feixes: {
+    position: 'absolute',
+    left: LAMPADA.x - META,
+    top: LAMPADA.y - META,
+    width: LADO_DOS_FEIXES,
+    height: LADO_DOS_FEIXES,
+  },
   feixeDireita: {
     position: 'absolute',
-    left: CENTRO,
-    top: CENTRO - 24,
+    left: META,
+    top: META - ABERTURA,
     width: 0,
     height: 0,
-    borderTopWidth: 24,
-    borderBottomWidth: 24,
-    borderRightWidth: 112,
+    borderTopWidth: ABERTURA,
+    borderBottomWidth: ABERTURA,
+    borderRightWidth: COMPRIMENTO,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
     borderRightColor: luzSuave,
   },
   feixeEsquerda: {
     position: 'absolute',
-    left: CENTRO - 112,
-    top: CENTRO - 24,
+    left: META - COMPRIMENTO,
+    top: META - ABERTURA,
     width: 0,
     height: 0,
-    borderTopWidth: 24,
-    borderBottomWidth: 24,
-    borderLeftWidth: 112,
+    borderTopWidth: ABERTURA,
+    borderBottomWidth: ABERTURA,
+    borderLeftWidth: COMPRIMENTO,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
     borderLeftColor: luzSuave,
-  },
-  torre: {
-    position: 'absolute',
-    top: CENTRO + 14,
-    width: 52,
-    height: 120,
-    backgroundColor: cor.texto,
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
-    paddingTop: 20,
-    overflow: 'hidden',
-  },
-  faixa: { height: 18, backgroundColor: cor.mare },
-  lampada: {
-    position: 'absolute',
-    top: CENTRO - 20,
-    width: 40,
-    height: 40,
-    borderRadius: raio.circulo,
-    backgroundColor: cor.luz,
-    shadowColor: cor.luz,
-    shadowOpacity: 0.9,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 12,
   },
 });

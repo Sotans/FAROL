@@ -69,8 +69,8 @@ export function useDesafio(questoes: Questao[]) {
 
   function escolher(i: number) {
     if (fase !== 'respondendo') return;
-    if (questao.modo === 'imediato') conferir(i);
-    else setSelecionada(i);
+    // Toda escolha passa por Confirmar: tocar só seleciona.
+    if (ehDeEscolha(questao)) setSelecionada(i);
   }
 
   function confirmar() {

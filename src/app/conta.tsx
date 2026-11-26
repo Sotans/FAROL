@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { carreiraPorId } from '@/carreiras/dados';
 import { Botao } from '@/componentes/Botao';
-import { Personagem } from '@/componentes/Personagem';
+import { GuiaIlustrado, temGuiaIlustrado } from '@/componentes/Ilustracoes';
 import {
   codigoCompleto,
   emailValido,
@@ -60,16 +60,7 @@ const textos: Record<Fluxo, { titulo: string; sub: string; pronto: string; pront
 /** Conta (submeta 2.6): salvar o progresso com um e-mail, ou entrar numa conta existente. Login por código, sem senha. */
 export default function ContaTela() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
-  const {
-    conta,
-    carreira,
-    tomDoGuia,
-    cabeloDoGuia,
-    corDoCabeloDoGuia,
-    aposEntrarNaConta,
-    aposSalvarAConta,
-    sairDaConta,
-  } = useProgresso();
+  const { conta, carreira, aposEntrarNaConta, aposSalvarAConta, sairDaConta } = useProgresso();
   const [fluxo, setFluxo] = useState<Fluxo>(modo === 'entrar' ? 'entrar' : 'salvar');
   const [etapa, setEtapa] = useState<Etapa>('email');
   const [email, setEmail] = useState('');
@@ -192,15 +183,8 @@ export default function ContaTela() {
             </>
           ) : etapa === 'pronto' ? (
             <Animated.View entering={FadeInDown.duration(300)} style={estilos.centro}>
-              {c ? (
-                <Personagem
-                  carreira={c}
-                  tom={tomDoGuia}
-                  cabelo={cabeloDoGuia}
-                  corDoCabelo={corDoCabeloDoGuia}
-                  expressao="comemorando"
-                  tamanho={110}
-                />
+              {temGuiaIlustrado(c) ? (
+                <GuiaIlustrado carreira={c} pose={fluxo === 'entrar' ? 'acenando' : 'comemorando'} altura={200} />
               ) : null}
               <Text style={[estilos.titulo, estilos.textoCentro]}>{t.pronto}</Text>
               <Text style={[estilos.sub, estilos.textoCentro]}>{t.prontoSub}</Text>

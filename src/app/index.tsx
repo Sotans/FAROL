@@ -20,9 +20,10 @@ import {
   ALTURA_DA_LINHA,
   ALTURA_DO_FAROL,
   COLUNA_DOS_NOS,
+  ALTURA_DA_IMAGEM_DO_FAROL,
   LAMPADA_DO_FAROL,
+  LARGURA_DA_IMAGEM_DO_FAROL,
   NoTrilha,
-  TAMANHO_DO_FAROL,
   type EstadoNo,
   type Ligacao,
 } from '@/componentes/NoTrilha';
@@ -80,8 +81,8 @@ function FeixeDoFarol({
 }) {
   const reduzir = useReducedMotion();
   const y = useSharedValue(ultimoAlvoDoFeixe.get(moduloId) ?? alvoY);
-  const lx = largura - MARGEM_DO_FAROL - TAMANHO_DO_FAROL * 1.5 + LAMPADA_DO_FAROL.x;
-  const ly = TOPO_DA_TRILHA + (ALTURA_DO_FAROL - TAMANHO_DO_FAROL) / 2 + LAMPADA_DO_FAROL.y;
+  const lx = largura - MARGEM_DO_FAROL - LARGURA_DA_IMAGEM_DO_FAROL + LAMPADA_DO_FAROL.x;
+  const ly = TOPO_DA_TRILHA + (ALTURA_DO_FAROL - ALTURA_DA_IMAGEM_DO_FAROL) / 2 + LAMPADA_DO_FAROL.y;
   const cx = COLUNA_DOS_NOS / 2;
 
   useEffect(() => {

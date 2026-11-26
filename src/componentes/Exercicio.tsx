@@ -71,16 +71,15 @@ export function Exercicio(props: Props) {
     );
   }
 
-  const completar = q.tipo === 'completar';
+  // Múltipla escolha e completar: botões na largura toda, um embaixo do outro.
   return (
-    <View style={completar ? estilos.fichas : estilos.opcoes}>
+    <View style={estilos.opcoes}>
       {q.opcoes.map((texto, i) => (
         <Opcao
           key={`${q.id}-${i}`}
           texto={texto}
           estado={props.estadoDaOpcao(i)}
           desabilitado={props.opcaoDesabilitada(i)}
-          compacta={completar}
           onPress={() => props.onEscolher(i)}
         />
       ))}
@@ -342,8 +341,7 @@ function Bloco({
 
 const estilos = StyleSheet.create({
   riscado: { textDecorationLine: 'line-through' },
-  opcoes: { gap: 10 },
-  fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  opcoes: { gap: 12 },
   frase: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   ordenar: { gap: 22 },
   linhaDeResposta: {

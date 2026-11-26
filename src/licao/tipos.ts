@@ -2,7 +2,10 @@
 export type TipoDeEscolha = 'multipla' | 'certoErrado' | 'completar' | 'identificarErro';
 export type TipoQuestao = TipoDeEscolha | 'ordenar' | 'ligarPares';
 
-/** imediato: o toque já confere. confirmar: a pessoa escolhe e toca em CONFIRMAR. */
+/**
+ * Nível de pressão pensado para a questão (docs/11, modos de resposta). Hoje as telas
+ * conferem toda escolha no Confirmar: o toque só seleciona, como pede o protótipo novo.
+ */
 export type ModoResposta = 'imediato' | 'confirmar';
 
 type Base = {

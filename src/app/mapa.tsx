@@ -5,6 +5,8 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Botao } from '@/componentes/Botao';
+import { GuiaIlustrado, temGuiaIlustrado } from '@/componentes/Ilustracoes';
+import { carreiraPorId } from '@/carreiras/dados';
 import { rotuloMateria, rotuloNivel, type Materia, type ResultadoDaMateria } from '@/diagnostico/dados';
 import { useProgresso } from '@/estado/progresso';
 import { haptico } from '@/servicos/haptico';
@@ -13,7 +15,8 @@ import { cor, fonte, raio, tamanho } from '@/tema/tokens';
 
 /** T7. O resultado como conquista: nível, ponto forte e o que vale tentar pular. */
 export default function MapaDoPontoDePartida() {
-  const { mapa } = useProgresso();
+  const { mapa, carreira } = useProgresso();
+  const c = carreiraPorId(carreira);
 
   useEffect(() => {
     haptico.sucesso();
@@ -28,6 +31,11 @@ export default function MapaDoPontoDePartida() {
   return (
     <SafeAreaView style={estilos.tela} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
+        {temGuiaIlustrado(c) ? (
+          <View style={estilos.guia}>
+            <GuiaIlustrado carreira={c} pose="comemorando" altura={180} />
+          </View>
+        ) : null}
         <Text style={estilos.titulo} accessibilityRole="header">
           Seu ponto de partida
         </Text>
@@ -74,6 +82,7 @@ function CartaoDaMateria({ nome, resultado }: { nome: string; resultado: Resulta
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cor.fundo, paddingHorizontal: 16 },
   corpo: { paddingTop: 20, paddingBottom: 16, gap: 12 },
+  guia: { alignItems: 'center' },
   // O mapa é uma conquista: título com a voz das conquistas (Fraunces).
   titulo: { fontFamily: fonte.conquista, fontSize: tamanho.xxl - 2, color: cor.luzClara },
   sub: { fontFamily: fonte.texto, fontSize: tamanho.sm, color: cor.textoSuave, marginTop: -6, marginBottom: 6 },
