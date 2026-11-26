@@ -33,7 +33,6 @@ export default function Diagnostico() {
 
   const q = questoesDoDiagnostico[indice];
   const total = questoesDoDiagnostico.length;
-  const completar = q.tipo === 'completar';
   const respondendo = resultado === null;
 
   function responder(escolhida: number | null) {
@@ -96,22 +95,25 @@ export default function Diagnostico() {
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Mapa · pergunta ${indice + 1} de ${total}`} tom="luz" />
         <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
-        <View style={completar ? estilos.fichas : estilos.opcoes}>
-          {q.opcoes.map((texto, i) => (
-            <Opcao
-              key={`${q.id}-${i}`}
-              texto={texto}
-              estado={estadoDaOpcao(i)}
-              desabilitado={!respondendo}
-              compacta={completar}
-              onPress={() => {
-                haptico.selecao();
-                setSelecionada(i);
-              }}
-            />
-          ))}
+        <View style={estilos.areaDeResposta}>
+          <View style={estilos.opcoes}>
+            {q.opcoes.map((texto, i) => (
+              <Opcao
+                key={`${q.id}-${i}`}
+                texto={texto}
+                estado={estadoDaOpcao(i)}
+                desabilitado={!respondendo}
+                onPress={() => {
+                  haptico.selecao();
+                  setSelecionada(i);
+                }}
+              />
+            ))}
+          </View>
+          {respondendo ? (
+            <Botao rotulo="Ainda não vi isso" variante="terciario" onPress={() => responder(null)} />
+          ) : null}
         </View>
-        {respondendo ? <Botao rotulo="Ainda não vi isso" variante="terciario" onPress={() => responder(null)} /> : null}
       </ScrollView>
 
       <View style={estilos.rodapeFixo}>
@@ -145,10 +147,10 @@ const estilos = StyleSheet.create({
     paddingRight: 24,
   },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
-  corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
+  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
+  areaDeResposta: { flexGrow: 1, justifyContent: 'center', gap: 12, paddingVertical: 8 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
-  opcoes: { gap: 10 },
-  fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  opcoes: { gap: 12 },
   rodapeFixo: { justifyContent: 'flex-end' },
   rodape: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },
 });

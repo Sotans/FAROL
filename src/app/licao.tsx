@@ -52,8 +52,8 @@ export default function Licao() {
   const correta = deEscolha ? q.correta : -1;
   const situacao: Situacao =
     fase === 'guiada' || fase === 'seguir' ? 'revelada' : fase === 'acerto' || fase === 'erro' ? fase : 'respondendo';
-  // Ordenar sempre confirma: a sequência só faz sentido completa.
-  const pedeConfirmacao = q.tipo === 'ordenar' || (deEscolha && q.modo === 'confirmar');
+  // Toda questão confere no Confirmar (apagado até haver resposta), menos ligar pares, que confere par a par.
+  const pedeConfirmacao = q.tipo !== 'ligarPares';
   const podeConfirmar = q.tipo === 'ordenar' ? licao.ordem.length === q.itens.length : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
@@ -116,11 +116,7 @@ export default function Licao() {
         <View style={estilos.linhaDoTipo}>
           <View style={estilos.chip}>
             <Chip
-              texto={
-                boasVindas
-                  ? 'Lição de boas-vindas'
-                  : (q.origem ?? `${rotuloTipo[q.tipo]}${q.modo === 'imediato' ? ' · imediato' : ''}`)
-              }
+              texto={boasVindas ? 'Lição de boas-vindas' : (q.origem ?? rotuloTipo[q.tipo])}
               tom={boasVindas || q.origem ? 'luz' : 'mare'}
             />
           </View>
@@ -149,22 +145,25 @@ export default function Licao() {
           </Animated.View>
         ) : null}
 
-        <Exercicio
-          key={q.id}
-          questao={q}
-          situacao={situacao}
-          estadoDaOpcao={estadoDaOpcao}
-          opcaoDesabilitada={opcaoDesabilitada}
-          onEscolher={(i) => {
-            haptico.selecao();
-            licao.escolher(i);
-          }}
-          ordem={licao.ordem}
-          onAdicionar={licao.adicionarAOrdem}
-          onRemover={licao.removerDaOrdem}
-          onErrarPar={licao.errarPar}
-          onConcluirPares={licao.concluirPares}
-        />
+        {/* As respostas ocupam o meio do espaço livre, entre o enunciado e o Confirmar. */}
+        <View style={estilos.areaDeResposta}>
+          <Exercicio
+            key={q.id}
+            questao={q}
+            situacao={situacao}
+            estadoDaOpcao={estadoDaOpcao}
+            opcaoDesabilitada={opcaoDesabilitada}
+            onEscolher={(i) => {
+              haptico.selecao();
+              licao.escolher(i);
+            }}
+            ordem={licao.ordem}
+            onAdicionar={licao.adicionarAOrdem}
+            onRemover={licao.removerDaOrdem}
+            onErrarPar={licao.errarPar}
+            onConcluirPares={licao.concluirPares}
+          />
+        </View>
 
         {licao.avisoDeLimite ? (
           <Animated.View entering={FadeInDown} style={estilos.aviso}>
@@ -269,6 +268,7 @@ const estilos = StyleSheet.create({
   dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
   dicaSemSaldo: { color: cor.textoSuave },
   corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
+  areaDeResposta: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
   caixaDica: {
     flexDirection: 'row',

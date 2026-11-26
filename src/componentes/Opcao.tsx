@@ -19,7 +19,6 @@ type Props = {
   estado: EstadoOpcao;
   onPress: () => void;
   desabilitado?: boolean;
-  compacta?: boolean;
 };
 
 const visual = {
@@ -31,7 +30,7 @@ const visual = {
   removida: { fundo: cor.superficie, borda: cor.linhaForte, texto: cor.textoSuave },
 } as const;
 
-export function Opcao({ texto, estado, onPress, desabilitado = false, compacta = false }: Props) {
+export function Opcao({ texto, estado, onPress, desabilitado = false }: Props) {
   const v = visual[estado];
   const reduzir = useReducedMotion();
   const deslocamento = useSharedValue(0);
@@ -56,7 +55,7 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
   }));
 
   return (
-    <Animated.View style={[animado, compacta ? estilos.compactaRaiz : null]}>
+    <Animated.View style={animado}>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ disabled: desabilitado, selected: estado === 'selecionada' }}
@@ -64,7 +63,6 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
         onPress={onPress}
         style={[
           estilos.base,
-          compacta ? estilos.compacta : null,
           {
             backgroundColor: v.fundo,
             borderColor: v.borda,
@@ -96,12 +94,11 @@ const estilos = StyleSheet.create({
     paddingVertical: 16,
     justifyContent: 'center',
   },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  compactaRaiz: { alignSelf: 'flex-start' },
-  compacta: { paddingHorizontal: 22 },
+  linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   texto: {
     flexShrink: 1,
     fontFamily: fonte.textoSemi,
-    fontSize: tamanho.md,
+    fontSize: tamanho.md + 1,
+    textAlign: 'center',
   },
 });

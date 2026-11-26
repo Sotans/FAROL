@@ -52,7 +52,8 @@ export default function Desafio() {
   const correta = deEscolha ? q.correta : -1;
   // No desafio não há nova tentativa: depois de um erro, a solução aparece.
   const situacao: Situacao = fase === 'acerto' ? 'acerto' : fase === 'respondendo' ? 'respondendo' : 'revelada';
-  const pedeConfirmacao = q.tipo === 'ordenar' || (deEscolha && q.modo === 'confirmar');
+  // Toda questão confere no Confirmar (apagado até haver resposta), menos ligar pares, que confere par a par.
+  const pedeConfirmacao = q.tipo !== 'ligarPares';
   const podeConfirmar = q.tipo === 'ordenar' ? desafio.ordem.length === q.itens.length : selecionada !== null;
 
   function estadoDaOpcao(i: number): EstadoOpcao {
@@ -139,22 +140,25 @@ export default function Desafio() {
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
         <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
-        <Exercicio
-          key={q.id}
-          questao={q}
-          situacao={situacao}
-          estadoDaOpcao={estadoDaOpcao}
-          opcaoDesabilitada={() => fase !== 'respondendo'}
-          onEscolher={(i) => {
-            haptico.selecao();
-            desafio.escolher(i);
-          }}
-          ordem={desafio.ordem}
-          onAdicionar={desafio.adicionarAOrdem}
-          onRemover={desafio.removerDaOrdem}
-          onErrarPar={desafio.errarPar}
-          onConcluirPares={desafio.concluirPares}
-        />
+        {/* As respostas ocupam o meio do espaço livre, entre o enunciado e o Confirmar. */}
+        <View style={estilos.areaDeResposta}>
+          <Exercicio
+            key={q.id}
+            questao={q}
+            situacao={situacao}
+            estadoDaOpcao={estadoDaOpcao}
+            opcaoDesabilitada={() => fase !== 'respondendo'}
+            onEscolher={(i) => {
+              haptico.selecao();
+              desafio.escolher(i);
+            }}
+            ordem={desafio.ordem}
+            onAdicionar={desafio.adicionarAOrdem}
+            onRemover={desafio.removerDaOrdem}
+            onErrarPar={desafio.errarPar}
+            onConcluirPares={desafio.concluirPares}
+          />
+        </View>
       </ScrollView>
 
       <View style={estilos.rodapeFixo}>
@@ -200,6 +204,7 @@ const estilos = StyleSheet.create({
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
   luzes: { paddingVertical: 6 },
   corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
+  areaDeResposta: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },
   enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
   rodapeFixo: { justifyContent: 'flex-end' },
   rodape: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },
