@@ -15,10 +15,10 @@ import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Luzes } from '@/componentes/Luzes';
 import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
-import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { alvoDoDesafio } from '@/desafio/alvo';
 import { useDesafio } from '@/desafio/useDesafio';
 import { useProgresso } from '@/estado/progresso';
+import { quebrarEnunciado } from '@/licao/enunciado';
 import { montarDesafio } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
 import { haptico } from '@/servicos/haptico';
@@ -130,7 +130,6 @@ export default function Desafio() {
           <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={desafio.progresso} />
-        <SequenciaDeAcertos valor={desafio.acertosSeguidos} />
       </View>
 
       <View style={estilos.luzes}>
@@ -139,7 +138,7 @@ export default function Desafio() {
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Desafio · questão ${desafio.indice + 1} de ${desafio.total} · ${rotuloTipo[q.tipo]}`} tom="luz" />
-        <Text style={estilos.enunciado}>{q.enunciado}</Text>
+        <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
         {/* Em telas altas, as respostas descem para a zona do polegar; o enunciado fica no topo. */}
         <View style={estilos.empurra} />
         <Exercicio
@@ -166,10 +165,9 @@ export default function Desafio() {
             <Botao rotulo="Confirmar" desabilitado={!podeConfirmar} onPress={desafio.confirmar} />
           </View>
         ) : null}
-        {fase === 'respondendo' && !pedeConfirmacao ? (
-          <Text style={estilos.toque}>
-            {q.tipo === 'ligarPares' ? 'Ligue cada item ao seu par' : 'Toque na resposta'}
-          </Text>
+        {/* Sem "Toque na resposta": as opções já dizem o que fazer. O gesto de ligar pares é o único que precisa de instrução. */}
+        {fase === 'respondendo' && q.tipo === 'ligarPares' ? (
+          <Text style={estilos.toque}>Ligue cada item ao seu par</Text>
         ) : null}
         {fase === 'acerto' ? (
           <FolhaFeedback

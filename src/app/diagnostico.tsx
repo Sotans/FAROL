@@ -10,6 +10,7 @@ import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Opcao, type EstadoOpcao } from '@/componentes/Opcao';
 import { calcularMapa, questoesDoDiagnostico, type RespostaDoDiagnostico } from '@/diagnostico/dados';
 import { useProgresso } from '@/estado/progresso';
+import { quebrarEnunciado } from '@/licao/enunciado';
 import { haptico } from '@/servicos/haptico';
 import { tocar, tocarAcerto } from '@/servicos/som';
 import { IconeFechar } from '@/icones';
@@ -94,7 +95,7 @@ export default function Diagnostico() {
 
       <ScrollView contentContainerStyle={estilos.corpo} showsVerticalScrollIndicator={false}>
         <Chip texto={`Mapa · pergunta ${indice + 1} de ${total}`} tom="luz" />
-        <Text style={estilos.enunciado}>{q.enunciado}</Text>
+        <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
         <View style={completar ? estilos.fichas : estilos.opcoes}>
           {q.opcoes.map((texto, i) => (
             <Opcao

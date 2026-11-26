@@ -11,8 +11,8 @@ import { Chip } from '@/componentes/Chip';
 import { FolhaFeedback } from '@/componentes/FolhaFeedback';
 import { Exercicio, type Situacao } from '@/componentes/Exercicio';
 import type { EstadoOpcao } from '@/componentes/Opcao';
-import { SequenciaDeAcertos } from '@/componentes/SequenciaDeAcertos';
 import { useProgresso } from '@/estado/progresso';
+import { quebrarEnunciado } from '@/licao/enunciado';
 import { trilhaDePortugues } from '@/conteudo/trilha';
 import { montarBoasVindas, montarFarol, montarLicao, montarRevisaoRapida } from '@/licao/montar';
 import { ehDeEscolha, rotuloTipo } from '@/licao/tipos';
@@ -109,7 +109,6 @@ export default function Licao() {
           <IconeFechar tamanho={26} />
         </Pressable>
         <BarraProgresso valor={licao.progresso} />
-        <SequenciaDeAcertos valor={licao.acertosSeguidos} />
         <Pressable
           onPress={licao.usarDica}
           accessibilityRole="button"
@@ -129,7 +128,7 @@ export default function Licao() {
           }
           tom={boasVindas || q.origem ? 'luz' : 'mare'}
         />
-        <Text style={estilos.enunciado}>{q.enunciado}</Text>
+        <Text style={estilos.enunciado}>{quebrarEnunciado(q.enunciado)}</Text>
 
         {licao.dicaAberta ? (
           <Animated.View entering={FadeInDown} style={estilos.caixaDica}>
@@ -177,10 +176,9 @@ export default function Licao() {
             <Botao rotulo="Confirmar" desabilitado={!podeConfirmar} onPress={licao.confirmar} />
           </View>
         ) : null}
-        {fase === 'respondendo' && !pedeConfirmacao ? (
-          <Text style={estilos.toque}>
-            {q.tipo === 'ligarPares' ? 'Ligue cada item ao seu par' : 'Toque na resposta'}
-          </Text>
+        {/* Sem "Toque na resposta": as opções já dizem o que fazer. O gesto de ligar pares é o único que precisa de instrução. */}
+        {fase === 'respondendo' && q.tipo === 'ligarPares' ? (
+          <Text style={estilos.toque}>Ligue cada item ao seu par</Text>
         ) : null}
         {fase === 'acerto' ? (
           <FolhaFeedback
