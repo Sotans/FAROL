@@ -342,7 +342,7 @@ function Bloco({
 
 const estilos = StyleSheet.create({
   riscado: { textDecorationLine: 'line-through' },
-  opcoes: { gap: 10 },
+  opcoes: { gap: 14 },
   fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   frase: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   ordenar: { gap: 22 },

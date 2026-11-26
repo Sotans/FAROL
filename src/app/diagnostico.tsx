@@ -146,7 +146,7 @@ const estilos = StyleSheet.create({
   },
   sair: { width: alvoMinimo, height: alvoMinimo, alignItems: 'center', justifyContent: 'center' },
   corpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
-  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
+  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
   opcoes: { gap: 10 },
   fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   rodapeFixo: { justifyContent: 'flex-end' },

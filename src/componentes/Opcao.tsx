@@ -88,12 +88,12 @@ export function Opcao({ texto, estado, onPress, desabilitado = false, compacta =
 const estilos = StyleSheet.create({
   riscado: { textDecorationLine: 'line-through' },
   base: {
-    minHeight: alvoMinimo + 4,
+    minHeight: alvoMinimo + 14,
     borderRadius: raio.md + 2,
     borderWidth: 2,
     borderBottomWidth: 4,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 16,
     justifyContent: 'center',
   },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 8 },

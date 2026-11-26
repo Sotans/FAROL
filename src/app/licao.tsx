@@ -149,8 +149,6 @@ export default function Licao() {
           </Animated.View>
         ) : null}
 
-        {/* Em telas altas, as respostas descem para a zona do polegar; o enunciado fica no topo. */}
-        <View style={estilos.empurra} />
         <Exercicio
           key={q.id}
           questao={q}
@@ -270,9 +268,8 @@ const estilos = StyleSheet.create({
   },
   dicaTexto: { fontFamily: fonte.textoSemi, fontSize: tamanho.sm, color: cor.luz },
   dicaSemSaldo: { color: cor.textoSuave },
-  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
-  empurra: { flexGrow: 1, minHeight: 0 },
-  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg - 2, lineHeight: 28, color: cor.texto },
+  corpo: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, gap: 22 },
+  enunciado: { fontFamily: fonte.textoSemi, fontSize: tamanho.lg + 1, lineHeight: 31, color: cor.texto },
   caixaDica: {
     flexDirection: 'row',
     gap: 8,
