@@ -5,7 +5,6 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  FadeOut,
   useAnimatedProps,
   useReducedMotion,
   useSharedValue,
@@ -416,10 +415,10 @@ export default function Trilha() {
 
       <Aviso texto={aviso} />
 
+      {/* Os cartões só entram esmaecendo; saem na hora, para o fundo não segurar toques enquanto some. */}
       {cartaoAberto && !farolAceso ? (
         <Animated.View
           entering={FadeIn.duration(duracao.transicao)}
-          exiting={FadeOut.duration(duracao.transicao)}
           style={StyleSheet.absoluteFill}>
           <Pressable style={estilos.fundoCartao} onPress={() => setCartaoAberto(false)} accessibilityLabel="Fechar" />
           <Animated.View entering={FadeInDown.duration(220)} style={estilos.cartao}>
@@ -446,7 +445,6 @@ export default function Trilha() {
       {listaAberta ? (
         <Animated.View
           entering={FadeIn.duration(duracao.transicao)}
-          exiting={FadeOut.duration(duracao.transicao)}
           style={StyleSheet.absoluteFill}>
           <Pressable style={estilos.fundoCartao} onPress={() => setListaAberta(false)} accessibilityLabel="Fechar" />
           <Animated.View entering={FadeInDown.duration(220)} style={[estilos.cartao, estilos.cartaoPulo]}>
@@ -508,7 +506,6 @@ export default function Trilha() {
       {alvoDoPulo !== null ? (
         <Animated.View
           entering={FadeIn.duration(duracao.transicao)}
-          exiting={FadeOut.duration(duracao.transicao)}
           style={StyleSheet.absoluteFill}>
           <Pressable
             style={estilos.fundoCartao}
