@@ -52,7 +52,7 @@ export default function Licao() {
     if (farol) return montarFarol(modulo, agora.getTime());
     return montarLicao(modulo, concluidas, agora.getTime(), vencidas(revisoes, agora));
   });
-  const licao = useLicao(questoes, modoDeErro);
+  const licao = useLicao(questoes, modoDeErro, { isolada: demonstracao });
   const { questao: q, fase, selecionada, removidas } = licao;
   const deEscolha = ehDeEscolha(q);
   const correta = deEscolha ? q.correta : -1;
@@ -84,8 +84,7 @@ export default function Licao() {
   function continuar() {
     if (licao.proxima()) {
       if (demonstracao) {
-        if (router.canGoBack()) router.back();
-        else router.dismissTo('/');
+        voltar();
         return;
       }
       registrarRevisoes(licao.notas);
@@ -104,16 +103,22 @@ export default function Licao() {
     }
   }
 
+  /** A demonstração volta para onde foi aberta (o Laboratório); a lição volta para a trilha. */
+  function voltar() {
+    if (demonstracao && router.canGoBack()) router.back();
+    else router.dismissTo('/');
+  }
+
   function sair() {
     haptico.selecao();
     if (Platform.OS === 'web') {
       // Alert.alert não funciona no navegador.
-      if (window.confirm('Sair da lição? Guardamos onde você parou.')) router.dismissTo('/');
+      if (window.confirm('Sair da lição? Guardamos onde você parou.')) voltar();
       return;
     }
     Alert.alert('Sair da lição?', 'Guardamos onde você parou.', [
       { text: 'Continuar a lição', style: 'cancel' },
-      { text: 'Sair', onPress: () => router.dismissTo('/') },
+      { text: 'Sair', onPress: voltar },
     ]);
   }
 

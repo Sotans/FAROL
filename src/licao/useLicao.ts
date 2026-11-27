@@ -23,9 +23,17 @@ export type Fase = 'respondendo' | 'acerto' | 'erro' | 'guiada' | 'seguir';
  * A barra de progresso nunca recua: se a fila cresce por causa de um erro, a barra
  * fica parada até alcançar o novo total, em vez de voltar.
  */
-export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-de-novo') {
-  const { acertosSeguidos, registrarAcerto, quebrarSequenciaDeAcertos, dicasHoje, registrarDica, ganharDicas } =
-    useProgresso();
+export function useLicao(
+  questoes: Questao[],
+  modoDeErro: ModoDeErro = 'tentar-de-novo',
+  /** Isolada (a demonstração do Laboratório): não gasta dicas nem mexe na sequência de acertos. */
+  { isolada = false }: { isolada?: boolean } = {},
+) {
+  const estadoDoApp = useProgresso();
+  const { acertosSeguidos, dicasHoje, ganharDicas } = estadoDoApp;
+  const registrarAcerto = isolada ? () => {} : estadoDoApp.registrarAcerto;
+  const quebrarSequenciaDeAcertos = isolada ? () => {} : estadoDoApp.quebrarSequenciaDeAcertos;
+  const registrarDica = isolada ? () => {} : estadoDoApp.registrarDica;
   const [fila, setFila] = useState<Questao[]>(questoes);
   const [indice, setIndice] = useState(0);
   const [fase, setFase] = useState<Fase>('respondendo');
@@ -39,7 +47,7 @@ export function useLicao(questoes: Questao[], modoDeErro: ModoDeErro = 'tentar-d
   // Revisão espaçada: a nota de cada questão original, decidida na primeira vez que ela é resolvida.
   const [notas, setNotas] = useState<Record<string, Nota>>({});
   // Limite diário: o contador fica no estado do app e zera na virada do dia, não a cada lição.
-  const dicasRestantes = Math.max(0, limites.dicasPorDia - dicasHoje);
+  const dicasRestantes = isolada ? limites.dicasPorDia : Math.max(0, limites.dicasPorDia - dicasHoje);
   const [dicaAberta, setDicaAberta] = useState(false);
   const [avisoDeLimite, setAvisoDeLimite] = useState(false);
   const [acertosDePrimeira, setAcertosDePrimeira] = useState(0);

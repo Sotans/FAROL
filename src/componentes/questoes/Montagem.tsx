@@ -33,6 +33,14 @@ export function Proporcao({ questao: q, resposta, tom, travada, onMudar }: Props
 
   const mudarVagas = (novas: (number | null)[]) => onMudar({ ...r, vagas: novas });
 
+  // Depois de um erro, cada parte mostra se está certa: a relação e cada vaga, comparada com a
+  // montagem aceita que mais se parece com a da pessoa. Ensina mais que pintar tudo de coral.
+  const referencia = q.montagens.reduce((melhor, m) =>
+    m.filter((v, i) => v === vagas[i]).length > melhor.filter((v, i) => v === vagas[i]).length ? m : melhor,
+  );
+  const tomDaVaga = (i: number) => (tom === 'errado' ? (vagas[i] === referencia[i] ? 'certo' : 'errado') : tom);
+  const tomDaRelacao = tom === 'errado' ? (r.relacao === q.relacao ? 'certo' : 'errado') : tom;
+
   function soltarDoBanco(valor: number, zona: string | null) {
     if (!zona?.startsWith('vaga-')) return;
     const novas = [...vagas];
@@ -69,7 +77,7 @@ export function Proporcao({ questao: q, resposta, tom, travada, onMudar }: Props
           rotulo={`${vagas[i]}, na vaga ${i + 1}. Toque para devolver`}
           onToque={() => soltarDaVaga(i, null)}
           onSoltar={(z) => soltarDaVaga(i, z)}>
-          <Ficha texto={String(vagas[i])} estado={estadoPeloTom(tom, true)} />
+          <Ficha texto={String(vagas[i])} estado={estadoPeloTom(tomDaVaga(i), true)} />
         </Arrastavel>
       ) : (
         <Text style={estilos.vagaVazia} accessibilityLabel={`Vaga ${i + 1}, vazia`}>
@@ -90,7 +98,7 @@ export function Proporcao({ questao: q, resposta, tom, travada, onMudar }: Props
           ]}
           valor={r.relacao}
           travado={travada}
-          tom={tom}
+          tom={tomDaRelacao}
           onEscolher={(relacao) => onMudar({ ...r, relacao })}
         />
         <View style={estilos.proporcao}>
@@ -147,7 +155,13 @@ export function MontarFrase({ questao: q, resposta, tom, travada, onMudar }: Pro
               onSoltar={(z) => {
                 if (z !== 'frase') mudar(pecas.filter((_, p) => p !== posicao));
               }}>
-              <Ficha texto={q.pecas[i]} estado={estadoPeloTom(tom, true)} />
+              <Ficha
+                texto={q.pecas[i]}
+                estado={estadoPeloTom(
+                  tom === 'errado' ? (q.pecas[i] === q.correta[posicao] ? 'certo' : 'errado') : tom,
+                  true,
+                )}
+              />
             </Arrastavel>
           ))}
         </ZonaDeSoltura>

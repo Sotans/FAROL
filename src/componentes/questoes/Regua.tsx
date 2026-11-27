@@ -20,11 +20,16 @@ export function Regua({ questao: q, resposta, tom, travada, onMudar }: PropsDaQu
   const fracao = (valor - q.min) / (q.max - q.min);
   const texto = `${q.prefixo ?? ''}${valor.toLocaleString('pt-BR')}${q.sufixo ?? ''}`;
 
-  function mover(x: number) {
+  /**
+   * Leva o marcador ao ponto tocado. `sempre` registra a resposta mesmo sem mudar o valor:
+   * o primeiro toque conta como "mexeu", ou o Confirmar nunca acenderia quando a resposta
+   * certa é justamente o ponto onde o marcador começa.
+   */
+  function mover(x: number, sempre = false) {
     if (travada || largura === 0) return;
     const novo = arredondar(q, q.min + (Math.min(Math.max(x, 0), largura) / largura) * (q.max - q.min));
-    if (novo !== valor) {
-      haptico.selecao();
+    if (novo !== valor || sempre) {
+      if (novo !== valor) haptico.selecao();
       onMudar({ tipo: 'regua', valor: novo });
     }
   }
@@ -33,12 +38,13 @@ export function Regua({ questao: q, resposta, tom, travada, onMudar }: PropsDaQu
     runOnJS: true,
     enabled: !travada,
     minDistance: 0,
-    onBegin: (e) => mover(e.x),
+    onBegin: (e) => mover(e.x, true),
     onUpdate: (e) => mover(e.x),
   });
 
   const corDoMarcador = tom === 'certo' ? cor.acerto : tom === 'errado' ? cor.atencao : cor.luz;
-  const marcas = [0, 0.25, 0.5, 0.75, 1].map((f) => arredondar(q, q.min + f * (q.max - q.min)));
+  // Sem repetidas: numa régua curta, duas marcas podem cair no mesmo número.
+  const marcas = [...new Set([0, 0.25, 0.5, 0.75, 1].map((f) => arredondar(q, q.min + f * (q.max - q.min))))];
 
   return (
     <View style={estilos.raiz}>
